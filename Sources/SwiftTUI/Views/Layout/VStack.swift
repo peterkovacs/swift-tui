@@ -38,12 +38,20 @@ public struct VStack<Content: View>: View, PrimitiveView {
         node.children[0].update(view: content.view)
         node.alignment = alignment
         node.spacing = spacing
+        node._visitor = nil
     }
 }
 
 class VStackNode: Node, Control {
     var alignment: HorizontalAlignment
     var spacing: Extended
+
+    fileprivate var _visitor: VerticallyProportionalVisitor? = nil
+    var visitor: VerticallyProportionalVisitor {
+        let visitor = _visitor ?? VerticallyProportionalVisitor(spacing: spacing, children: children)
+        _visitor = visitor
+        return visitor
+    }
 
     init(
         view: any GenericView,
@@ -59,6 +67,14 @@ class VStackNode: Node, Control {
     struct VerticallyProportionalVisitor: SizeVisitor {
         let spacing: Extended
         var visited: [(node: Control, size: ProposedSize)]
+
+        fileprivate init(spacing: Extended, children: [Node]) {
+            self.spacing = spacing
+            self.visited = []
+            for child in children {
+                child.size(visitor: &self)
+            }
+        }
 
         static var axis: Axis { .vertical }
 
@@ -101,20 +117,11 @@ class VStackNode: Node, Control {
     }
 
     override func size<T>(visitor: inout T) where T : SizeVisitor {
-        // OPTIMIZATION: We can cache the contents of this visitor for as long as its children are unchanged.
-        var myVisitor = VerticallyProportionalVisitor(spacing: spacing, visited: [])
-
-        for child in children {
-            child.size(visitor: &myVisitor)
-        }
-
-        visitor.visit(node: self, size: myVisitor.size(proposedSize:))
+        visitor.visit(node: self, size: self.visitor.size(proposedSize:))
     }
 
     func size(proposedSize: Size) -> Size {
-        var visitor = Visitor()
-        size(visitor: &visitor)
-        return visitor.size(proposedSize)
+        self.visitor.size(proposedSize: proposedSize)
     }
 
 }
