@@ -60,18 +60,25 @@ class HStackNode: Node, Control {
         let spacing: Extended
         var visited: [(node: Control, size: ProposedSize)]
 
+        static var axis: Axis { .horizontal }
+
         mutating func visit(node: Control, size: @escaping (Size) -> Size) {
             visited.append((node, size))
         }
 
         func size(proposedSize: Size) -> Size {
-            var resultSize: Size = .zero
-            var remaining = visited.count
-            let children = visited.sorted {
-                $0.node.verticalFlexibility(width: proposedSize.width) < $1.node.verticalFlexibility(width: proposedSize.width)
-            }
+            let children = visited
+                .map { (size: $0.size, flexibility: $0.node.horizontalFlexibility(height: proposedSize.height)) }
+                .sorted { $0.flexibility < $1.flexibility }
 
-            for (_, size) in children {
+            var resultSize: Size = .init(
+                width: Extended(children.filter { $0.flexibility != .infinity }.count - 1) * spacing,
+                height: 0
+            )
+
+            var remaining = children.count
+
+            for (size, _) in children {
                 // How much height is remaining based on what's used so far.
                 let remainingWidth = resultSize.width == .infinity ? .infinity : proposedSize.width - resultSize.width
 
@@ -85,11 +92,6 @@ class HStackNode: Node, Control {
 
                 resultSize.height = max(resultSize.height, childSize.height)
                 resultSize.width += childSize.width
-
-                if remaining > 1 {
-                    resultSize.width += spacing
-                }
-
                 remaining -= 1
             }
 
@@ -98,6 +100,7 @@ class HStackNode: Node, Control {
     }
 
     override func size<T>(visitor: inout T) where T : SizeVisitor {
+        // OPTIMIZATION: We can cache the contents of this visitor for as long as its children are unchanged.
         var myVisitor = HorizontallyProportionalVisitor(spacing: spacing, visited: [])
 
         for child in children {
@@ -108,9 +111,8 @@ class HStackNode: Node, Control {
     }
 
     func size(proposedSize: Size) -> Size {
-        var visitor = HorizontallyProportionalVisitor(spacing: spacing, visited: [])
+        var visitor = Visitor()
         size(visitor: &visitor)
-        return visitor.size(proposedSize: proposedSize)
+        return visitor.size(proposedSize)
     }
-
 }

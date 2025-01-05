@@ -60,18 +60,26 @@ class VStackNode: Node, Control {
         let spacing: Extended
         var visited: [(node: Control, size: ProposedSize)]
 
+        static var axis: Axis { .vertical }
+
         mutating func visit(node: Control, size: @escaping (Size) -> Size) {
             visited.append((node, size))
         }
 
         func size(proposedSize: Size) -> Size {
-            var resultSize: Size = .zero
-            var remaining = visited.count
-            let children = visited.sorted {
-                $0.node.verticalFlexibility(width: proposedSize.width) < $1.node.verticalFlexibility(width: proposedSize.width)
-            }
+            let children = visited
+                .map { (size: $0.size, flexibility: $0.node.verticalFlexibility(width: proposedSize.width)) }
+                .sorted { $0.flexibility < $1.flexibility }
 
-            for (_, size) in children {
+            // Anything that is infinitely flexible does not get spacing before it
+            var resultSize: Size = .init(
+                width: 0,
+                height: Extended(children.filter { $0.flexibility != .infinity }.count - 1) * spacing
+            )
+
+            var remaining = children.count
+
+            for (size, _) in children {
                 // How much height is remaining based on what's used so far.
                 let remainingHeight = resultSize.height == .infinity ? .infinity : proposedSize.height - resultSize.height
 
@@ -85,11 +93,6 @@ class VStackNode: Node, Control {
 
                 resultSize.height += childSize.height
                 resultSize.width = max(resultSize.width, childSize.width)
-
-                if remaining > 1 {
-                    resultSize.height += spacing
-                }
-
                 remaining -= 1
             }
 
@@ -98,6 +101,7 @@ class VStackNode: Node, Control {
     }
 
     override func size<T>(visitor: inout T) where T : SizeVisitor {
+        // OPTIMIZATION: We can cache the contents of this visitor for as long as its children are unchanged.
         var myVisitor = VerticallyProportionalVisitor(spacing: spacing, visited: [])
 
         for child in children {
@@ -108,9 +112,9 @@ class VStackNode: Node, Control {
     }
 
     func size(proposedSize: Size) -> Size {
-        var visitor = VerticallyProportionalVisitor(spacing: spacing, visited: [])
+        var visitor = Visitor()
         size(visitor: &visitor)
-        return visitor.size(proposedSize: proposedSize)
+        return visitor.size(proposedSize)
     }
 
 }
