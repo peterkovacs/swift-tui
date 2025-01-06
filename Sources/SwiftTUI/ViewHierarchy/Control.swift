@@ -1,6 +1,9 @@
 
-@MainActor protocol Control {
+@MainActor internal protocol Control: AnyObject {
+    var frame: Rect { get } 
+    func move(to: Position)
     func size(proposedSize: Size) -> Size
+    func layout(size: Size) -> Size
     func verticalFlexibility(width: Extended) -> Extended
     func horizontalFlexibility(height: Extended) -> Extended
 }

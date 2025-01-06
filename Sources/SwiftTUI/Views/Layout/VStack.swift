@@ -38,18 +38,29 @@ public struct VStack<Content: View>: View, PrimitiveView {
         node.children[0].update(view: content.view)
         node.alignment = alignment
         node.spacing = spacing
-        node._visitor = nil
+        node._sizeVisitor = nil
     }
 }
 
-class VStackNode: Node, Control {
+final class VStackNode: Node, Control {
     var alignment: HorizontalAlignment
     var spacing: Extended
 
-    fileprivate var _visitor: VerticallyProportionalVisitor? = nil
-    var visitor: VerticallyProportionalVisitor {
-        let visitor = _visitor ?? VerticallyProportionalVisitor(spacing: spacing, children: children)
-        _visitor = visitor
+    fileprivate var _sizeVisitor: SizeVisitor? = nil
+    var sizeVisitor: SizeVisitor {
+        let visitor = _sizeVisitor ?? SizeVisitor(spacing: spacing, children: children)
+        _sizeVisitor = visitor
+        return visitor
+    }
+
+    fileprivate var _layoutVisitor: Layout? = nil
+    var layoutVisitor: Layout {
+        let visitor = _layoutVisitor ?? Layout(
+            spacing: spacing,
+            alignment: alignment,
+            children: children
+        )
+        _layoutVisitor = visitor
         return visitor
     }
 
@@ -64,9 +75,9 @@ class VStackNode: Node, Control {
         super.init(view: view, parent: parent)
     }
 
-    struct VerticallyProportionalVisitor: SizeVisitor {
+    struct SizeVisitor: LayoutVisitor {
         let spacing: Extended
-        var visited: [(node: Control, size: ProposedSize)]
+        var visited: [(node: Control, size: (Size) -> Size)]
 
         fileprivate init(spacing: Extended, children: [Node]) {
             self.spacing = spacing
@@ -116,12 +127,87 @@ class VStackNode: Node, Control {
         }
     }
 
-    override func size<T>(visitor: inout T) where T : SizeVisitor {
-        visitor.visit(node: self, size: self.visitor.size(proposedSize:))
+    struct Layout: LayoutVisitor {
+        let spacing: Extended
+        let alignment: HorizontalAlignment
+        var visited: [(node: Control, layout: (Size) -> Size)]
+
+        fileprivate init(spacing: Extended, alignment: HorizontalAlignment, children: [Node]) {
+            self.spacing = spacing
+            self.alignment = alignment
+            self.visited = []
+            for child in children {
+                child.layout(visitor: &self)
+            }
+        }
+
+        static var axis: Axis { .vertical }
+
+        mutating func visit(node: Control, size: @escaping (Size) -> Size) {
+            visited.append((node, size))
+        }
+
+        func layout(size: Size) -> Size {
+            let children = visited
+                .map { (node: $0.node, layout: $0.layout, flexibility: $0.node.verticalFlexibility(width: size.width)) }
+                .sorted { $0.flexibility < $1.flexibility }
+
+            var remaining = children.count
+            var remainingHeight = size.height
+
+            for (node, childSize, flexibility) in children {
+                let childSize = childSize(
+                    Size(
+                        width: size.width,
+                        height: remainingHeight / Extended(remaining)
+                    )
+                )
+
+                remainingHeight -= childSize.height
+                if childSize.height > 0 {
+                    remainingHeight -= spacing
+                }
+                remaining -= 1
+            }
+
+
+            var line: Extended = 0
+            // TODO: Problem -- need to iterate through these in `visited` order and not in the order that we calculated childSizes.
+            // But how can we do that? Need to access the underlying frame size instead of using th emapped value.
+            for (control, _) in visited {
+                var position = Position(column: 0, line: line)
+
+                if control.frame.size.height > 0 {
+                    line += control.frame.size.height
+                    line += spacing
+                }
+
+                switch alignment {
+                case .leading: position.column = 0
+                case .center: position.column = (size.width - control.frame.size.width) / 2
+                case .trailing: position.column = size.width - control.frame.size.width
+                }
+
+                control.move(to: position)
+            }
+
+            return size
+        }
+    }
+
+    override func size<T>(visitor: inout T) where T : LayoutVisitor {
+        visitor.visit(node: self, size: self.sizeVisitor.size(proposedSize:))
+    }
+
+    override func layout<T>(visitor: inout T) where T : SwiftTUI.LayoutVisitor {
+        visitor.visit(node: self, size: self.layoutVisitor.layout(size:))
+    }
+
+    override func layout(size: Size) -> Size {
+        self.layoutVisitor.layout(size: size)
     }
 
     func size(proposedSize: Size) -> Size {
-        self.visitor.size(proposedSize: proposedSize)
+        self.sizeVisitor.size(proposedSize: proposedSize)
     }
-
 }

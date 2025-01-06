@@ -31,7 +31,7 @@ class SpacerNode: Node, Control {
         super.init(view: view, parent: parent)
     }
 
-    override func size<T>(visitor: inout T) where T : SizeVisitor {
+    override func size<T>(visitor: inout T) where T : LayoutVisitor {
         visitor.visit(node: self) { [self] proposedSize in
             switch T.axis {
             case .horizontal:
@@ -40,6 +40,22 @@ class SpacerNode: Node, Control {
                 return .init(width: 0, height: proposedSize.height < minLength ? minLength : proposedSize.height)
             }
         }
+    }
+
+    override func layout<T>(visitor: inout T) where T : LayoutVisitor {
+        visitor.visit(node: self) { [self] size in
+            switch T.axis {
+            case .horizontal:
+                self.layout(size: .init(width: size.width < minLength ? minLength : size.width, height: 0))
+            case .vertical:
+                self.layout(size: .init(width: 0, height: size.height < minLength ? minLength : size.height))
+            }
+
+        }
+    }
+
+    override func layout(size: Size) -> Size {
+        super.layout(size: size)
     }
 
     // This method is only called by {horizontal,vertical}Flexibility, so we'll just return back the proposed size since this is infinitely flexible.

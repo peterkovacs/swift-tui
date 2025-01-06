@@ -39,7 +39,7 @@ public struct Text: View, PrimitiveView {
     }
 }
 
-class TextNode: Node, Control {
+final class TextNode: Node, Control {
     var text: Text.Value
 
     init(view: any GenericView, parent: Node?, text: Text.Value) {
@@ -47,8 +47,17 @@ class TextNode: Node, Control {
         super.init(view: view, parent: parent)
     }
 
-    override func size<T>(visitor: inout T) where T : SizeVisitor {
-        visitor.visit(node: self, size: size)
+    override func size<T>(visitor: inout T) where T : LayoutVisitor {
+        visitor.visit(node: self, size: size(proposedSize:))
+    }
+
+    override func layout<T>(visitor: inout T) where T : LayoutVisitor {
+        visitor.visit(node: self, size: layout(size:))
+    }
+
+    override func layout(size: Size) -> Size {
+        // TODO: deal with size that doesn't fit the text
+        super.layout(size: self.size(proposedSize: size))
     }
 
     func size(proposedSize: Size) -> Size {
@@ -59,9 +68,7 @@ class TextNode: Node, Control {
             
         case .attributed(let attributed):
             // TODO: Deal with attributed
-            return proposedSize
-
-            // return .init(width: String(attributed).count, height: attributed.exported.height)
+            return .init(width: Extended(attributed.characters.count), height: 1)
         }
     }
 }

@@ -47,14 +47,25 @@ internal class Node {
         // TODO: Do we need to maintain the `index` invariant on children? If so, update here.
     }
 
-    func size<T: SizeVisitor>(visitor: inout T) {
+    func size<T: LayoutVisitor>(visitor: inout T) {
         for child in children {
             child.size(visitor: &visitor)
         }
     }
 
-    func layout(size: Size, visitor: inout any SizeVisitor) {
+    func layout<T: LayoutVisitor>(visitor: inout T) {
+        for child in children {
+            child.layout(visitor: &visitor)
+        }
+    }
+
+    func layout(size: Size) -> Size {
         frame.size = size
+        return size
+    }
+
+    func move(to position: Position) {
+        frame.position = position
     }
 }
 

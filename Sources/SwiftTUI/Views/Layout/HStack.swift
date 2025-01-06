@@ -38,18 +38,29 @@ public struct HStack<Content: View>: View, PrimitiveView {
         node.children[0].update(view: content.view)
         node.alignment = alignment
         node.spacing = spacing
-        node._visitor = nil
+        node._sizeVisitor = nil
     }
 }
 
-class HStackNode: Node, Control {
+final class HStackNode: Node, Control {
     var alignment: VerticalAlignment
     var spacing: Extended
 
-    fileprivate var _visitor: HorizontallyProportionalVisitor? = nil
-    var visitor: HorizontallyProportionalVisitor {
-        let visitor = _visitor ?? HorizontallyProportionalVisitor(spacing: spacing, children: children)
-        _visitor = visitor
+    fileprivate var _sizeVisitor: SizeVisitor? = nil
+    var sizeVisitor: SizeVisitor {
+        let visitor = _sizeVisitor ?? SizeVisitor(spacing: spacing, children: children)
+        _sizeVisitor = visitor
+        return visitor
+    }
+
+    fileprivate var _layoutVisitor: Layout? = nil
+    var layoutVisitor: Layout {
+        let visitor = _layoutVisitor ?? Layout(
+            spacing: spacing,
+            alignment: alignment,
+            children: children
+        )
+        _layoutVisitor = visitor
         return visitor
     }
 
@@ -64,9 +75,9 @@ class HStackNode: Node, Control {
         super.init(view: view, parent: parent)
     }
 
-    struct HorizontallyProportionalVisitor: SizeVisitor {
+    struct SizeVisitor: SwiftTUI.LayoutVisitor {
         let spacing: Extended
-        var visited: [(node: Control, size: ProposedSize)]
+        var visited: [(node: Control, size: (Size) -> Size)]
 
         fileprivate init(spacing: Extended, children: [Node]) {
             self.spacing = spacing
@@ -115,11 +126,85 @@ class HStackNode: Node, Control {
         }
     }
 
-    override func size<T>(visitor: inout T) where T : SizeVisitor {
-        visitor.visit(node: self, size: self.visitor.size(proposedSize:))
+    struct Layout: LayoutVisitor {
+        let spacing: Extended
+        let alignment: VerticalAlignment
+        var visited: [(node: Control, layout: (Size) -> Size)]
+
+        fileprivate init(spacing: Extended, alignment: VerticalAlignment, children: [Node]) {
+            self.spacing = spacing
+            self.alignment = alignment
+            self.visited = []
+            for child in children {
+                child.layout(visitor: &self)
+            }
+        }
+
+        static var axis: Axis { .horizontal }
+
+        mutating func visit(node: Control, size: @escaping (Size) -> Size) {
+            visited.append((node, size))
+        }
+
+        func layout(size: Size) -> Size {
+            let children = visited
+                .map { (node: $0.node, layout: $0.layout, flexibility: $0.node.horizontalFlexibility(height: size.height)) }
+                .sorted { $0.flexibility < $1.flexibility }
+
+            var remaining = children.count
+            var remainingWidth = size.width
+
+            for (_, childSize, _) in children {
+                let childSize = childSize(
+                    Size(
+                        width: remainingWidth / Extended(remaining),
+                        height: size.height
+                    )
+                )
+
+                remainingWidth -= childSize.width
+                if childSize.width > 0 {
+                    remainingWidth -= spacing
+                }
+                remaining -= 1
+            }
+
+            var column: Extended = 0
+            for (control, _) in visited {
+                var position = Position(column: column, line: 0)
+
+                if control.frame.size.width > 0 {
+                    column += control.frame.size.width
+                    column += spacing
+                }
+
+                switch alignment {
+                case .top: position.line = 0
+                case .center: position.line = (size.height - control.frame.size.height) / 2
+                case .bottom: position.line = size.height - control.frame.size.height
+                }
+
+                print("moving \(String(describing: control)) to \(position))")
+                control.move(to: position)
+            }
+
+            return size
+        }
+    }
+
+    override func size<T>(visitor: inout T) where T : SwiftTUI.LayoutVisitor {
+        visitor.visit(node: self, size: self.sizeVisitor.size(proposedSize:))
+    }
+
+    override func layout<T>(visitor: inout T) where T : SwiftTUI.LayoutVisitor {
+        visitor.visit(node: self, size: self.layoutVisitor.layout(size:))
+    }
+
+    override func layout(size: Size) -> Size {
+        layoutVisitor.layout(size: super.layout(size: size))
     }
 
     func size(proposedSize: Size) -> Size {
-        self.visitor.size(proposedSize: proposedSize)
+        self.sizeVisitor.size(proposedSize: proposedSize)
     }
 }
