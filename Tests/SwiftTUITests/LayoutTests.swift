@@ -1,5 +1,6 @@
 @testable import SwiftTUI
 import Testing
+import SnapshotTesting
 
 @Suite("Size Tests") @MainActor struct SizeTests {
     @Test func sizeOfSingleText() async throws {
@@ -9,15 +10,15 @@ import Testing
             }
         }
 
-        let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node
+        let (application, _) = try drawView(MyView())
 
         do {
-            let size = (node as? Control)?.size(proposedSize: .zero)
+            let size = (application.node as? Control)?.size(proposedSize: .zero)
             #expect(size == .init(width: 5, height: 1))
         }
 
         do {
-            let size = (node as? Control)?.size(proposedSize: .init(width: 100, height: 100))
+            let size = (application.node as? Control)?.size(proposedSize: .init(width: 100, height: 100))
             #expect(size == .init(width: 5, height: 1))
         }
     }
@@ -30,8 +31,8 @@ import Testing
             }
         }
 
-        let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node
-        let size = (node as? Control)?.size(proposedSize: .zero)
+        let (application, _) = try drawView(MyView())
+        let size = (application.node as? Control)?.size(proposedSize: .zero)
 
         #expect(size == .init(width: 5, height: 2))
     }
@@ -45,15 +46,15 @@ import Testing
             }
         }
 
-        let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node
+        let (application, _) = try drawView(MyView())
 
         do {
-            let size = (node as? Control)?.size(proposedSize: .zero)
+            let size = (application.node as? Control)?.size(proposedSize: .zero)
             #expect(size == .init(width: 5, height: 2))
         }
 
         do {
-            let size = (node as? Control)?.size(proposedSize: .init(width: 100, height: 100))
+            let size = (application.node as? Control)?.size(proposedSize: .init(width: 100, height: 100))
             #expect(size == .init(width: 5, height: 100))
         }
     }
@@ -69,8 +70,8 @@ import Testing
             }
         }
 
-        let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node
-        let size = (node as? Control)?.size(proposedSize: .zero)
+        let (application, _) = try drawView(MyView())
+        let size = (application.node as? Control)?.size(proposedSize: .zero)
 
         #expect(size == .init(width: 5, height: 2))
     }
@@ -85,8 +86,8 @@ import Testing
             }
         }
 
-        let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node
-        let size = (node as? Control)?.size(proposedSize: .zero)
+        let (application, _) = try drawView(MyView())
+        let size = (application.node as? Control)?.size(proposedSize: .zero)
 
         #expect(size == .init(width: 11, height: 1))
     }
@@ -102,14 +103,14 @@ import Testing
             }
         }
 
-        let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node
+        let (application, _) = try drawView(MyView())
         do {
-            let size = (node as? Control)?.size(proposedSize: .zero)
+            let size = (application.node as? Control)?.size(proposedSize: .zero)
             #expect(size == .init(width: 11, height: 1))
         }
 
         do {
-            let size = (node as? Control)?.size(proposedSize: .init(width: 100, height: 100))
+            let size = (application.node as? Control)?.size(proposedSize: .init(width: 100, height: 100))
             #expect(size == .init(width: 100, height: 1))
 
         }
@@ -133,8 +134,8 @@ import Testing
             }
         }
 
-        let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node
-        let size = (node as? Control)?.size(proposedSize: .zero)
+        let (application, _) = try drawView(MyView())
+        let size = (application.node as? Control)?.size(proposedSize: .zero)
 
         #expect(size == .init(width: 16, height: 2))
     }
@@ -160,14 +161,14 @@ import Testing
             }
         }
 
-        let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node
+        let (application, _) = try drawView(MyView())
         do {
-            let size = (node as? Control)?.size(proposedSize: .zero)
+            let size = (application.node as? Control)?.size(proposedSize: .zero)
             #expect(size == .init(width: 16, height: 2))
         }
 
         do {
-            let size = (node as? Control)?.size(proposedSize: .init(width: 100, height: 100))
+            let size = (application.node as? Control)?.size(proposedSize: .init(width: 100, height: 100))
             #expect(size == .init(width: 100, height: 100))
         }
     }
@@ -182,11 +183,11 @@ import Testing
             }
         }
 
-        let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node!
-        let size = (node as? Control)?.layout(size: .init(width: 100, height: 100))
+        let (application, _) = try drawView(MyView())
+        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
         #expect(size == .init(width: 100, height: 100))
-        #expect(node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 0, width: 5, height: 1))
-        #expect(node.children[0].children[0].children[0].children[1].frame == .init(column: 0, line: 1, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 0, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[1].frame == .init(column: 0, line: 1, width: 5, height: 1))
     }
 
     @Test func layoutOfVStackLeadingWithSpacer() async throws {
@@ -200,11 +201,11 @@ import Testing
             }
         }
 
-        let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node!
-        let size = (node as? Control)?.layout(size: .init(width: 100, height: 100))
+        let (application, _) = try drawView(MyView())
+        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
         #expect(size == .init(width: 100, height: 100))
-        #expect(node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 0, width: 5, height: 1))
-        #expect(node.children[0].children[0].children[0].children[2].frame == .init(column: 0, line: 99, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 0, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[2].frame == .init(column: 0, line: 99, width: 5, height: 1))
     }
 
     @Test func layoutOfVStackCenter() async throws {
@@ -217,11 +218,11 @@ import Testing
             }
         }
 
-        let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node!
-        let size = (node as? Control)?.layout(size: .init(width: 100, height: 100))
+        let (application, _) = try drawView(MyView())
+        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
         #expect(size == .init(width: 100, height: 100))
-        #expect(node.children[0].children[0].children[0].children[0].frame == .init(column: 47, line: 0, width: 5, height: 1))
-        #expect(node.children[0].children[0].children[0].children[1].frame == .init(column: 47, line: 1, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 47, line: 0, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[1].frame == .init(column: 47, line: 1, width: 5, height: 1))
     }
 
     @Test func layoutOfVStackCenterWithSpacer() async throws {
@@ -235,11 +236,11 @@ import Testing
             }
         }
 
-        let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node!
-        let size = (node as? Control)?.layout(size: .init(width: 100, height: 100))
+        let (application, _) = try drawView(MyView())
+        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
         #expect(size == .init(width: 100, height: 100))
-        #expect(node.children[0].children[0].children[0].children[0].frame == .init(column: 47, line: 0, width: 5, height: 1))
-        #expect(node.children[0].children[0].children[0].children[2].frame == .init(column: 47, line: 99, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 47, line: 0, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[2].frame == .init(column: 47, line: 99, width: 5, height: 1))
     }
 
     @Test func layoutOfVStackTrailing() async throws {
@@ -252,11 +253,11 @@ import Testing
             }
         }
 
-        let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node!
-        let size = (node as? Control)?.layout(size: .init(width: 100, height: 100))
+        let (application, _) = try drawView(MyView())
+        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
         #expect(size == .init(width: 100, height: 100))
-        #expect(node.children[0].children[0].children[0].children[0].frame == .init(column: 95, line: 0, width: 5, height: 1))
-        #expect(node.children[0].children[0].children[0].children[1].frame == .init(column: 95, line: 1, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 95, line: 0, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[1].frame == .init(column: 95, line: 1, width: 5, height: 1))
     }
 
     @Test func layoutOfVStackTrailingWithSpacer() async throws {
@@ -270,11 +271,11 @@ import Testing
             }
         }
 
-        let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node!
-        let size = (node as? Control)?.layout(size: .init(width: 100, height: 100))
+        let (application, _) = try drawView(MyView())
+        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
         #expect(size == .init(width: 100, height: 100))
-        #expect(node.children[0].children[0].children[0].children[0].frame == .init(column: 95, line: 0, width: 5, height: 1))
-        #expect(node.children[0].children[0].children[0].children[2].frame == .init(column: 95, line: 99, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 95, line: 0, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[2].frame == .init(column: 95, line: 99, width: 5, height: 1))
     }
 
 
@@ -288,11 +289,11 @@ import Testing
             }
         }
 
-        let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node!
-        let size = (node as? Control)?.layout(size: .init(width: 100, height: 100))
+        let (application, _) = try drawView(MyView())
+        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
         #expect(size == .init(width: 100, height: 100))
-        #expect(node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 0, width: 5, height: 1))
-        #expect(node.children[0].children[0].children[0].children[1].frame == .init(column: 6, line: 0, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 0, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[1].frame == .init(column: 6, line: 0, width: 5, height: 1))
     }
 
     @Test func layoutOfHStackTopWithSpacer() async throws {
@@ -306,11 +307,11 @@ import Testing
             }
         }
 
-        let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node!
-        let size = (node as? Control)?.layout(size: .init(width: 100, height: 100))
+        let (application, _) = try drawView(MyView())
+        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
         #expect(size == .init(width: 100, height: 100))
-        #expect(node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 0, width: 5, height: 1))
-        #expect(node.children[0].children[0].children[0].children[2].frame == .init(column: 95, line: 0, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 0, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[2].frame == .init(column: 95, line: 0, width: 5, height: 1))
     }
 
     @Test func layoutOfHStackCenter() async throws {
@@ -323,11 +324,11 @@ import Testing
             }
         }
 
-        let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node!
-        let size = (node as? Control)?.layout(size: .init(width: 100, height: 100))
+        let (application, _) = try drawView(MyView())
+        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
         #expect(size == .init(width: 100, height: 100))
-        #expect(node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 49, width: 5, height: 1))
-        #expect(node.children[0].children[0].children[0].children[1].frame == .init(column: 6, line: 49, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 49, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[1].frame == .init(column: 6, line: 49, width: 5, height: 1))
     }
 
     @Test func layoutOfHStackCenterWithSpacer() async throws {
@@ -341,11 +342,11 @@ import Testing
             }
         }
 
-        let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node!
-        let size = (node as? Control)?.layout(size: .init(width: 100, height: 100))
+        let (application, _) = try drawView(MyView())
+        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
         #expect(size == .init(width: 100, height: 100))
-        #expect(node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 49, width: 5, height: 1))
-        #expect(node.children[0].children[0].children[0].children[2].frame == .init(column: 95, line: 49, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 49, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[2].frame == .init(column: 95, line: 49, width: 5, height: 1))
     }
 
     @Test func layoutOfHStackBottom() async throws {
@@ -358,11 +359,11 @@ import Testing
             }
         }
 
-        let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node!
-        let size = (node as? Control)?.layout(size: .init(width: 100, height: 100))
+        let (application, _) = try drawView(MyView())
+        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
         #expect(size == .init(width: 100, height: 100))
-        #expect(node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 99, width: 5, height: 1))
-        #expect(node.children[0].children[0].children[0].children[1].frame == .init(column: 6, line: 99, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 99, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[1].frame == .init(column: 6, line: 99, width: 5, height: 1))
     }
 
     @Test func layoutOfHStackBottomWithSpacer() async throws {
@@ -376,10 +377,36 @@ import Testing
             }
         }
 
-        let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node!
-        let size = (node as? Control)?.layout(size: .init(width: 100, height: 100))
+        let (application, _) = try drawView(MyView())
+        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
         #expect(size == .init(width: 100, height: 100))
-        #expect(node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 99, width: 5, height: 1))
-        #expect(node.children[0].children[0].children[0].children[2].frame == .init(column: 95, line: 99, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 99, width: 5, height: 1))
+        #expect(application.node.children[0].children[0].children[0].children[2].frame == .init(column: 95, line: 99, width: 5, height: 1))
+    }
+
+    @Test func layoutOfHStackContainingVStacksAndSpacers() async throws {
+        struct MyView: View {
+            var body: some View {
+                HStack {
+                    VStack {
+                        Text("Hello")
+                        Spacer()
+                        Text("World")
+                    }
+
+                    Spacer()
+
+                    VStack {
+                        Text("1234567890")
+                        Spacer()
+                        Text("1234567890")
+                    }
+                }
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
+        assertSnapshot(of: application.node.frameDescription, as: .lines)
     }
 }

@@ -10,8 +10,8 @@ import Testing
                 let _ = ()
             }
         }
-        let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node
-        #expect(node?.treeDescription == """
+        let (application, _) = try drawView(MyView())
+        #expect(application.node?.treeDescription == """
         → VStack<MyView>
           → ComposedView<MyView>
             → EmptyView
@@ -29,8 +29,8 @@ import Testing
         }
 
         do {
-            let node = Application(root: MyView(condition: true), parser: .init(fileHandle: .nullDevice)).node
-            #expect(node?.treeDescription == """
+            let (application, _) = try drawView(MyView(condition: true))
+            #expect(application.node?.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → OptionalView<Text>
@@ -39,8 +39,8 @@ import Testing
         }
 
         do {
-            let node = Application(root: MyView(condition: false), parser: .init(fileHandle: .nullDevice)).node
-            #expect(node?.treeDescription == """
+            let (application, _) = try drawView(MyView(condition: false))
+            #expect(application.node?.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → OptionalView<Text>
@@ -62,8 +62,8 @@ import Testing
         }
 
         do {
-            let node = Application(root: MyView(condition: true), parser: .init(fileHandle: .nullDevice)).node
-            #expect(node?.treeDescription == """
+            let (application, _) = try drawView(MyView(condition: true))
+            #expect(application.node?.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → ConditionalView<Text, Text>
@@ -72,8 +72,8 @@ import Testing
         }
 
         do {
-            let node = Application(root: MyView(condition: false), parser: .init(fileHandle: .nullDevice)).node
-            #expect(node?.treeDescription == """
+            let (application, _) = try drawView(MyView(condition: false))
+            #expect(application.node?.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → ConditionalView<Text, Text>
@@ -90,8 +90,8 @@ import Testing
         }
 
         do {
-            let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node
-            #expect(node?.treeDescription == """
+            let (application, _) = try drawView(MyView())
+            #expect(application.node?.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → Text
@@ -108,8 +108,8 @@ import Testing
         }
 
         do {
-            let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node
-            #expect(node?.treeDescription == """
+            let (application, _) = try drawView(MyView())
+            #expect(application.node?.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text}>
@@ -129,8 +129,8 @@ import Testing
         }
 
         do {
-            let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node
-            #expect(node?.treeDescription == """
+            let (application, _) = try drawView(MyView())
+            #expect(application.node?.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text}>
@@ -152,8 +152,8 @@ import Testing
         }
 
         do {
-            let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node
-            #expect(node?.treeDescription == """
+            let (application, _) = try drawView(MyView())
+            #expect(application.node?.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text}>
@@ -177,8 +177,8 @@ import Testing
         }
 
         do {
-            let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node
-            #expect(node?.treeDescription == """
+            let (application, _) = try drawView(MyView())
+            #expect(application.node?.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text}>
@@ -204,8 +204,8 @@ import Testing
         }
 
         do {
-            let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node
-            #expect(node?.treeDescription == """
+            let (application, _) = try drawView(MyView())
+            #expect(application.node?.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text, Text}>
@@ -233,8 +233,8 @@ import Testing
         }
 
         do {
-            let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node
-            #expect(node?.treeDescription == """
+            let (application, _) = try drawView(MyView())
+            #expect(application.node?.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text, Text, Text}>
@@ -264,8 +264,8 @@ import Testing
         }
 
         do {
-            let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node
-            #expect(node?.treeDescription == """
+            let (application, _) = try drawView(MyView())
+            #expect(application.node?.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text, Text, Text, Text}>
@@ -297,8 +297,8 @@ import Testing
         }
 
         do {
-            let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node
-            #expect(node?.treeDescription == """
+            let (application, _) = try drawView(MyView())
+            #expect(application.node?.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text, Text, Text, Text, Text}>
@@ -332,8 +332,8 @@ import Testing
         }
 
         do {
-            let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node
-            #expect(node?.treeDescription == """
+            let (application, _) = try drawView(MyView())
+            #expect(application.node?.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text, Text, Text, Text, Text, Text}>
@@ -369,8 +369,8 @@ import Testing
         }
 
         do {
-            let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node
-            #expect(node?.treeDescription == """
+            let (application, _) = try drawView(MyView())
+            #expect(application.node?.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text, Text, Text, Text, Text, Text, Text}>
@@ -408,8 +408,8 @@ import Testing
         }
 
         do {
-            let node = Application(root: MyView(), parser: .init(fileHandle: .nullDevice)).node
-            #expect(node?.treeDescription == """
+            let (application, _) = try drawView(MyView())
+            #expect(application.node?.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text, Text, Text, Text, Text, Text, Text, Text}>

@@ -17,7 +17,8 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/pointfreeco/swift-dependencies.git", from: "1.6.0")
+        .package(url: "https://github.com/pointfreeco/swift-dependencies.git", from: "1.6.0"),
+        .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.12.0"),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -32,7 +33,10 @@ let package = Package(
         .target(name: "CUnicode"),
         .testTarget(
             name: "SwiftTUITests",
-            dependencies: ["SwiftTUI"]
+            dependencies: [
+                "SwiftTUI",
+                .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
+            ]
         ),
     ]
 )

@@ -71,4 +71,47 @@ final class TextNode: Node, Control {
             return .init(width: Extended(attributed.characters.count), height: 1)
         }
     }
+
+    override func cell(at position: Position, covering: Cell?) -> Cell? {
+        guard frame.contains(position) else { return nil }
+
+        let position = position - frame.position
+
+        switch text {
+        case .string(let text):
+            var covering = covering ?? .init(char: " ")
+            covering.char = text[text.index(text.startIndex, offsetBy: position.column.intValue)]
+            return covering
+
+        case .attributed(let attributedText):
+            let characters = attributedText.characters
+            let i = characters.index(characters.startIndex, offsetBy: position.column.intValue)
+            let char = attributedText[i ..< characters.index(after: i)]
+
+            var covering = covering ?? .init(char: " ")
+            covering.char = char.characters[char.startIndex]
+
+            if let bold = char.bold {
+                covering.attributes.bold = bold
+            }
+            if let italic = char.italic {
+                covering.attributes.italic = italic
+            }
+            if let underline = char.underline {
+                covering.attributes.underline = underline
+            }
+            if let strikethrough = char.strikethrough {
+                covering.attributes.strikethrough = strikethrough
+            }
+            if let inverted = char.inverted {
+                covering.attributes.inverted = inverted
+            }
+
+            return covering
+        }
+    }
+
+    override var description: String {
+        "Text:\(text)"
+    }
 }

@@ -6,6 +6,8 @@ internal class Node {
     private(set) var application: Application?
     private(set) weak var parent: Node? = nil
     private(set) var children: [Node] = []
+
+    /// Frame of this node, if it is a control, relative to its containing control frame.
     private(set) var frame: Rect = .zero
     var bounds: Size { frame.size }
 
@@ -66,6 +68,24 @@ internal class Node {
 
     func move(to position: Position) {
         frame.position = position
+//
+//        for child in children {
+//            child.move(to: child.frame.position + position)
+//        }
+    }
+
+    func cell(at position: Position, covering: Cell?) -> Cell? {
+        var result: Cell? = nil
+        for child in children {
+            if let cell = child.cell(at: position - frame.position, covering: result) {
+                result = cell
+            }
+        }
+        return result
+    }
+
+    var description: String {
+        "\(type(of: self.view))"
     }
 }
 
@@ -73,15 +93,34 @@ extension Node {
     private func treeDescription(level: Int) -> String {
         var str = ""
         let indent = Array(repeating: " ", count: level * 2).joined()
-        str += "\(indent)→ \(type(of: self.view))"
+        str += "\(indent)→ \(description)"
+
         for child in children {
             str += "\n"
-            str += child.treeDescription(level: level + 1)
+            str += child.frameDescription(level: level + 1)
         }
         return str
     }
 
     var treeDescription: String {
         treeDescription(level: 0)
+    }
+
+    func frameDescription(level: Int) -> String {
+        var str = ""
+        let indent = Array(repeating: " ", count: level * 2).joined()
+        str += "\(indent)→ \(description)"
+        if frame != .zero {
+            str += " \(frame)"
+        }
+        for child in children {
+            str += "\n"
+            str += child.frameDescription(level: level + 1)
+        }
+        return str
+    }
+
+    var frameDescription: String {
+        frameDescription(level: 0) + "\n"
     }
 }

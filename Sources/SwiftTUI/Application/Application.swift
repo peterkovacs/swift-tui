@@ -2,16 +2,24 @@ import Foundation
 
 @MainActor public class Application {
     private(set) var node: Node!
-    // let renderer: Renderer
+    private(set) var renderer: Renderer!
     let parser: KeyParser
     var invalidated: [Node] = []
 
     init<T: View>(
         root: T,
-        parser: KeyParser
+        renderer: Renderer = TerminalRenderer(fileHandle: .standardOutput),
+        parser: KeyParser = .init(fileHandle: .standardInput)
     ) {
         self.parser = parser
         self.node = Node.root(root, application: self)
+        self.renderer = renderer
+        self.renderer.application = self
+    }
+
+    func setup() {
+        _ = node.layout(size: renderer.window.size)
+        renderer.draw(rect: nil)
     }
 
     func invalidate(node: Node) {
@@ -34,8 +42,13 @@ import Foundation
             node.update(view: node.view)
         }
 
+        _ = node.layout(size: renderer.window.size)
+
+        for node in invalidated {
+            renderer.invalidate(rect: node.frame)
+        }
+
         invalidated = []
-
-
+        renderer.update()
     }
 }

@@ -46,16 +46,16 @@ class SpacerNode: Node, Control {
         visitor.visit(node: self) { [self] size in
             switch T.axis {
             case .horizontal:
-                self.layout(size: .init(width: size.width < minLength ? minLength : size.width, height: 0))
+                self.layout(size: .init(width: size.width < minLength ? minLength : size.width, height: size.height))
             case .vertical:
-                self.layout(size: .init(width: 0, height: size.height < minLength ? minLength : size.height))
+                self.layout(size: .init(width: size.width, height: size.height < minLength ? minLength : size.height))
             }
 
         }
     }
 
-    override func layout(size: Size) -> Size {
-        super.layout(size: size)
+    override func move(to position: Position) {
+        super.move(to: position)
     }
 
     // This method is only called by {horizontal,vertical}Flexibility, so we'll just return back the proposed size since this is infinitely flexible.

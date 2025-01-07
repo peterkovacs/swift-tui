@@ -28,10 +28,14 @@ struct Rect: Equatable {
 
     /// The smallest rectangle that contains the two source rectangles.
     func union(_ r2: Rect) -> Rect {
-        Rect(minColumn: min(minColumn, r2.minColumn),
-             minLine: min(minLine, r2.minLine),
-             maxColumn: max(maxColumn, r2.maxColumn),
-             maxLine: max(maxLine, r2.maxLine))
+        if r2.size.isZero { return self }
+
+        return Rect(
+            minColumn: min(minColumn, r2.minColumn),
+            minLine: min(minLine, r2.minLine),
+            maxColumn: max(maxColumn, r2.maxColumn),
+            maxLine: max(maxLine, r2.maxLine)
+        )
     }
 
     func contains(_ position: Position) -> Bool {

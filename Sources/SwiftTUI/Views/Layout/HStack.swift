@@ -148,13 +148,14 @@ final class HStackNode: Node, Control {
 
         func layout(size: Size) -> Size {
             let children = visited
-                .map { (node: $0.node, layout: $0.layout, flexibility: $0.node.horizontalFlexibility(height: size.height)) }
-                .sorted { $0.flexibility < $1.flexibility }
+                .sorted { $0.node.horizontalFlexibility(height: size.height) < $1.node.horizontalFlexibility(height: size.height) }
+                .map(\.layout)
 
             var remaining = children.count
             var remainingWidth = size.width
 
-            for (_, childSize, _) in children {
+            for (childSize) in children {
+                // Calculates *and sets* the frame size based on the `size(proposedSize:)` from the provided size..
                 let childSize = childSize(
                     Size(
                         width: remainingWidth / Extended(remaining),
@@ -184,7 +185,7 @@ final class HStackNode: Node, Control {
                 case .bottom: position.line = size.height - control.frame.size.height
                 }
 
-                print("moving \(String(describing: control)) to \(position))")
+                // print("moving \(String(describing: control)) to \(position))")
                 control.move(to: position)
             }
 
@@ -197,11 +198,13 @@ final class HStackNode: Node, Control {
     }
 
     override func layout<T>(visitor: inout T) where T : SwiftTUI.LayoutVisitor {
-        visitor.visit(node: self, size: self.layoutVisitor.layout(size:))
+        visitor.visit(node: self) { size in
+            super.layout(size: self.layoutVisitor.layout(size: size))
+        }
     }
 
     override func layout(size: Size) -> Size {
-        layoutVisitor.layout(size: super.layout(size: size))
+        super.layout(size: layoutVisitor.layout(size: self.sizeVisitor.size(proposedSize: size)))
     }
 
     func size(proposedSize: Size) -> Size {

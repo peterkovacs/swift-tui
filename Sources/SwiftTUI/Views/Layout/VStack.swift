@@ -149,13 +149,14 @@ final class VStackNode: Node, Control {
 
         func layout(size: Size) -> Size {
             let children = visited
-                .map { (node: $0.node, layout: $0.layout, flexibility: $0.node.verticalFlexibility(width: size.width)) }
-                .sorted { $0.flexibility < $1.flexibility }
+                .sorted { $0.node.verticalFlexibility(width: size.width) < $1.node.verticalFlexibility(width: size.width) }
+                .map(\.layout)
 
             var remaining = children.count
             var remainingHeight = size.height
 
-            for (node, childSize, flexibility) in children {
+            for (childSize) in children {
+                // Calculates *and sets* the frame size based on the `size(proposedSize:)` from the provided size..
                 let childSize = childSize(
                     Size(
                         width: size.width,
@@ -172,8 +173,7 @@ final class VStackNode: Node, Control {
 
 
             var line: Extended = 0
-            // TODO: Problem -- need to iterate through these in `visited` order and not in the order that we calculated childSizes.
-            // But how can we do that? Need to access the underlying frame size instead of using th emapped value.
+
             for (control, _) in visited {
                 var position = Position(column: 0, line: line)
 
@@ -195,16 +195,22 @@ final class VStackNode: Node, Control {
         }
     }
 
+    override func cell(at position: Position, covering: Cell?) -> Cell? {
+        super.cell(at: position, covering: covering)
+    }
+
     override func size<T>(visitor: inout T) where T : LayoutVisitor {
         visitor.visit(node: self, size: self.sizeVisitor.size(proposedSize:))
     }
 
     override func layout<T>(visitor: inout T) where T : SwiftTUI.LayoutVisitor {
-        visitor.visit(node: self, size: self.layoutVisitor.layout(size:))
+        visitor.visit(node: self) { size in
+            super.layout(size: self.layoutVisitor.layout(size: self.sizeVisitor.size(proposedSize: size)))
+        }
     }
 
     override func layout(size: Size) -> Size {
-        self.layoutVisitor.layout(size: size)
+        super.layout(size: layoutVisitor.layout(size: self.sizeVisitor.size(proposedSize: size)))
     }
 
     func size(proposedSize: Size) -> Size {
