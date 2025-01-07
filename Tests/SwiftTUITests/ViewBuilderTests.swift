@@ -34,7 +34,7 @@ import Testing
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → OptionalView<Text>
-                      → Text
+                      → Text:string("Hello World") (0, 0) 11x1
                 """)
         }
 
@@ -67,7 +67,7 @@ import Testing
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → ConditionalView<Text, Text>
-                      → Text
+                      → Text:string("Hello World") (0, 0) 11x1
                 """)
         }
 
@@ -77,7 +77,7 @@ import Testing
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → ConditionalView<Text, Text>
-                      → Text
+                      → Text:string("Goodbye World") (0, 0) 13x1
                 """)
         }
     }
@@ -94,7 +94,7 @@ import Testing
             #expect(application.node?.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
-                    → Text
+                    → Text:string("Hello World") (0, 0) 11x1
                 """)
         }
     }
@@ -113,8 +113,8 @@ import Testing
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text}>
-                      → Text
-                      → Text
+                      → Text:string("Hello World") (0, 0) 11x1
+                      → Text:string("Hello World") (0, 1) 11x1
                 """)
         }
     }
@@ -134,9 +134,9 @@ import Testing
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text}>
-                      → Text
-                      → Text
-                      → Text
+                      → Text:string("Hello World") (0, 0) 11x1
+                      → Text:string("Hello World") (0, 1) 11x1
+                      → Text:string("Hello World") (0, 2) 11x1
                 """)
         }
     }
@@ -157,10 +157,10 @@ import Testing
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text}>
-                      → Text
-                      → Text
-                      → Text
-                      → Text
+                      → Text:string("Hello World") (0, 0) 11x1
+                      → Text:string("Hello World") (0, 1) 11x1
+                      → Text:string("Hello World") (0, 2) 11x1
+                      → Text:string("Hello World") (0, 3) 11x1
                 """)
         }
     }
@@ -182,11 +182,11 @@ import Testing
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text}>
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
+                      → Text:string("Hello World") (0, 0) 11x1
+                      → Text:string("Hello World") (0, 1) 11x1
+                      → Text:string("Hello World") (0, 2) 11x1
+                      → Text:string("Hello World") (0, 3) 11x1
+                      → Text:string("Hello World") (0, 4) 11x1
                 """)
         }
     }
@@ -209,12 +209,12 @@ import Testing
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text, Text}>
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
+                      → Text:string("Hello World") (0, 0) 11x1
+                      → Text:string("Hello World") (0, 1) 11x1
+                      → Text:string("Hello World") (0, 2) 11x1
+                      → Text:string("Hello World") (0, 3) 11x1
+                      → Text:string("Hello World") (0, 4) 11x1
+                      → Text:string("Hello World") (0, 5) 11x1
                 """)
         }
     }
@@ -238,13 +238,13 @@ import Testing
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text, Text, Text}>
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
+                      → Text:string("Hello World") (0, 0) 11x1
+                      → Text:string("Hello World") (0, 1) 11x1
+                      → Text:string("Hello World") (0, 2) 11x1
+                      → Text:string("Hello World") (0, 3) 11x1
+                      → Text:string("Hello World") (0, 4) 11x1
+                      → Text:string("Hello World") (0, 5) 11x1
+                      → Text:string("Hello World") (0, 6) 11x1
                 """)
         }
     }
@@ -269,14 +269,14 @@ import Testing
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text, Text, Text, Text}>
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
+                      → Text:string("Hello World") (0, 0) 11x1
+                      → Text:string("Hello World") (0, 1) 11x1
+                      → Text:string("Hello World") (0, 2) 11x1
+                      → Text:string("Hello World") (0, 3) 11x1
+                      → Text:string("Hello World") (0, 4) 11x1
+                      → Text:string("Hello World") (0, 5) 11x1
+                      → Text:string("Hello World") (0, 6) 11x1
+                      → Text:string("Hello World") (0, 7) 11x1
                 """)
         }
     }
@@ -302,15 +302,15 @@ import Testing
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text, Text, Text, Text, Text}>
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
+                      → Text:string("Hello World") (0, 0) 11x1
+                      → Text:string("Hello World") (0, 1) 11x1
+                      → Text:string("Hello World") (0, 2) 11x1
+                      → Text:string("Hello World") (0, 3) 11x1
+                      → Text:string("Hello World") (0, 4) 11x1
+                      → Text:string("Hello World") (0, 5) 11x1
+                      → Text:string("Hello World") (0, 6) 11x1
+                      → Text:string("Hello World") (0, 7) 11x1
+                      → Text:string("Hello World") (0, 8) 11x1
                 """)
         }
     }
@@ -337,16 +337,16 @@ import Testing
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text, Text, Text, Text, Text, Text}>
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
+                      → Text:string("Hello World") (0, 0) 11x1
+                      → Text:string("Hello World") (0, 1) 11x1
+                      → Text:string("Hello World") (0, 2) 11x1
+                      → Text:string("Hello World") (0, 3) 11x1
+                      → Text:string("Hello World") (0, 4) 11x1
+                      → Text:string("Hello World") (0, 5) 11x1
+                      → Text:string("Hello World") (0, 6) 11x1
+                      → Text:string("Hello World") (0, 7) 11x1
+                      → Text:string("Hello World") (0, 8) 11x1
+                      → Text:string("Hello World") (0, 9) 11x1
                 """)
         }
     }
@@ -374,17 +374,17 @@ import Testing
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text, Text, Text, Text, Text, Text, Text}>
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
+                      → Text:string("Hello World") (0, 0) 11x1
+                      → Text:string("Hello World") (0, 1) 11x1
+                      → Text:string("Hello World") (0, 2) 11x1
+                      → Text:string("Hello World") (0, 3) 11x1
+                      → Text:string("Hello World") (0, 4) 11x1
+                      → Text:string("Hello World") (0, 5) 11x1
+                      → Text:string("Hello World") (0, 6) 11x1
+                      → Text:string("Hello World") (0, 7) 11x1
+                      → Text:string("Hello World") (0, 8) 11x1
+                      → Text:string("Hello World") (0, 9) 11x1
+                      → Text:string("Hello World") (0, 10) 11x1
                 """)
         }
     }
@@ -413,18 +413,18 @@ import Testing
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text, Text, Text, Text, Text, Text, Text, Text}>
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
-                      → Text
+                      → Text:string("Hello World") (0, 0) 11x1
+                      → Text:string("Hello World") (0, 1) 11x1
+                      → Text:string("Hello World") (0, 2) 11x1
+                      → Text:string("Hello World") (0, 3) 11x1
+                      → Text:string("Hello World") (0, 4) 11x1
+                      → Text:string("Hello World") (0, 5) 11x1
+                      → Text:string("Hello World") (0, 6) 11x1
+                      → Text:string("Hello World") (0, 7) 11x1
+                      → Text:string("Hello World") (0, 8) 11x1
+                      → Text:string("Hello World") (0, 9) 11x1
+                      → Text:string("Hello World") (0, 10) 11x1
+                      → Text:string("Hello World") (0, 11) 11x1
                 """)
         }
     }

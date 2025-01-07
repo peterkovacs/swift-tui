@@ -184,10 +184,9 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView())
-        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
-        #expect(size == .init(width: 100, height: 100))
-        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 0, width: 5, height: 1))
-        #expect(application.node.children[0].children[0].children[0].children[1].frame == .init(column: 0, line: 1, width: 5, height: 1))
+        assertSnapshot(
+            of: application.node.frameDescription, as: .lines
+        )
     }
 
     @Test func layoutOfVStackLeadingWithSpacer() async throws {
@@ -202,10 +201,9 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView())
-        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
-        #expect(size == .init(width: 100, height: 100))
-        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 0, width: 5, height: 1))
-        #expect(application.node.children[0].children[0].children[0].children[2].frame == .init(column: 0, line: 99, width: 5, height: 1))
+        assertSnapshot(
+            of: application.node.frameDescription, as: .lines
+        )
     }
 
     @Test func layoutOfVStackCenter() async throws {
@@ -219,10 +217,9 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView())
-        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
-        #expect(size == .init(width: 100, height: 100))
-        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 47, line: 0, width: 5, height: 1))
-        #expect(application.node.children[0].children[0].children[0].children[1].frame == .init(column: 47, line: 1, width: 5, height: 1))
+        assertSnapshot(
+            of: application.node.frameDescription, as: .lines
+        )
     }
 
     @Test func layoutOfVStackCenterWithSpacer() async throws {
@@ -237,10 +234,9 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView())
-        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
-        #expect(size == .init(width: 100, height: 100))
-        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 47, line: 0, width: 5, height: 1))
-        #expect(application.node.children[0].children[0].children[0].children[2].frame == .init(column: 47, line: 99, width: 5, height: 1))
+        assertSnapshot(
+            of: application.node.frameDescription, as: .lines
+        )
     }
 
     @Test func layoutOfVStackTrailing() async throws {
@@ -254,10 +250,9 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView())
-        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
-        #expect(size == .init(width: 100, height: 100))
-        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 95, line: 0, width: 5, height: 1))
-        #expect(application.node.children[0].children[0].children[0].children[1].frame == .init(column: 95, line: 1, width: 5, height: 1))
+        assertSnapshot(
+            of: application.node.frameDescription, as: .lines
+        )
     }
 
     @Test func layoutOfVStackTrailingWithSpacer() async throws {
@@ -272,10 +267,9 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView())
-        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
-        #expect(size == .init(width: 100, height: 100))
-        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 95, line: 0, width: 5, height: 1))
-        #expect(application.node.children[0].children[0].children[0].children[2].frame == .init(column: 95, line: 99, width: 5, height: 1))
+        assertSnapshot(
+            of: application.node.frameDescription, as: .lines
+        )
     }
 
 
@@ -290,10 +284,9 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView())
-        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
-        #expect(size == .init(width: 100, height: 100))
-        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 0, width: 5, height: 1))
-        #expect(application.node.children[0].children[0].children[0].children[1].frame == .init(column: 6, line: 0, width: 5, height: 1))
+        assertSnapshot(
+            of: application.node.frameDescription, as: .lines
+        )
     }
 
     @Test func layoutOfHStackTopWithSpacer() async throws {
@@ -308,10 +301,9 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView())
-        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
-        #expect(size == .init(width: 100, height: 100))
-        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 0, width: 5, height: 1))
-        #expect(application.node.children[0].children[0].children[0].children[2].frame == .init(column: 95, line: 0, width: 5, height: 1))
+        assertSnapshot(
+            of: application.node.frameDescription, as: .lines
+        )
     }
 
     @Test func layoutOfHStackCenter() async throws {
@@ -325,10 +317,9 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView())
-        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
-        #expect(size == .init(width: 100, height: 100))
-        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 49, width: 5, height: 1))
-        #expect(application.node.children[0].children[0].children[0].children[1].frame == .init(column: 6, line: 49, width: 5, height: 1))
+        assertSnapshot(
+            of: application.node.frameDescription, as: .lines
+        )
     }
 
     @Test func layoutOfHStackCenterWithSpacer() async throws {
@@ -343,10 +334,9 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView())
-        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
-        #expect(size == .init(width: 100, height: 100))
-        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 49, width: 5, height: 1))
-        #expect(application.node.children[0].children[0].children[0].children[2].frame == .init(column: 95, line: 49, width: 5, height: 1))
+        assertSnapshot(
+            of: application.node.frameDescription, as: .lines
+        )
     }
 
     @Test func layoutOfHStackBottom() async throws {
@@ -360,10 +350,9 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView())
-        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
-        #expect(size == .init(width: 100, height: 100))
-        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 99, width: 5, height: 1))
-        #expect(application.node.children[0].children[0].children[0].children[1].frame == .init(column: 6, line: 99, width: 5, height: 1))
+        assertSnapshot(
+            of: application.node.frameDescription, as: .lines
+        )
     }
 
     @Test func layoutOfHStackBottomWithSpacer() async throws {
@@ -378,10 +367,9 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView())
-        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
-        #expect(size == .init(width: 100, height: 100))
-        #expect(application.node.children[0].children[0].children[0].children[0].frame == .init(column: 0, line: 99, width: 5, height: 1))
-        #expect(application.node.children[0].children[0].children[0].children[2].frame == .init(column: 95, line: 99, width: 5, height: 1))
+        assertSnapshot(
+            of: application.node.frameDescription, as: .lines
+        )
     }
 
     @Test func layoutOfHStackContainingVStacksAndSpacers() async throws {
@@ -406,7 +394,6 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView())
-        let size = (application.node as? Control)?.layout(size: .init(width: 100, height: 100))
         assertSnapshot(of: application.node.frameDescription, as: .lines)
     }
 }
