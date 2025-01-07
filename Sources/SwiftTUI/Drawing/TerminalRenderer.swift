@@ -202,6 +202,7 @@ class TerminalRenderer: Renderer {
             return
         }
 
+        write(EscapeSequence.clearScreen)
         window = CellGrid<Cell?>(
             repeating: nil,
             size: .init(
