@@ -396,4 +396,27 @@ import SnapshotTesting
         let (application, _) = try drawView(MyView())
         assertSnapshot(of: application.node.frameDescription, as: .lines)
     }
+
+    @Test func layoutOfHStacksContainingSpacers() async throws {
+        struct MyView: View {
+            var body: some View {
+                HStack {
+                    Text("Hello")
+                    Spacer()
+                    Text("World")
+                }
+
+                Spacer()
+
+                HStack {
+                    Text("1234567890")
+                    Spacer()
+                    Text("1234567890")
+                }
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+        assertSnapshot(of: application.node.frameDescription, as: .lines)
+    }
 }

@@ -199,7 +199,7 @@ final class HStackNode: Node, Control {
 
     override func layout<T>(visitor: inout T) where T : SwiftTUI.LayoutVisitor {
         visitor.visit(node: self) { size in
-            super.layout(size: self.layoutVisitor.layout(size: size))
+            super.layout(size: self.layoutVisitor.layout(size: self.sizeVisitor.size(proposedSize: size)))
         }
     }
 
