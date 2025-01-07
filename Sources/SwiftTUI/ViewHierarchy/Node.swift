@@ -8,7 +8,20 @@ internal class Node {
     private(set) var children: [Node] = []
 
     /// Frame of this node, if it is a control, relative to its containing control frame.
-    private(set) var frame: Rect = .zero
+    private(set) var frame: Rect = .zero {
+        didSet {
+            _relative = nil
+        }
+    }
+
+    private var _relative: Rect?
+    var relative: Rect {
+        if _relative == nil {
+            _relative = frame.relative(to: parent)
+        }
+        return _relative!
+    }
+
     var bounds: Size { frame.size }
 
     static func root<T: View>(_ view: T, application: Application? = nil) -> Node {
@@ -17,21 +30,20 @@ internal class Node {
         return node
     }
 
-    init(view: any GenericView, parent: Node? = nil) {
+    init(view: any GenericView, parent: Node?) {
         self.view = view
         self.parent = parent
         self.application = parent?.application
-
-        // view.build(node: self)
     }
 
     func invalidate() {
         application?.invalidate(node: self)
     }
 
-    func update(view: any GenericView) {
+    final func update(view: any GenericView) {
         view.update(node: self)
         self.view = view
+        self._relative = nil
     }
 
     func add(at index: [Node].Index, node: Node) {
@@ -74,20 +86,41 @@ internal class Node {
 //        }
     }
 
-    func cell(at position: Position, covering: Cell?) -> Cell? {
-        var result: Cell? = nil
+    func draw(rect: Rect, into window: inout CellGrid<Cell?>) {
+        guard let frame = rect.intersection(relative) else { return }
         for child in children {
-            if let cell = child.cell(at: position - frame.position, covering: result) {
-                result = cell
-            }
+            child.draw(rect: frame, into: &window)
         }
-        return result
     }
 
     var description: String {
         "\(type(of: self.view))"
     }
 }
+
+fileprivate extension Position {
+    @MainActor func relative(to node: Node?) -> Position {
+        if let node {
+            return node.relative.position + self
+        } else {
+            return self
+        }
+    }
+}
+
+fileprivate extension Rect {
+    @MainActor func relative(to node: Node?) -> Rect {
+        if let node {
+            return .init(
+                position: node.relative.position + position,
+                size: size
+            )
+        } else {
+            return self
+        }
+    }
+}
+
 
 extension Node {
     private func treeDescription(level: Int) -> String {
@@ -111,7 +144,7 @@ extension Node {
         let indent = Array(repeating: " ", count: level * 2).joined()
         str += "\(indent)→ \(description)"
         if frame != .zero {
-            str += " \(frame)"
+            str += " \(relative)"
         }
         for child in children {
             str += "\n"

@@ -36,20 +36,24 @@ extension Renderer {
     /// Draw a specific area, or the entire layer if the area is nil.
     func draw(rect: Rect? = nil) {
         guard let root = application?.node else { return }
-         if rect == nil { invalidated = nil }
-         let rect = rect ?? Rect(position: .zero, size: window.size)
-         guard rect.size.width > 0, rect.size.height > 0 else {
-             assertionFailure("Trying to draw in empty rect")
-             return
-         }
+        var newWindow: CellGrid<Cell?>
 
-         for line in rect.minLine.intValue ... rect.maxLine.intValue {
-             for column in rect.minColumn.intValue ... rect.maxColumn.intValue {
-                 let position = Position(column: Extended(column), line: Extended(line))
-                 if let cell = root.cell(at: position, covering: window[position]) {
-                     drawPixel(cell, at: Position(column: Extended(column), line: Extended(line)))
-                 }
-             }
-         }
+        if let rect {
+            newWindow = window
+            rect.indices.forEach { newWindow[$0] = nil }
+        } else {
+            newWindow = .init(repeating: nil, size: window.size)
+            invalidated = nil
+        }
+
+        let rect = rect ?? Rect(position: .zero, size: window.size)
+
+        root.draw(rect: rect, into: &newWindow)
+
+        for position in rect.indices {
+            if newWindow[position] != window[position] {
+                drawPixel(newWindow[position], at: position)
+            }
+        }
     }
 }

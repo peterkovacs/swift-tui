@@ -195,10 +195,6 @@ final class VStackNode: Node, Control {
         }
     }
 
-    override func cell(at position: Position, covering: Cell?) -> Cell? {
-        super.cell(at: position, covering: covering)
-    }
-
     override func size<T>(visitor: inout T) where T : LayoutVisitor {
         visitor.visit(node: self, size: self.sizeVisitor.size(proposedSize:))
     }

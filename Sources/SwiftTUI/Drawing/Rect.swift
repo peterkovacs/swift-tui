@@ -38,6 +38,24 @@ struct Rect: Equatable {
         )
     }
 
+    // The overlapping portions
+    func intersection(_ rhs: Rect) -> Rect? {
+        if rhs.size.isZero { return self }
+        if size.isZero { return rhs }
+
+        let result = Rect(
+            minColumn: max(minColumn, rhs.minColumn),
+            minLine: max(minLine, rhs.minLine),
+            maxColumn: min(maxColumn, rhs.maxColumn),
+            maxLine: min(maxLine, rhs.maxLine)
+        )
+
+        if result.size.width > 0 && result.size.height > 0 {
+            return result
+        }
+        return nil
+    }
+
     func contains(_ position: Position) -> Bool {
         position.column >= minColumn &&
         position.line >= minLine &&
@@ -48,4 +66,10 @@ struct Rect: Equatable {
 
 extension Rect: CustomStringConvertible {
     var description: String { "\(position) \(size)" }
+}
+
+extension Rect {
+    var indices: some Collection<Position> {
+        CellGrid<Cell>.CoordinateIterator(size: size, coordinate: .zero).lazy.map { $0 + position }
+    }
 }

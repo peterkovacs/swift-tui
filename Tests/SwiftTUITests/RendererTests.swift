@@ -5,7 +5,7 @@ import Testing
 @MainActor
 @Suite struct RendererTests {
 
-    @Test func testRenders() async throws {
+    @Test func testRendersComplex1() async throws {
         struct MyView: View {
             var body: some View {
                 HStack {
@@ -38,6 +38,42 @@ import Testing
             "                    \n" +
             "                    \n" +
             "World     1234567890\n"
+        )
+    }
+
+    @Test func testRendersComplex2() async throws {
+        struct MyView: View {
+            var body: some View {
+                HStack {
+                    Text("Hello")
+                    Spacer()
+                    Text("World")
+                }
+
+                Spacer()
+                Text("CENTER")
+                Spacer()
+
+                HStack {
+                    Text("1234567890")
+                    Spacer()
+                    Text("1234567890")
+                }
+            }
+        }
+
+        let (application, _) = try drawView(MyView(), size: .init(width: 30, height: 5))
+        assertSnapshot(
+            of: (application.renderer as! TestRenderer).description,
+            as: .lines
+        )
+        #expect(
+            (application.renderer as? TestRenderer)?.description ==
+            "Hello                    World\n" +
+            "                              \n" +
+            "            CENTER            \n" +
+            "                              \n" +
+            "1234567890          1234567890\n"
         )
     }
 }

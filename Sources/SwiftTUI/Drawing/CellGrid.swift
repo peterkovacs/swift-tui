@@ -42,6 +42,19 @@ struct CellGrid<Element> {
             yield &elements[(p.line * size.width + p.column).intValue]
         }
     }
+
+    subscript<T>(_ coord: Position, default default: T) -> T where Optional<T> == Element {
+        _read {
+            let p = (coord.line * size.width + coord.column).intValue
+            yield elements[p] ?? `default`
+        }
+
+        _modify {
+            let p = (coord.line * size.width + coord.column).intValue
+            if elements[p] == nil { elements[p] = `default` }
+            yield &elements[p]!
+        }
+    }
 }
 
 extension CellGrid: Sequence {

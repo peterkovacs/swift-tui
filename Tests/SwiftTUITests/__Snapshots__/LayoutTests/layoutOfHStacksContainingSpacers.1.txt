@@ -9,6 +9,6 @@
       → Spacer (0, 1) 100x98
       → HStack<TupleView<Pack{Text, Spacer, Text}>> (0, 99) 100x1
         → TupleView<Pack{Text, Spacer, Text}>
-          → Text:string("1234567890") (0, 0) 10x1
-          → Spacer (11, 0) 78x1
-          → Text:string("1234567890") (90, 0) 10x1
+          → Text:string("1234567890") (0, 99) 10x1
+          → Spacer (11, 99) 78x1
+          → Text:string("1234567890") (90, 99) 10x1

@@ -39,13 +39,14 @@ import Foundation
         updateScheduled = false
 
         for node in invalidated {
+            renderer.invalidate(rect: node.relative)
             node.update(view: node.view)
         }
 
         _ = node.layout(size: renderer.window.size)
 
         for node in invalidated {
-            renderer.invalidate(rect: node.frame)
+            renderer.invalidate(rect: node.relative)
         }
 
         invalidated = []

@@ -72,42 +72,37 @@ final class TextNode: Node, Control {
         }
     }
 
-    override func cell(at position: Position, covering: Cell?) -> Cell? {
-        guard frame.contains(position) else { return nil }
+    override func draw(rect: Rect, into window: inout CellGrid<Cell?>) {
+        guard let rect = relative.intersection(rect) else { return }
 
-        let position = position - frame.position
 
         switch text {
         case .string(let text):
-            var covering = covering ?? .init(char: " ")
-            covering.char = text[text.index(text.startIndex, offsetBy: position.column.intValue)]
-            return covering
-
-        case .attributed(let attributedText):
-            let characters = attributedText.characters
-            let i = characters.index(characters.startIndex, offsetBy: position.column.intValue)
-            let char = attributedText[i ..< characters.index(after: i)]
-
-            var covering = covering ?? .init(char: " ")
-            covering.char = char.characters[char.startIndex]
-
-            if let bold = char.bold {
-                covering.attributes.bold = bold
-            }
-            if let italic = char.italic {
-                covering.attributes.italic = italic
-            }
-            if let underline = char.underline {
-                covering.attributes.underline = underline
-            }
-            if let strikethrough = char.strikethrough {
-                covering.attributes.strikethrough = strikethrough
-            }
-            if let inverted = char.inverted {
-                covering.attributes.inverted = inverted
+            for (position, char) in zip(rect.indices, text) {
+                window[position, default: .init(char: char)].char = char
             }
 
-            return covering
+        case .attributed(let text):
+            var position = rect.indices.makeIterator()
+            let characters = text.runs.lazy.flatMap { run in
+                text.characters[run.range].lazy.map {
+                    (position.next(), run.bold, run.italic, run.underline, run.strikethrough, run.inverted, $0)
+                }
+            }
+            
+            for (position, bold, italic, underline, strikethrough, inverted, char) in characters {
+                guard let position else { break }
+                var result = window[position, default: .init(char: char)]
+                result.char = char
+
+                if let value = bold { result.attributes.bold = value }
+                if let value = italic { result.attributes.italic = value }
+                if let value = underline { result.attributes.underline = value }
+                if let value = strikethrough { result.attributes.strikethrough = value }
+                if let value = inverted { result.attributes.inverted = value }
+
+                window[position] = result
+            }
         }
     }
 
