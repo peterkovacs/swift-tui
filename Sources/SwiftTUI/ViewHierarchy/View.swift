@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 public protocol View: Sendable {
     associatedtype Body: View
     @ViewBuilder var body: Body { get }

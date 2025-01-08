@@ -6,7 +6,7 @@ struct ComposedView<Content: View>: GenericView {
     func build(parent: Node?) -> Node {
         // TODO: State & Environment Properties
 
-        let node = ComposedNode(view: self, parent: parent)
+        let node = ComposedNode(view: self, parent: parent, content: view)
 
         let child = withObservationTracking {
             view.body.view.build(parent: node)
@@ -31,4 +31,16 @@ struct ComposedView<Content: View>: GenericView {
 
 class ComposedNode: Node {
     var state: [String: Any] = [:]
+
+    init<Content: View>(view: any GenericView, parent: Node?, content: Content) {
+        state = [:]
+        super.init(view: view, parent: parent)
+
+        // Set the stateValue references to this node in any contained @State properties.
+        for (label, value) in Mirror(reflecting: content).children {
+            if let stateValue = value as? any StateValue, let label {
+                stateValue.setup(node: self, label: label)
+            }
+        }
+    }
 }

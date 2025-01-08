@@ -12,7 +12,7 @@ import Foundation
         parser: KeyParser = .init(fileHandle: .standardInput)
     ) {
         self.parser = parser
-        self.node = Node.root(root, application: self)
+        self.node = VStackNode(root: root, application: self)
         self.renderer = renderer
         self.renderer.application = self
     }

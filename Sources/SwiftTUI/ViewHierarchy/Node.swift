@@ -24,10 +24,9 @@ internal class Node {
 
     var bounds: Size { frame.size }
 
-    static func root<T: View>(_ view: T, application: Application? = nil) -> Node {
-        let node = VStack { view }.view.build(parent: nil)
-        node.application = application
-        return node
+    init(root view: any GenericView, application: Application?) {
+        self.view = view
+        self.application = application
     }
 
     init(view: any GenericView, parent: Node?) {

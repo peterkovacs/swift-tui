@@ -65,7 +65,7 @@ final class TextNode: Node, Control {
         case .string(let string):
             // TODO: handle multi-line and proposedSize that spills our text onto multiple lines.
             return .init(width: Extended(string.count), height: 1)
-            
+
         case .attributed(let attributed):
             // TODO: Deal with attributed
             return .init(width: Extended(attributed.characters.count), height: 1)
@@ -89,7 +89,7 @@ final class TextNode: Node, Control {
                     (position.next(), run.bold, run.italic, run.underline, run.strikethrough, run.inverted, $0)
                 }
             }
-            
+
             for (position, bold, italic, underline, strikethrough, inverted, char) in characters {
                 guard let position else { break }
                 var result = window[position, default: .init(char: char)]

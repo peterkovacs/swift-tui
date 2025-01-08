@@ -10,3 +10,13 @@ public struct Size: Sendable, Equatable, CustomStringConvertible {
 
     var isZero: Bool { width.intValue == 0 && height.intValue == 0 }
 }
+
+extension Size {
+    func intersection(_ rhs: Size) -> Size {
+        .init(width: min(width, rhs.width), height: min(height, rhs.height))
+    }
+
+    func union(_ rhs: Size) -> Size {
+        .init(width: max(width, rhs.width), height: max(height, rhs.height))
+    }
+}

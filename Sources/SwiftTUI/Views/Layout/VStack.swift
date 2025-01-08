@@ -64,6 +64,20 @@ final class VStackNode: Node, Control {
         return visitor
     }
 
+    init<T: View>(
+        root view: T,
+        application: Application?
+    ) {
+        self.alignment = .center
+        self.spacing = 0
+        super.init(
+            root: VStack { view }.view,
+            application: application
+        )
+
+        add(at: 0, node: view.view.build(parent: self))
+    }
+
     init(
         view: any GenericView,
         parent: Node?,
