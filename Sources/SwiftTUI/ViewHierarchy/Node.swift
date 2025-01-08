@@ -7,6 +7,9 @@ internal class Node {
     private(set) weak var parent: Node? = nil
     private(set) var children: [Node] = []
 
+    /// Manipulation of this EnvironmentValues passing through this level.
+    var environment: ((inout EnvironmentValues) -> Void)?
+
     /// Frame of this node, if it is a control, relative to its containing control frame.
     private(set) var frame: Rect = .zero {
         didSet {

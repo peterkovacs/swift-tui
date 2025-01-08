@@ -8,6 +8,12 @@ public struct Text: View, PrimitiveView {
         case attributed(AttributedString)
     }
 
+    @Environment(\.bold) var bold
+    @Environment(\.italic) var italic
+    @Environment(\.underline) var underline
+    @Environment(\.strikethrough) var strikethrough
+    @Environment(\.foregroundColor) var foregroundColor
+
     // TODO: Read text attributes from Environment.
 
     let text: Value
@@ -27,6 +33,12 @@ public struct Text: View, PrimitiveView {
             text: text
         )
 
+        node.bold = bold
+        node.italic = italic
+        node.underline = underline
+        node.strikethrough = strikethrough
+        node.foregroundColor = foregroundColor
+
         return node
     }
 
@@ -35,16 +47,32 @@ public struct Text: View, PrimitiveView {
             fatalError("Invalid node type")
         }
 
+        node.set(references: self)
+
         node.text = text
+        node.bold = bold
+        node.italic = italic
+        node.underline = underline
+        node.strikethrough = strikethrough
+        node.foregroundColor = foregroundColor
     }
 }
 
-final class TextNode: Node, Control {
+final class TextNode: ComposedNode, Control {
     var text: Text.Value
+    var bold: Bool = false
+    var italic: Bool = false
+    var underline: Bool = false
+    var strikethrough: Bool = false
+    var foregroundColor: Color = .default
 
-    init(view: any GenericView, parent: Node?, text: Text.Value) {
+    init(view: Text, parent: Node?, text: Text.Value) {
         self.text = text
-        super.init(view: view, parent: parent)
+        super.init(
+            view: view,
+            parent: parent,
+            content: view
+        )
     }
 
     override func size<T>(visitor: inout T) where T : LayoutVisitor {
@@ -79,7 +107,15 @@ final class TextNode: Node, Control {
         switch text {
         case .string(let text):
             for (position, char) in zip(rect.indices, text) {
-                window[position, default: .init(char: char)].char = char
+                var result = window[position, default: .init(char: char)]
+                result.char = char
+                result.attributes.bold = bold
+                result.attributes.italic = italic
+                result.attributes.underline = underline
+                result.attributes.strikethrough = strikethrough
+                result.foregroundColor = foregroundColor
+                
+                window[position] = result
             }
 
         case .attributed(let text):
@@ -95,10 +131,11 @@ final class TextNode: Node, Control {
                 var result = window[position, default: .init(char: char)]
                 result.char = char
 
-                if let value = bold { result.attributes.bold = value }
-                if let value = italic { result.attributes.italic = value }
-                if let value = underline { result.attributes.underline = value }
-                if let value = strikethrough { result.attributes.strikethrough = value }
+                result.attributes.bold = bold ?? self.bold
+                result.attributes.italic = italic ?? self.italic
+                result.attributes.underline = underline ?? self.underline
+                result.attributes.strikethrough = strikethrough ?? self.strikethrough
+
                 if let value = inverted { result.attributes.inverted = value }
 
                 window[position] = result

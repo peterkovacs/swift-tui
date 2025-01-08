@@ -3,17 +3,17 @@ import SwiftTUI
 struct ContentView: View {
     var body: some View {
         HStack { 
-            Text("Hello")
+            Text("Hello").bold()
             Spacer()
-            Text("World")
+            Text("World").italic()
         }
 
         Spacer() 
 
         HStack { 
-            Text("Goodbye")
+            Text("Goodbye").strikethrough()
             Spacer()
-            Text("World")
+            Text("World").underline()
         }
     }
 }

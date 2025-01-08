@@ -28,6 +28,6 @@ extension EnvironmentValues {
     }
 
     private struct ExitEnvironmentKey: EnvironmentKey {
-        @MainActor static var defaultValue: @Sendable () -> Void = Exit.exit
+        static let defaultValue: @Sendable () -> Void = Exit.exit
     }
 }
