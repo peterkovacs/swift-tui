@@ -101,7 +101,7 @@ final class TextNode: ComposedNode, Control {
     }
 
     override func draw(rect: Rect, into window: inout CellGrid<Cell?>) {
-        guard let rect = relative.intersection(rect) else { return }
+        guard let rect = global.intersection(rect) else { return }
 
 
         switch text {

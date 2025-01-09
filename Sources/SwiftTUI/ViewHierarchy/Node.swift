@@ -13,16 +13,17 @@ internal class Node {
     /// Frame of this node, if it is a control, relative to its containing control frame.
     private(set) var frame: Rect = .zero {
         didSet {
-            _relative = nil
+            _global = nil
         }
     }
 
-    private var _relative: Rect?
-    var relative: Rect {
-        if _relative == nil {
-            _relative = frame.relative(to: parent)
+    /// Frame of node, if it is a Control, in global coordinates
+    private var _global: Rect?
+    var global: Rect {
+        if _global == nil {
+            _global = frame.relative(to: parent)
         }
-        return _relative!
+        return _global!
     }
 
     var bounds: Size { frame.size }
@@ -45,7 +46,7 @@ internal class Node {
     final func update(view: any GenericView) {
         view.update(node: self)
         self.view = view
-        self._relative = nil
+        self._global = nil
     }
 
     func add(at index: [Node].Index, node: Node) {
@@ -89,14 +90,14 @@ internal class Node {
     }
 
     func draw(rect: Rect, into window: inout CellGrid<Cell?>) {
-        guard let rect = relative.intersection(rect) else { return }
+        guard let rect = global.intersection(rect) else { return }
         for child in children {
             child.draw(rect: rect, into: &window)
         }
     }
 
     func draw(rect: Rect, _ action: (Rect, Control) -> Void) {
-        guard let rect = relative.intersection(rect) else { return }
+        guard let rect = global.intersection(rect) else { return }
 
         if let control = self as? Control {
             action(rect, control)
@@ -115,7 +116,7 @@ internal class Node {
 fileprivate extension Position {
     @MainActor func relative(to node: Node?) -> Position {
         if let node {
-            return node.relative.position + self
+            return node.global.position + self
         } else {
             return self
         }
@@ -126,7 +127,7 @@ fileprivate extension Rect {
     @MainActor func relative(to node: Node?) -> Rect {
         if let node {
             return .init(
-                position: node.relative.position + position,
+                position: node.global.position + position,
                 size: size
             )
         } else {
@@ -158,7 +159,7 @@ extension Node {
         let indent = Array(repeating: " ", count: level * 2).joined()
         str += "\(indent)→ \(description)"
         if frame != .zero {
-            str += " \(relative)"
+            str += " \(global)"
         }
         for child in children {
             str += "\n"
