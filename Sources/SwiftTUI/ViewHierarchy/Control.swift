@@ -1,6 +1,7 @@
 
 @MainActor internal protocol Control: AnyObject {
-    var frame: Rect { get } 
+    var frame: Rect { get }
+    var relative: Rect { get }
     func move(to: Position)
     func size(proposedSize: Size) -> Size
     func layout(size: Size) -> Size
@@ -32,5 +33,4 @@ extension Control {
 
         return maxSize.width - minSize.width
     }
-
 }

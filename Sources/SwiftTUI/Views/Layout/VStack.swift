@@ -220,7 +220,7 @@ final class VStackNode: Node, Control {
     }
 
     override func layout(size: Size) -> Size {
-        super.layout(size: layoutVisitor.layout(size: self.sizeVisitor.size(proposedSize: size)))
+        super.layout(size: layoutVisitor.layout(size: sizeVisitor.size(proposedSize: size)))
     }
 
     func size(proposedSize: Size) -> Size {

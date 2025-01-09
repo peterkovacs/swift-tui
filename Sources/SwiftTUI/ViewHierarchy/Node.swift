@@ -89,9 +89,21 @@ internal class Node {
     }
 
     func draw(rect: Rect, into window: inout CellGrid<Cell?>) {
-        guard let frame = rect.intersection(relative) else { return }
+        guard let rect = relative.intersection(rect) else { return }
         for child in children {
-            child.draw(rect: frame, into: &window)
+            child.draw(rect: rect, into: &window)
+        }
+    }
+
+    func draw(rect: Rect, _ action: (Rect, Control) -> Void) {
+        guard let rect = relative.intersection(rect) else { return }
+
+        if let control = self as? Control {
+            action(rect, control)
+        } else {
+            for child in children {
+                child.draw(rect: rect, action)
+            }
         }
     }
 

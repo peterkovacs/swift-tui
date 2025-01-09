@@ -19,9 +19,7 @@ protocol GenericView: Sendable {
     /// - node: the node in the view hierachy which will be updated based on this view.
     @MainActor func update(node: Node)
 
-    static var size: Int? { get }
 }
 
 extension GenericView {
-    static var size: Int? { nil }
 }

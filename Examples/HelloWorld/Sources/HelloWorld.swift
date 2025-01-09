@@ -6,7 +6,7 @@ struct ContentView: View {
             Text("Hello").bold()
             Spacer()
             Text("World").italic()
-        }
+        }.background(.blue)
 
         Spacer() 
 
@@ -15,6 +15,7 @@ struct ContentView: View {
             Spacer()
             Text("World").underline()
         }
+        .background(.red)
     }
 }
 
