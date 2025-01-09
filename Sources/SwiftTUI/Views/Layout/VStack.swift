@@ -75,6 +75,10 @@ final class VStackNode: Node, Control {
             application: application
         )
 
+        self.environment = {
+            $0.layoutAxis = .vertical
+        }
+
         add(at: 0, node: view.view.build(parent: self))
     }
 
@@ -87,6 +91,9 @@ final class VStackNode: Node, Control {
         self.alignment = alignment
         self.spacing = spacing
         super.init(view: view, parent: parent)
+        self.environment = {
+            $0.layoutAxis = .vertical
+        }
     }
 
     struct SizeVisitor: LayoutVisitor {
@@ -100,8 +107,6 @@ final class VStackNode: Node, Control {
                 child.size(visitor: &self)
             }
         }
-
-        static var axis: Axis { .vertical }
 
         mutating func visit(node: Control, size: @escaping (Size) -> Size) {
             visited.append((node, size))
@@ -154,8 +159,6 @@ final class VStackNode: Node, Control {
                 child.layout(visitor: &self)
             }
         }
-
-        static var axis: Axis { .vertical }
 
         mutating func visit(node: Control, size: @escaping (Size) -> Size) {
             visited.append((node, size))

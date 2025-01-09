@@ -26,13 +26,13 @@ internal class Node {
         return _global!
     }
 
-    var bounds: Size { frame.size }
-
+    /// Construct the root Node of an application, should only be called by the top-level Layout node.
     init(root view: any GenericView, application: Application?) {
         self.view = view
         self.application = application
     }
 
+    /// Construct a Node for a given view.
     init(view: any GenericView, parent: Node?) {
         self.view = view
         self.parent = parent
@@ -43,12 +43,14 @@ internal class Node {
         application?.invalidate(node: self)
     }
 
+    /// Update this node with a given view.
     final func update(view: any GenericView) {
         view.update(node: self)
         self.view = view
         self._global = nil
     }
 
+    /// Add a child Node to the hierarchy.
     func add(at index: [Node].Index, node: Node) {
         children.insert(node, at: index)
 
@@ -58,18 +60,21 @@ internal class Node {
         // }
     }
 
+    /// Remove a child node from the hierarchy.
     func remove(at index: [Node].Index) {
         children.remove(at: index).parent = nil
 
         // TODO: Do we need to maintain the `index` invariant on children? If so, update here.
     }
 
+    /// Calculate the size of a node hierarchy by visiting each node. Control nodes should override this method with a method that actually calculates it's size.
     func size<T: LayoutVisitor>(visitor: inout T) {
         for child in children {
             child.size(visitor: &visitor)
         }
     }
 
+    /// Performs the layout of a node hierarchy by visiting each node. Control nodes should override this method that actually performs its layout.
     func layout<T: LayoutVisitor>(visitor: inout T) {
         for child in children {
             child.layout(visitor: &visitor)

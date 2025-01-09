@@ -73,6 +73,9 @@ final class HStackNode: Node, Control {
         self.alignment = alignment
         self.spacing = spacing
         super.init(view: view, parent: parent)
+        self.environment = {
+            $0.layoutAxis = .horizontal
+        }
     }
 
     struct SizeVisitor: SwiftTUI.LayoutVisitor {
@@ -86,8 +89,6 @@ final class HStackNode: Node, Control {
                 child.size(visitor: &self)
             }
         }
-
-        static var axis: Axis { .horizontal }
 
         mutating func visit(node: Control, size: @escaping (Size) -> Size) {
             visited.append((node, size))
@@ -139,8 +140,6 @@ final class HStackNode: Node, Control {
                 child.layout(visitor: &self)
             }
         }
-
-        static var axis: Axis { .horizontal }
 
         mutating func visit(node: Control, size: @escaping (Size) -> Size) {
             visited.append((node, size))

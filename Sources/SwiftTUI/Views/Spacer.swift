@@ -1,4 +1,5 @@
 public struct Spacer: View, PrimitiveView {
+    @Environment(\.layoutAxis) var layoutAxis
     let minLength: Extended
     public init(minLength: Extended? = nil) {
         self.minLength = minLength ?? 0
@@ -11,6 +12,8 @@ public struct Spacer: View, PrimitiveView {
             minLength: minLength
         )
 
+        node.layoutAxis = layoutAxis
+
         return node
     }
 
@@ -19,21 +22,26 @@ public struct Spacer: View, PrimitiveView {
             fatalError("Invalid node type")
         }
 
+        node.set(references: self)
+
         node.minLength = minLength
+        node.layoutAxis = layoutAxis
     }
 }
 
-class SpacerNode: Node, Control {
+class SpacerNode: ComposedNode, Control {
     var minLength: Extended
+    var layoutAxis: LayoutAxis
 
-    init(view: any GenericView, parent: Node?, minLength: Extended) {
+    init(view: Spacer, parent: Node?, minLength: Extended) {
         self.minLength = minLength
-        super.init(view: view, parent: parent)
+        self.layoutAxis = .defaultValue
+        super.init(view: view, parent: parent, content: view)
     }
 
     override func size<T>(visitor: inout T) where T : LayoutVisitor {
         visitor.visit(node: self) { [self] proposedSize in
-            switch T.axis {
+            switch layoutAxis {
             case .horizontal:
                 return .init(width: proposedSize.width < minLength ? minLength : proposedSize.width, height: 0)
             case .vertical:
@@ -44,7 +52,7 @@ class SpacerNode: Node, Control {
 
     override func layout<T>(visitor: inout T) where T : LayoutVisitor {
         visitor.visit(node: self) { [self] size in
-            switch T.axis {
+            switch layoutAxis {
             case .horizontal:
                 self.layout(size: .init(width: size.width < minLength ? minLength : size.width, height: size.height))
             case .vertical:
