@@ -72,4 +72,28 @@ extension Rect {
     var indices: some Collection<Position> {
         CellGrid<Cell>.CoordinateIterator(size: size, coordinate: .zero).lazy.map { $0 + position }
     }
+
+    var top: some Collection<Position> {
+        (minColumn.intValue...maxColumn.intValue).lazy.map {
+            Position(column: Extended($0), line: minLine)
+        }
+    }
+
+    var right: some Collection<Position> {
+        (minLine.intValue...maxLine.intValue).lazy.map {
+            Position(column: maxColumn, line: Extended($0))
+        }
+    }
+
+    var bottom: some Collection<Position> {
+        (minColumn.intValue...maxColumn.intValue).lazy.map {
+            Position(column: Extended($0), line: maxLine)
+        }
+    }
+
+    var left: some Collection<Position> {
+        (minLine.intValue...maxLine.intValue).lazy.map {
+            Position(column: minColumn, line: Extended($0))
+        }
+    }
 }

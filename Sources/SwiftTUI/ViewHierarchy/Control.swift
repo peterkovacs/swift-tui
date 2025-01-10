@@ -3,6 +3,7 @@
     var frame: Rect { get }
     var global: Rect { get }
     func move(to: Position)
+    func move(by: Position)
     func size(proposedSize: Size) -> Size
     func layout(size: Size) -> Size
     func verticalFlexibility(width: Extended) -> Extended

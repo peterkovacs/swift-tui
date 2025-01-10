@@ -9,10 +9,9 @@ public struct Spacer: View, PrimitiveView {
         let node = SpacerNode(
             view: self,
             parent: parent,
-            minLength: minLength
+            minLength: minLength,
+            layoutAxis: _layoutAxis
         )
-
-        node.layoutAxis = layoutAxis
 
         return node
     }
@@ -33,10 +32,11 @@ class SpacerNode: ComposedNode, Control {
     var minLength: Extended
     var layoutAxis: LayoutAxis
 
-    init(view: Spacer, parent: Node?, minLength: Extended) {
+    init(view: Spacer, parent: Node?, minLength: Extended, layoutAxis: Environment<LayoutAxis>) {
         self.minLength = minLength
         self.layoutAxis = .defaultValue
         super.init(view: view, parent: parent, content: view)
+        self.layoutAxis = layoutAxis.wrappedValue
     }
 
     override func size<T>(visitor: inout T) where T : LayoutVisitor {
@@ -60,10 +60,6 @@ class SpacerNode: ComposedNode, Control {
             }
 
         }
-    }
-
-    override func move(to position: Position) {
-        super.move(to: position)
     }
 
     // This method is only called by {horizontal,vertical}Flexibility, so we'll just return back the proposed size since this is infinitely flexible.

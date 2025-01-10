@@ -39,6 +39,7 @@ public struct HStack<Content: View>: View, PrimitiveView {
         node.alignment = alignment
         node.spacing = spacing
         node._sizeVisitor = nil
+        node._layoutVisitor = nil
     }
 }
 
@@ -146,16 +147,16 @@ final class HStackNode: Node, Control {
         }
 
         func layout(size: Size) -> Size {
-            let children = visited
-                .sorted { $0.node.horizontalFlexibility(height: size.height) < $1.node.horizontalFlexibility(height: size.height) }
-                .map(\.layout)
+            let childrenOrder = visited
+                .indices
+                .sorted { visited[$0].node.horizontalFlexibility(height: size.height) < visited[$1].node.horizontalFlexibility(height: size.height) }
 
-            var remaining = children.count
+            var remaining = visited.count
             var remainingWidth = size.width
 
-            for (childSize) in children {
+            let children = childrenOrder.map { i in
                 // Calculates *and sets* the frame size based on the `size(proposedSize:)` from the provided size..
-                let childSize = childSize(
+                let childSize = visited[i].layout(
                     Size(
                         width: remainingWidth / Extended(remaining),
                         height: size.height
@@ -167,25 +168,29 @@ final class HStackNode: Node, Control {
                     remainingWidth -= spacing
                 }
                 remaining -= 1
+
+                return (i, visited[i].node, childSize)
             }
+                .sorted { $0.0 < $1.0 }
+
 
             var column: Extended = 0
-            for (control, _) in visited {
+
+            for (_, control, childSize) in children {
                 var position = Position(column: column, line: 0)
 
-                if control.frame.size.width > 0 {
-                    column += control.frame.size.width
+                if childSize.width > 0 {
+                    column += childSize.width
                     column += spacing
                 }
 
                 switch alignment {
                 case .top: position.line = 0
-                case .center: position.line = (size.height - control.frame.size.height) / 2
-                case .bottom: position.line = size.height - control.frame.size.height
+                case .center: position.line = (size.height - childSize.height) / 2
+                case .bottom: position.line = size.height - childSize.height
                 }
 
-                // print("moving \(String(describing: control)) to \(position))")
-                control.move(to: position)
+                control.move(by: position)
             }
 
             return size

@@ -30,14 +30,13 @@ public struct Text: View, PrimitiveView {
         let node = TextNode(
             view: self,
             parent: parent,
-            text: text
+            text: text,
+            bold: _bold,
+            italic: _italic,
+            underline: _underline,
+            strikethrough: _strikethrough,
+            foregroundColor: _foregroundColor
         )
-
-        node.bold = bold
-        node.italic = italic
-        node.underline = underline
-        node.strikethrough = strikethrough
-        node.foregroundColor = foregroundColor
 
         return node
     }
@@ -66,13 +65,27 @@ final class TextNode: ComposedNode, Control {
     var strikethrough: Bool = false
     var foregroundColor: Color = .default
 
-    init(view: Text, parent: Node?, text: Text.Value) {
+    init(
+        view: Text,
+        parent: Node?,
+        text: Text.Value,
+        bold: Environment<Bool>,
+        italic: Environment<Bool>,
+        underline: Environment<Bool>,
+        strikethrough: Environment<Bool>,
+        foregroundColor: Environment<Color>
+    ) {
         self.text = text
         super.init(
             view: view,
             parent: parent,
             content: view
         )
+        self.bold = bold.wrappedValue
+        self.italic = italic.wrappedValue
+        self.underline = underline.wrappedValue
+        self.strikethrough = strikethrough.wrappedValue
+        self.foregroundColor = foregroundColor.wrappedValue
     }
 
     override func size<T>(visitor: inout T) where T : LayoutVisitor {

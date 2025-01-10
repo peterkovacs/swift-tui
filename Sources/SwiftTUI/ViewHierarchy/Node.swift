@@ -82,16 +82,17 @@ internal class Node {
     }
 
     func layout(size: Size) -> Size {
+        frame.position = .zero
         frame.size = size
         return size
     }
 
     func move(to position: Position) {
         frame.position = position
-//
-//        for child in children {
-//            child.move(to: child.frame.position + position)
-//        }
+    }
+
+    func move(by position: Position) {
+        frame.position += position
     }
 
     func draw(rect: Rect, into window: inout CellGrid<Cell?>) {

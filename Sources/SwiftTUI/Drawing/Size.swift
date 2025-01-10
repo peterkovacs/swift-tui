@@ -19,4 +19,12 @@ extension Size {
     func union(_ rhs: Size) -> Size {
         .init(width: max(width, rhs.width), height: max(height, rhs.height))
     }
+
+    static func + (lhs: Size, rhs: Size) -> Size {
+        .init(width: lhs.width + rhs.width, height: lhs.height + rhs.height)
+    }
+
+    static func - (lhs: Size, rhs: Size) -> Size {
+        .init(width: lhs.width - rhs.width, height: lhs.height - rhs.height)
+    }
 }

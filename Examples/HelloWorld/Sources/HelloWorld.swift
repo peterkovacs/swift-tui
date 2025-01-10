@@ -2,20 +2,26 @@ import SwiftTUI
 
 struct ContentView: View {
     var body: some View {
-        HStack { 
-            Text("Hello").bold()
-            Spacer()
-            Text("World").italic()
-        }.background(.blue)
+        VStack {
+            HStack { 
+                Text("Hello").bold()
+                Spacer()
+                Text("World").italic()
+            }
+            .border(.red)
+            .background(.blue)
 
-        Spacer() 
+            Spacer() 
 
-        HStack { 
-            Text("Goodbye").strikethrough()
-            Spacer()
-            Text("World").underline()
+            HStack { 
+                Text("Goodbye").strikethrough()
+                Spacer()
+                Text("World").underline()
+            }
+            .background(.red)
+            .border()
         }
-        .background(.red)
+        .border()
     }
 }
 
