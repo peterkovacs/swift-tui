@@ -33,6 +33,43 @@ import SnapshotTesting
         )
     }
 
+    @Test(arguments: [
+        Edges.top,
+        Edges.bottom,
+        Edges.left,
+        Edges.right,
+        [.top, .right],
+        [.top, .left],
+        [.top, .right, .bottom],
+        [.top, .left, .bottom],
+        [.bottom, .right],
+        [.bottom, .left],
+        [.left, .bottom, .right],
+        Edges.vertical,
+        Edges.horizontal,
+        Edges.all,
+    ])
+    func testBorderEdges(edges: Edges) async throws {
+        struct MyView: View {
+            let edges: Edges
+            var body: some View {
+                HStack {
+                    Text("Hello")
+                    Spacer()
+                    Text("World")
+                }
+                .border(edges: edges)
+            }
+        }
+
+        let (application, _) = try drawView(MyView(edges: edges), size: .init(width: 25, height: 20))
+        assertSnapshot(
+            of: (application.renderer as! TestRenderer).description,
+            as: .lines,
+            named: "testBorderEdges-\(edges.rawValue)"
+        )
+    }
+
     @Test func testMultipleBorders() async throws {
         struct MyView: View {
             var body: some View {

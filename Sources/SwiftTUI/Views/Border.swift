@@ -147,7 +147,6 @@ final class BorderNode: ComposedNode {
         super.init(view: view, parent: parent, content: content)
     }
 
-    @MainActor
     struct BorderVisitor: LayoutVisitor {
         var visited: [(node: Control, size: (Size) -> Size)]
 
@@ -194,7 +193,7 @@ final class BorderNode: ComposedNode {
     override func draw(rect: Rect, into window: inout CellGrid<Cell?>) {
         // We're (potentially) drawing outside of the given `rect` to make
         // the code identifying the border pixels a little simpler.
-        
+
         func draw(position: Position, char: Character) {
             var cell = window[position, default: .init(char: " ")]
             cell.char = char
