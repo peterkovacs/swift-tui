@@ -87,10 +87,6 @@ internal class Node {
         return size
     }
 
-    func move(to position: Position) {
-        frame.position = position
-    }
-
     func move(by position: Position) {
         frame.position += position
     }
@@ -116,16 +112,6 @@ internal class Node {
 
     var description: String {
         "\(type(of: self.view))"
-    }
-}
-
-fileprivate extension Position {
-    @MainActor func relative(to node: Node?) -> Position {
-        if let node {
-            return node.global.position + self
-        } else {
-            return self
-        }
     }
 }
 
