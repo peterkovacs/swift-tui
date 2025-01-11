@@ -32,7 +32,7 @@ struct Padding<Content: View>: View, PrimitiveView {
     }
 }
 
-final class PaddingNode: ModifierNode {
+class PaddingNode: ModifierNode {
     var size: Extended
     var edges: Edges
 

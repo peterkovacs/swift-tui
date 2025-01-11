@@ -102,57 +102,23 @@ struct Border<Content: View>: View, PrimitiveView {
     }
 }
 
-final class BorderNode: ModifierNode {
+final class BorderNode: PaddingNode {
     var style: BorderStyle
-    var edges: Edges
     var color: Color
 
     var borderSize: Size {
-        Size(
-            width: (edges.contains(.left) ? 1 : 0) + (edges.contains(.right) ? 1 : 0),
-            height: (edges.contains(.top) ? 1 : 0) + (edges.contains(.bottom) ? 1 : 0)
-        )
+        paddingSize
     }
 
     var borderPosition: Position {
-        .init(
-            column: edges.contains(.left) ? 1 : 0,
-            line: edges.contains(.top) ? 1 : 0
-        )
+        paddingPosition
     }
 
     init<Content: View>(view: any GenericView, parent: Node?, content: Content, style: BorderStyle, edges: Edges) {
         self.style = style
         self.color = .default
-        self.edges = edges
 
-        super.init(view: view, parent: parent, content: content)
-    }
-
-    override func layout<T>(visitor: inout T) where T : Visitor.Layout {
-        for element in layoutVisitor.visited {
-            visitor.visit(
-                layout: .init(
-                    node: element.node
-                ) { [borderPosition, borderSize] (rect: Rect) in
-                    element.layout(rect + borderPosition - borderSize) - borderPosition + borderSize
-                } frame: { [borderPosition, borderSize] rect in
-                    element.frame(rect + borderPosition - borderSize)
-                } global: { [borderPosition, borderSize] in
-                    element.global() - borderPosition + borderSize
-                }
-            )
-        }
-    }
-
-    override func size<T>(visitor: inout T) where T : Visitor.Size {
-        for element in sizeVisitor.visited {
-            visitor.visit(
-                size: .init(node: element.node) { [borderSize] (size: Size) in
-                    element.size(size - borderSize) + borderSize
-                }
-            )
-        }
+        super.init(view: view, parent: parent, content: content, size: 1, edges: edges)
     }
 
     override func draw(rect: Rect, into window: inout CellGrid<Cell?>) {
