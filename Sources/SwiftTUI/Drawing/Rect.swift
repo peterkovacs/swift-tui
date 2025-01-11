@@ -96,4 +96,40 @@ extension Rect {
             Position(column: minColumn, line: Extended($0))
         }
     }
+
+    var topRight: Position {
+        .init(column: maxColumn, line: minLine)
+    }
+
+    var topLeft: Position {
+        .init(column: minColumn, line: minLine)
+    }
+
+    var bottomRight: Position {
+        .init(column: maxColumn, line: maxLine)
+    }
+
+    var bottomLeft: Position {
+        .init(column: minColumn, line: maxLine)
+    }
+
+}
+
+extension Rect {
+    static func - (lhs: Rect, rhs: Position) -> Rect {
+        .init(position: lhs.position - rhs, size: lhs.size)
+    }
+
+    static func + (lhs: Rect, rhs: Position) -> Rect {
+        .init(position: lhs.position + rhs, size: lhs.size)
+    }
+
+    static func - (lhs: Rect, rhs: Size) -> Rect {
+        .init(position: lhs.position, size: lhs.size - rhs)
+    }
+
+    static func + (lhs: Rect, rhs: Size) -> Rect {
+        .init(position: lhs.position, size: lhs.size + rhs)
+    }
+
 }

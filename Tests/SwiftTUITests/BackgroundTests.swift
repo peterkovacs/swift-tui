@@ -2,7 +2,7 @@
 import Testing
 
 @MainActor
-@Suite struct BackgroundTests {
+@Suite("Background Tests") struct BackgroundTests {
     @Test func rendersBackground() throws {
         struct MyView: View {
             var body: some View {

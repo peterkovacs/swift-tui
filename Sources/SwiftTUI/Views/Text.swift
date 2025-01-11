@@ -88,17 +88,28 @@ final class TextNode: ComposedNode, Control {
         self.foregroundColor = foregroundColor.wrappedValue
     }
 
-    override func size<T>(visitor: inout T) where T : LayoutVisitor {
-        visitor.visit(node: self, size: size(proposedSize:))
+    override func size<T>(visitor: inout T) where T : Visitor.Size {
+        visitor.visit(size: .init(node: self, size: size(proposedSize:)))
     }
 
-    override func layout<T>(visitor: inout T) where T : LayoutVisitor {
-        visitor.visit(node: self, size: layout(size:))
+    override func layout<T>(visitor: inout T) where T : Visitor.Layout {
+        visitor.visit(
+            layout: .init(node: self, layout: layout(rect:)) {
+                self.frame = $0
+            } global: {
+                self.global
+            }
+        )
     }
 
-    override func layout(size: Size) -> Size {
+    override func layout(rect: Rect) -> Rect {
         // TODO: deal with size that doesn't fit the text
-        super.layout(size: self.size(proposedSize: size))
+        super.layout(
+            rect: .init(
+                position: rect.position,
+                size: self.size(proposedSize: rect.size)
+            )
+        )
     }
 
     func size(proposedSize: Size) -> Size {

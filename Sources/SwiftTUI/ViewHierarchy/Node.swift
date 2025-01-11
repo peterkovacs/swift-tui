@@ -11,7 +11,7 @@ internal class Node {
     var environment: ((inout EnvironmentValues) -> Void)?
 
     /// Frame of this node, if it is a control, relative to its containing control frame.
-    private(set) var frame: Rect = .zero {
+    var frame: Rect = .zero {
         didSet {
             _global = nil
         }
@@ -20,10 +20,13 @@ internal class Node {
     /// Frame of node, if it is a Control, in global coordinates
     private var _global: Rect?
     var global: Rect {
-        if _global == nil {
-            _global = frame.relative(to: parent)
+        guard let _global else {
+            let frame = frame.relative(to: parent)
+            _global = frame
+            return frame
         }
-        return _global!
+
+        return _global
     }
 
     /// Construct the root Node of an application, should only be called by the top-level Layout node.
@@ -44,7 +47,7 @@ internal class Node {
     }
 
     /// Update this node with a given view.
-    final func update(view: any GenericView) {
+    func update(view: any GenericView) {
         view.update(node: self)
         self.view = view
         self._global = nil
@@ -74,6 +77,12 @@ internal class Node {
         }
     }
 
+    func size<T: Visitor.Size>(visitor: inout T) {
+        for child in children {
+            child.size(visitor: &visitor)
+        }
+    }
+
     /// Performs the layout of a node hierarchy by visiting each node. Control nodes should override this method that actually performs its layout.
     func layout<T: LayoutVisitor>(visitor: inout T) {
         for child in children {
@@ -81,14 +90,16 @@ internal class Node {
         }
     }
 
-    func layout(size: Size) -> Size {
-        frame.position = .zero
-        frame.size = size
-        return size
+    func layout<T: Visitor.Layout>(visitor: inout T) {
+        for child in children {
+            child.layout(visitor: &visitor)
+        }
     }
 
-    func move(by position: Position) {
-        frame.position += position
+    @discardableResult
+    func layout(rect: Rect) -> Rect {
+        frame = rect
+        return frame
     }
 
     func draw(rect: Rect, into window: inout CellGrid<Cell?>) {
@@ -98,14 +109,20 @@ internal class Node {
         }
     }
 
-    func draw(rect: Rect, _ action: (Rect, Control) -> Void) {
+    /// Calls the callback with each Control in this node's hierarchy.
+    ///
+    /// - Parameter rect: The invalidated Rect in which to draw.
+    /// - Parameter action: A callback that takes the intersection of the controls frame, the control, and the controls frame.
+    ///
+    /// This can be overridden by descendant types to provide custom logic for calculating the frame passed to action.
+    func draw(rect: Rect, action: (_ invalidated: Rect, _ control: Control, _ frame: Rect) -> Void) {
         guard let rect = global.intersection(rect) else { return }
 
         if let control = self as? Control {
-            action(rect, control)
+            action(rect, control, control.global)
         } else {
             for child in children {
-                child.draw(rect: rect, action)
+                child.draw(rect: rect, action: action)
             }
         }
     }

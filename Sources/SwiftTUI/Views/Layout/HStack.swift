@@ -54,15 +54,20 @@ final class HStackNode: Node, Control {
         return visitor
     }
 
-    fileprivate var _layoutVisitor: Layout? = nil
-    var layoutVisitor: Layout {
-        let visitor = _layoutVisitor ?? Layout(
-            spacing: spacing,
-            alignment: alignment,
-            children: children
-        )
-        _layoutVisitor = visitor
-        return visitor
+    fileprivate var _layoutVisitor: LayoutVisitor? = nil
+    var layoutVisitor: LayoutVisitor {
+        get {
+            let visitor = _layoutVisitor ?? LayoutVisitor(
+                spacing: spacing,
+                alignment: alignment,
+                children: children
+            )
+            _layoutVisitor = visitor
+            return visitor
+        }
+        set {
+            _layoutVisitor = newValue
+        }
     }
 
     init(
@@ -79,9 +84,9 @@ final class HStackNode: Node, Control {
         }
     }
 
-    struct SizeVisitor: SwiftTUI.LayoutVisitor {
+    struct SizeVisitor: Visitor.Size {
         let spacing: Extended
-        var visited: [(node: Control, size: (Size) -> Size)]
+        var visited: [Visitor.SizeElement]
 
         fileprivate init(spacing: Extended, children: [Node]) {
             self.spacing = spacing
@@ -91,8 +96,8 @@ final class HStackNode: Node, Control {
             }
         }
 
-        mutating func visit(node: Control, size: @escaping (Size) -> Size) {
-            visited.append((node, size))
+        mutating func visit(size: Visitor.SizeElement) {
+            visited.append(size)
         }
 
         func size(proposedSize: Size) -> Size {
@@ -128,10 +133,10 @@ final class HStackNode: Node, Control {
         }
     }
 
-    struct Layout: LayoutVisitor {
+    struct LayoutVisitor: Visitor.Layout {
         let spacing: Extended
         let alignment: VerticalAlignment
-        var visited: [(node: Control, layout: (Size) -> Size)]
+        var visited: [(element: Visitor.LayoutElement, frame: Rect)]
 
         fileprivate init(spacing: Extended, alignment: VerticalAlignment, children: [Node]) {
             self.spacing = spacing
@@ -142,73 +147,103 @@ final class HStackNode: Node, Control {
             }
         }
 
-        mutating func visit(node: Control, size: @escaping (Size) -> Size) {
-            visited.append((node, size))
+        mutating func visit(layout: Visitor.LayoutElement) {
+            visited.append((layout, layout.node.frame))
         }
 
-        func layout(size: Size) -> Size {
+        mutating func layout(rect: Rect) -> Rect {
             let childrenOrder = visited
                 .indices
-                .sorted { visited[$0].node.horizontalFlexibility(height: size.height) < visited[$1].node.horizontalFlexibility(height: size.height) }
+                .sorted {
+                    visited[$0].element.node.horizontalFlexibility(height: rect.size.height) < visited[$1].element.node.horizontalFlexibility(height: rect.size.height)
+                }
 
             var remaining = visited.count
-            var remainingWidth = size.width
+            var frame: Rect = .init(
+                position: rect.position,
+                size: .init(width: 0, height: rect.size.height)
+            )
 
-            let children = childrenOrder.map { i in
-                // Calculates *and sets* the frame size based on the `size(proposedSize:)` from the provided size..
-                let childSize = visited[i].layout(
-                    Size(
-                        width: remainingWidth / Extended(remaining),
-                        height: size.height
+            // First calculate the sizes of each visited control from least flexible -> most flexible.
+            for i in childrenOrder {
+                visited[i].frame = visited[i].element.layout(
+                    Rect(
+                        position: .zero,
+                        size: Size(
+                            width: (rect.size.width - frame.size.width) / Extended(remaining),
+                            height: rect.size.height
+                        )
                     )
                 )
 
-                remainingWidth -= childSize.width
-                if childSize.width > 0 {
-                    remainingWidth -= spacing
+                frame.size.width += visited[i].frame.size.width
+                if visited[i].frame.size.width > 0, remaining > 1 {
+                    frame.size.width += spacing
                 }
                 remaining -= 1
-
-                return (i, visited[i].node, childSize)
             }
-                .sorted { $0.0 < $1.0 }
-
 
             var column: Extended = 0
 
-            for (_, control, childSize) in children {
-                var position = Position(column: column, line: 0)
+            // Next, set the position of each visited control based on the order in which they were defined
+            for (element, var childFrame) in visited {
+                childFrame.position.column = column
 
-                if childSize.width > 0 {
-                    column += childSize.width
+                if childFrame.size.width > 0 {
+                    column += childFrame.size.width
                     column += spacing
                 }
 
                 switch alignment {
-                case .top: position.line = 0
-                case .center: position.line = (size.height - childSize.height) / 2
-                case .bottom: position.line = size.height - childSize.height
+                case .top:    childFrame.position.line = rect.minLine
+                case .center: childFrame.position.line = (rect.size.height - childFrame.size.height) / 2
+                case .bottom: childFrame.position.line = (rect.size.height - childFrame.size.height)
                 }
 
-                control.move(by: position)
+                element.frame( childFrame )
             }
 
-            return size
+            return frame
         }
     }
 
-    override func size<T>(visitor: inout T) where T : SwiftTUI.LayoutVisitor {
-        visitor.visit(node: self, size: self.sizeVisitor.size(proposedSize:))
+
+    override func size<T>(visitor: inout T) where T : Visitor.Size {
+        visitor.visit(size: .init(node: self, size: self.sizeVisitor.size(proposedSize:)))
     }
 
-    override func layout<T>(visitor: inout T) where T : SwiftTUI.LayoutVisitor {
-        visitor.visit(node: self) { size in
-            super.layout(size: self.layoutVisitor.layout(size: self.sizeVisitor.size(proposedSize: size)))
-        }
+    override func layout<T>(visitor: inout T) where T : Visitor.Layout {
+        visitor.visit(
+            layout: .init(node: self) { rect in
+                super.layout(
+                    rect: self.layoutVisitor.layout(
+                        rect: .init(
+                            position: rect.position,
+                            size: self.sizeVisitor.size(
+                                proposedSize: rect.size
+                            )
+                        )
+                    )
+                )
+            } frame: {
+                self.frame = $0
+            } global: {
+                self.global
+            }
+        )
     }
 
-    override func layout(size: Size) -> Size {
-        super.layout(size: layoutVisitor.layout(size: self.sizeVisitor.size(proposedSize: size)))
+    override func layout(rect: Rect) -> Rect {
+        super.layout(
+            rect: layoutVisitor.layout(
+                rect: .init(
+                    position: rect.position,
+                    size: self.sizeVisitor.size(
+                        proposedSize: rect.size
+                    )
+                )
+            )
+        )
     }
 
     func size(proposedSize: Size) -> Size {

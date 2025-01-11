@@ -2,7 +2,7 @@ import Testing
 @testable import SwiftTUI
 
 @MainActor
-@Suite("ViewBuilder") struct ViewBuilderTests {
+@Suite("View Builder Tests") struct ViewBuilderTests {
 
     @Test func buildEmpty() async throws {
         struct MyView: View {

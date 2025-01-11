@@ -198,4 +198,29 @@ import SnapshotTesting
         #expect(Array(Rect(minColumn: 0, minLine: 0, maxColumn: 24, maxLine: 2).indices) == bluePixels)
 
     }
+
+    @Test func testBorderInBorder() async throws {
+        struct MyView: View {
+            var body: some View {
+                Text("Hello")
+                    .border()
+                    .border()
+            }
+        }
+
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 9x5
+          → ComposedView<MyView>
+            → Border:[(0, 0) 9x5]
+              → Border:[(1, 1) 7x3]
+                → Text:string("Hello") (2, 2) 5x1
+        
+        """)
+        assertSnapshot(
+            of: (application.renderer as! TestRenderer).description,
+            as: .lines
+        )
+
+    }
 }

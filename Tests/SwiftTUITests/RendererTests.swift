@@ -3,7 +3,7 @@ import SnapshotTesting
 import Testing
 
 @MainActor
-@Suite struct RendererTests {
+@Suite("Renderer Tests") struct RendererTests {
 
     @Test func testRendersComplex1() async throws {
         struct MyView: View {

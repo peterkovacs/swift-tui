@@ -94,16 +94,15 @@ struct Border<Content: View>: View, PrimitiveView {
     func update(node: Node) {
         guard let node = node as? BorderNode else { fatalError() }
 
+        node.view = self
         node.set(references: self)
         node.style = style
         node.edges = edges
         node.color = color ?? foregroundColor
-        node._sizeVisitor = nil
-        node._layoutVisitor = nil
     }
 }
 
-final class BorderNode: ComposedNode {
+final class BorderNode: ModifierNode {
     var style: BorderStyle
     var edges: Edges
     var color: Color
@@ -122,23 +121,6 @@ final class BorderNode: ComposedNode {
         )
     }
 
-    fileprivate var _sizeVisitor: BorderVisitor? = nil
-    var sizeVisitor: BorderVisitor {
-        let visitor = _sizeVisitor ?? BorderVisitor(children: children) { $0.size(visitor: &$1) }
-        _sizeVisitor = visitor
-
-        return visitor
-    }
-
-    fileprivate var _layoutVisitor: BorderVisitor? = nil
-    var layoutVisitor: BorderVisitor {
-        let visitor = _layoutVisitor ?? BorderVisitor(children: children) { $0.layout(visitor: &$1) }
-        _layoutVisitor = visitor
-
-        return visitor
-    }
-
-
     init<Content: View>(view: any GenericView, parent: Node?, content: Content, style: BorderStyle, edges: Edges) {
         self.style = style
         self.color = .default
@@ -147,46 +129,31 @@ final class BorderNode: ComposedNode {
         super.init(view: view, parent: parent, content: content)
     }
 
-    struct BorderVisitor: LayoutVisitor {
-        var visited: [(node: Control, size: (Size) -> Size)]
-
-        fileprivate init(
-            children: [Node],
-            action: (Node, inout Self) -> Void
-        ) {
-            self.visited = []
-
-            for child in children {
-                action(child, &self)
-            }
-        }
-
-        mutating func visit(node: any Control, size: @escaping (Size) -> Size) {
-            visited.append((node, size))
-        }
-    }
-
-    override func layout<T>(visitor: inout T) where T : LayoutVisitor {
-        for child in layoutVisitor.visited {
-            visitor.visit(node: child.node) { [borderPosition, borderSize] (size: Size) in
-                defer {
-                    child.node.move(
-                        by: borderPosition
-                    )
+    override func layout<T>(visitor: inout T) where T : Visitor.Layout {
+        for element in layoutVisitor.visited {
+            visitor.visit(
+                layout: .init(
+                    node: element.node
+                ) { [borderPosition, borderSize] (rect: Rect) in
+                    element.layout(rect + borderPosition - borderSize) - borderPosition + borderSize
+                } frame: { [borderPosition, borderSize] rect in
+                    element.frame(rect + borderPosition - borderSize)
+                } global: { [borderPosition, borderSize] in
+                    element.global() - borderPosition + borderSize
                 }
-
-                return child.size( size - borderSize ) + borderSize
-            }
+            )
         }
     }
 
-    override func size<T>(visitor: inout T) where T : LayoutVisitor {
+    override func size<T>(visitor: inout T) where T : Visitor.Size {
         let borderSize = borderSize
 
-        for child in sizeVisitor.visited {
-            visitor.visit(node: child.node) { (size: Size) in
-                child.size( size - borderSize ) + borderSize
-            }
+        for element in sizeVisitor.visited {
+            visitor.visit(
+                size: .init(node: element.node) { [borderSize] (size: Size) in
+                    element.size(size - borderSize) + borderSize
+                }
+            )
         }
     }
 
@@ -201,60 +168,53 @@ final class BorderNode: ComposedNode {
             window[position] = cell
         }
 
-        self.draw(rect: rect) { rect, node in
-            let frame = Rect(
-                position: node.global.position - borderPosition,
-                size: node.global.size + borderSize
-            )
-
+        self.draw(rect: rect) { invalidated, _, frame in
             if edges.contains(.top) {
-                for i in frame.top { draw(position: i, char: style.top) }
+                for i in frame.top where invalidated.contains(i) { draw(position: i, char: style.top) }
             }
             if edges.contains(.right) {
-                for i in frame.right { draw(position: i, char: style.right) }
+                for i in frame.right where invalidated.contains(i) { draw(position: i, char: style.right) }
             }
             if edges.contains(.bottom) {
-                for i in frame.bottom { draw(position: i, char: style.bottom) }
+                for i in frame.bottom where invalidated.contains(i) { draw(position: i, char: style.bottom) }
             }
             if edges.contains(.left) {
-                for i in frame.left { draw(position: i, char: style.left) }
+                for i in frame.left where invalidated.contains(i) { draw(position: i, char: style.left) }
             }
 
-            if edges.contains(.top) && edges.contains(.right) {
-                draw(position: .init(column: frame.maxColumn, line: frame.minLine), char: style.topRight)
+            if edges.contains(.top) && edges.contains(.right) && invalidated.contains(frame.topRight) {
+                draw(position: frame.topRight, char: style.topRight)
             }
-            if edges.contains(.top) && edges.contains(.left) {
-                draw(position: .init(column: frame.minColumn, line: frame.minLine), char: style.topLeft)
+            if edges.contains(.top) && edges.contains(.left) && invalidated.contains(frame.topLeft) {
+                draw(position: frame.topLeft, char: style.topLeft)
             }
-            if edges.contains(.bottom) && edges.contains(.left) {
-                draw(position: .init(column: frame.minColumn, line: frame.maxLine), char: style.bottomLeft)
+            if edges.contains(.bottom) && edges.contains(.left) && invalidated.contains(frame.bottomLeft) {
+                draw(position: frame.bottomLeft, char: style.bottomLeft)
             }
-            if edges.contains(.bottom) && edges.contains(.right) {
-                draw(position: .init(column: frame.maxColumn, line: frame.maxLine), char: style.bottomRight)
+            if edges.contains(.bottom) && edges.contains(.right) && invalidated.contains(frame.bottomRight) {
+                draw(position: frame.bottomRight, char: style.bottomRight)
             }
         }
 
         super.draw(rect: rect, into: &window)
     }
 
-    override func draw(rect: Rect, _ action: (Rect, Control) -> Void) {
+    override func draw(rect: Rect, action: (Rect, Control, Rect) -> Void) {
         // When called by node higher in the hierarchy, we want to draw any children, while adjusting their size
         // This can take the place of the standard draw method which accomplishes the same thing.
-        for (node, _) in sizeVisitor.visited {
+        for element in layoutVisitor.visited {
+            // node.global is the position of the node, but doesn't allow any descendant Modifiers like ourselves to modify the frame.
+            //
+            let frame = element.global() - borderPosition + borderSize
             guard
-                let frame = Rect(
-                    position: node.global.position - borderPosition,
-                    size: node.global.size + borderSize
-                ).intersection(rect)
+                let invalidated = frame.intersection(rect)
             else { continue }
 
-            action(frame, node)
+            action(invalidated, element.node, frame)
         }
     }
 
     override var description: String {
-        let positions = sizeVisitor.visited.map(\.node).map(\.global)
-            .map { Rect(position: $0.position - borderPosition, size: $0.size + borderSize) }
-        return "Border:\(positions)"
+        return "Border:\(layoutVisitor.visited.map { $0.global() - borderPosition + borderSize })"
     }
 }

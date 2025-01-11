@@ -41,9 +41,9 @@ final class BackgroundNode: Node {
         rect: Rect,
         into window: inout CellGrid<Cell?>
     ) {
-        draw(rect: rect) { rect, node in
+        draw(rect: rect) { invalidated, node, _ in
 
-            for i in rect.indices {
+            for i in invalidated.indices {
                 window[i, default: .init(char: " ")].backgroundColor = color
             }
         }

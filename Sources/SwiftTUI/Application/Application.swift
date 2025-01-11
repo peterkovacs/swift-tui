@@ -18,7 +18,9 @@ import Foundation
     }
 
     func setup() {
-        _ = node.layout(size: renderer.window.size)
+        node.layout(
+            rect: .init(position: .zero, size: renderer.window.size)
+        )
         renderer.draw(rect: nil)
     }
 
@@ -43,7 +45,9 @@ import Foundation
             node.update(view: node.view)
         }
 
-        _ = node.layout(size: renderer.window.size)
+        node.layout(
+            rect: .init(position: .zero, size: renderer.window.size)
+        )
 
         for node in invalidated {
             renderer.invalidate(rect: node.global)
