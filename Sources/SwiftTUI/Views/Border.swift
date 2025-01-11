@@ -146,8 +146,6 @@ final class BorderNode: ModifierNode {
     }
 
     override func size<T>(visitor: inout T) where T : Visitor.Size {
-        let borderSize = borderSize
-
         for element in sizeVisitor.visited {
             visitor.visit(
                 size: .init(node: element.node) { [borderSize] (size: Size) in
