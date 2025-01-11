@@ -1,7 +1,8 @@
-→ VStack<MyView> (0, 0) 5x100
+→ VStack<MyView> (0, 0) 10x100
   → ComposedView<MyView>
-    → VStack<TupleView<Pack{Text, Spacer, Text}>> (0, 0) 5x100
-      → TupleView<Pack{Text, Spacer, Text}>
-        → Text:string("Hello") (0, 0) 5x1
-        → Spacer (0, 1) 5x98
-        → Text:string("World") (0, 99) 5x1
+    → VStack<TupleView<Pack{Text, Text, Spacer, Text}>> (0, 0) 10x100
+      → TupleView<Pack{Text, Text, Spacer, Text}>
+        → Text:string("1234567890") (0, 0) 10x1
+        → Text:string("Hello") (2, 1) 5x1
+        → Spacer (0, 2) 10x97
+        → Text:string("World") (2, 99) 5x1

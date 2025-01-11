@@ -3,6 +3,8 @@ import Testing
 import SnapshotTesting
 
 @Suite("Size Tests") @MainActor struct SizeTests {
+    let record = false
+
     @Test func sizeOfSingleText() async throws {
         struct MyView: View {
             var body: some View {
@@ -177,6 +179,7 @@ import SnapshotTesting
         struct MyView: View {
             var body: some View {
                 VStack(alignment: .leading) {
+                    Text("1234567890")
                     Text("Hello")
                     Text("World")
                 }
@@ -185,7 +188,9 @@ import SnapshotTesting
 
         let (application, _) = try drawView(MyView())
         assertSnapshot(
-            of: application.node.frameDescription, as: .lines
+            of: application.node.frameDescription,
+            as: .lines,
+            record: record
         )
     }
 
@@ -193,6 +198,7 @@ import SnapshotTesting
         struct MyView: View {
             var body: some View {
                 VStack(alignment: .leading) {
+                    Text("1234567890")
                     Text("Hello")
                     Spacer()
                     Text("World")
@@ -202,7 +208,9 @@ import SnapshotTesting
 
         let (application, _) = try drawView(MyView())
         assertSnapshot(
-            of: application.node.frameDescription, as: .lines
+            of: application.node.frameDescription,
+            as: .lines,
+            record: record
         )
     }
 
@@ -210,6 +218,7 @@ import SnapshotTesting
         struct MyView: View {
             var body: some View {
                 VStack(alignment: .center) {
+                    Text("1234567890")
                     Text("Hello")
                     Text("World")
                 }
@@ -218,7 +227,9 @@ import SnapshotTesting
 
         let (application, _) = try drawView(MyView())
         assertSnapshot(
-            of: application.node.frameDescription, as: .lines
+            of: application.node.frameDescription,
+            as: .lines,
+            record: record
         )
     }
 
@@ -226,6 +237,7 @@ import SnapshotTesting
         struct MyView: View {
             var body: some View {
                 VStack(alignment: .center) {
+                    Text("1234567890")
                     Text("Hello")
                     Spacer()
                     Text("World")
@@ -235,7 +247,9 @@ import SnapshotTesting
 
         let (application, _) = try drawView(MyView())
         assertSnapshot(
-            of: application.node.frameDescription, as: .lines
+            of: application.node.frameDescription,
+            as: .lines,
+            record: record
         )
     }
 
@@ -243,6 +257,7 @@ import SnapshotTesting
         struct MyView: View {
             var body: some View {
                 VStack(alignment: .trailing) {
+                    Text("1234567890")
                     Text("Hello")
                     Text("World")
                 }
@@ -251,7 +266,9 @@ import SnapshotTesting
 
         let (application, _) = try drawView(MyView())
         assertSnapshot(
-            of: application.node.frameDescription, as: .lines
+            of: application.node.frameDescription,
+            as: .lines,
+            record: record
         )
     }
 
@@ -259,6 +276,7 @@ import SnapshotTesting
         struct MyView: View {
             var body: some View {
                 VStack(alignment: .trailing) {
+                    Text("1234567890")
                     Text("Hello")
                     Spacer()
                     Text("World")
@@ -268,7 +286,9 @@ import SnapshotTesting
 
         let (application, _) = try drawView(MyView())
         assertSnapshot(
-            of: application.node.frameDescription, as: .lines
+            of: application.node.frameDescription,
+            as: .lines,
+            record: record
         )
     }
 
@@ -277,6 +297,10 @@ import SnapshotTesting
         struct MyView: View {
             var body: some View {
                 HStack(alignment: .top) {
+                    VStack {
+                        Text("Hello")
+                        Text("World")
+                    }
                     Text("Hello")
                     Text("World")
                 }
@@ -285,7 +309,9 @@ import SnapshotTesting
 
         let (application, _) = try drawView(MyView())
         assertSnapshot(
-            of: application.node.frameDescription, as: .lines
+            of: application.node.frameDescription,
+            as: .lines,
+            record: record
         )
     }
 
@@ -293,6 +319,11 @@ import SnapshotTesting
         struct MyView: View {
             var body: some View {
                 HStack(alignment: .top) {
+                    VStack {
+                        Text("Hello")
+                        Text("World")
+                    }
+
                     Text("Hello")
                     Spacer()
                     Text("World")
@@ -302,7 +333,9 @@ import SnapshotTesting
 
         let (application, _) = try drawView(MyView())
         assertSnapshot(
-            of: application.node.frameDescription, as: .lines
+            of: application.node.frameDescription,
+            as: .lines,
+            record: record
         )
     }
 
@@ -310,6 +343,12 @@ import SnapshotTesting
         struct MyView: View {
             var body: some View {
                 HStack(alignment: .center) {
+                    VStack {
+                        Text("Hello")
+                        Spacer()
+                        Text("World")
+                    }
+
                     Text("Hello")
                     Text("World")
                 }
@@ -318,7 +357,9 @@ import SnapshotTesting
 
         let (application, _) = try drawView(MyView())
         assertSnapshot(
-            of: application.node.frameDescription, as: .lines
+            of: application.node.frameDescription,
+            as: .lines,
+            record: record
         )
     }
 
@@ -326,6 +367,12 @@ import SnapshotTesting
         struct MyView: View {
             var body: some View {
                 HStack(alignment: .center) {
+                    VStack {
+                        Text("Hello")
+                        Spacer()
+                        Text("World")
+                    }
+
                     Text("Hello")
                     Spacer()
                     Text("World")
@@ -335,7 +382,9 @@ import SnapshotTesting
 
         let (application, _) = try drawView(MyView())
         assertSnapshot(
-            of: application.node.frameDescription, as: .lines
+            of: application.node.frameDescription,
+            as: .lines,
+            record: record
         )
     }
 
@@ -343,6 +392,12 @@ import SnapshotTesting
         struct MyView: View {
             var body: some View {
                 HStack(alignment: .bottom) {
+                    VStack {
+                        Text("Hello")
+                        Spacer()
+                        Text("World")
+                    }
+
                     Text("Hello")
                     Text("World")
                 }
@@ -351,7 +406,9 @@ import SnapshotTesting
 
         let (application, _) = try drawView(MyView())
         assertSnapshot(
-            of: application.node.frameDescription, as: .lines
+            of: application.node.frameDescription,
+            as: .lines,
+            record: record
         )
     }
 
@@ -368,7 +425,9 @@ import SnapshotTesting
 
         let (application, _) = try drawView(MyView())
         assertSnapshot(
-            of: application.node.frameDescription, as: .lines
+            of: application.node.frameDescription,
+            as: .lines,
+            record: record
         )
     }
 
@@ -394,7 +453,11 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView())
-        assertSnapshot(of: application.node.frameDescription, as: .lines)
+        assertSnapshot(
+            of: application.node.frameDescription,
+            as: .lines,
+            record: record
+        )
     }
 
     @Test func layoutOfHStacksContainingSpacers() async throws {
@@ -417,6 +480,10 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView())
-        assertSnapshot(of: application.node.frameDescription, as: .lines)
+        assertSnapshot(
+            of: application.node.frameDescription,
+            as: .lines,
+            record: record
+        )
     }
 }
