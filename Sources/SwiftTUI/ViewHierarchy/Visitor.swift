@@ -1,7 +1,3 @@
-@MainActor protocol LayoutVisitor {
-    mutating func visit(node: Control, size: @escaping (Size) -> Size)
-}
-
 enum Visitor {
     struct LayoutElement {
         /// The node that is participating in Layout

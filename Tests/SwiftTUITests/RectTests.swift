@@ -69,4 +69,38 @@ import Testing
         #expect(b.intersection(a) == nil)
     }
 
+    @Test func testClampedInfinity() async throws {
+        do {
+            let a = Rect(column: 0, line: 0, width: .infinity, height: 100)
+            let b = Rect(column: 0, line: 0, width: 100, height: 100)
+
+            #expect(a.clamped(to: b) == b)
+            #expect(b.clamped(to: a) == b)
+        }
+
+        do {
+            let a = Rect(column: 0, line: 0, width: .infinity, height: 50)
+            let b = Rect(column: 0, line: 0, width: 100, height: 100)
+
+            #expect(a.clamped(to: b) == .init(position: .zero, size: .init(width: 100, height: 50)))
+            #expect(b.clamped(to: a) == b)
+        }
+
+        do {
+            let a = Rect(column: 0, line: 0, width: 100, height: .infinity)
+            let b = Rect(column: 0, line: 0, width: 100, height: 100)
+
+            #expect(a.clamped(to: b) == b)
+            #expect(b.clamped(to: a) == b)
+        }
+
+        do {
+            let a = Rect(column: 0, line: 0, width: 50, height: .infinity)
+            let b = Rect(column: 0, line: 0, width: 100, height: 100)
+
+            #expect(a.clamped(to: b) == .init(position: .zero, size: .init(width: 50, height: 100)))
+            #expect(b.clamped(to: a) == b)
+        }
+
+    }
 }

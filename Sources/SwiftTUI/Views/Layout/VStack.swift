@@ -1,10 +1,4 @@
 
-public enum HorizontalAlignment: Sendable, Hashable {
-    case leading
-    case center
-    case trailing
-}
-
 public struct VStack<Content: View>: View, PrimitiveView {
     let alignment: HorizontalAlignment
     let spacing: Extended

@@ -42,6 +42,18 @@ public struct Extended: Equatable, Sendable {
         }
         return a
     }
+
+    /// Returns the `to` value if `self` is positive or negative infinity.
+    public func clamped(to rhs: Extended) -> Extended {
+        switch (data, rhs.data) {
+        case (.number, _):
+            return self
+        case (.positiveInfinity, _):
+            return rhs
+        case (.negativeInfinity, _):
+            return rhs
+        }
+    }
 }
 
 extension Extended: ExpressibleByIntegerLiteral {

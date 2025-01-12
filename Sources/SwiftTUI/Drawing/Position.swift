@@ -10,6 +10,13 @@ public struct Position: Equatable {
     }
 
     public static var zero: Position { Position(column: 0, line: 0) }
+
+    public func clamped(to bounds: Position) -> Self {
+        return .init(
+            column: column.clamped(to: bounds.column),
+            line: line.clamped(to: bounds.line)
+        )
+    }
 }
 
 extension Position: CustomStringConvertible {

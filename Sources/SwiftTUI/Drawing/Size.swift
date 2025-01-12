@@ -9,6 +9,14 @@ public struct Size: Sendable, Equatable, CustomStringConvertible {
     public var description: String { "\(width)x\(height)" }
 
     var isZero: Bool { width.intValue == 0 && height.intValue == 0 }
+
+    public func clamped(to bounds: Size) -> Self {
+        return .init(
+            width: width.clamped(to: bounds.width),
+            height: height.clamped(to: bounds.height)
+        )
+    }
+
 }
 
 extension Size {

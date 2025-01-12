@@ -62,6 +62,15 @@ struct Rect: Equatable {
         position.column <= maxColumn &&
         position.line <= maxLine
     }
+
+    /// Clamps any infinite values to those given in `to`
+    func clamped(to bounds: Rect) -> Rect {
+        return .init(
+            position: position.clamped(to: bounds.position),
+            size: size.clamped(to: bounds.size)
+        )
+    }
+
 }
 
 extension Rect: CustomStringConvertible {

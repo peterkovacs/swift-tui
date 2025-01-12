@@ -127,7 +127,6 @@ final class TextNode: ComposedNode, Control {
     override func draw(rect: Rect, into window: inout CellGrid<Cell?>) {
         guard let rect = global.intersection(rect) else { return }
 
-
         switch text {
         case .string(let text):
             for (position, char) in zip(rect.indices, text) {

@@ -71,12 +71,6 @@ internal class Node {
     }
 
     /// Calculate the size of a node hierarchy by visiting each node. Control nodes should override this method with a method that actually calculates it's size.
-    func size<T: LayoutVisitor>(visitor: inout T) {
-        for child in children {
-            child.size(visitor: &visitor)
-        }
-    }
-
     func size<T: Visitor.Size>(visitor: inout T) {
         for child in children {
             child.size(visitor: &visitor)
@@ -84,12 +78,6 @@ internal class Node {
     }
 
     /// Performs the layout of a node hierarchy by visiting each node. Control nodes should override this method that actually performs its layout.
-    func layout<T: LayoutVisitor>(visitor: inout T) {
-        for child in children {
-            child.layout(visitor: &visitor)
-        }
-    }
-
     func layout<T: Visitor.Layout>(visitor: inout T) {
         for child in children {
             child.layout(visitor: &visitor)
