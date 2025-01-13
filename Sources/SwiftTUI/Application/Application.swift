@@ -1,4 +1,6 @@
+import Dependencies
 import Foundation
+import AsyncAlgorithms
 
 @MainActor public class Application {
     private(set) var node: Node!
@@ -24,22 +26,14 @@ import Foundation
         renderer.draw(rect: nil)
     }
 
+    private let (invalidations, invalidate) = AsyncStream<Void>.makeStream()
+
     func invalidate(node: Node) {
         invalidated.append(node)
-        scheduleUpdate()
-    }
-
-    var updateScheduled = false
-    func scheduleUpdate() {
-        if !updateScheduled {
-            updateScheduled = true
-            Task { self.update() }
-        }
+        invalidate.yield()
     }
 
     func update() {
-        updateScheduled = false
-
         for node in invalidated {
             renderer.invalidate(rect: node.global)
             node.update(view: node.view)
@@ -115,12 +109,25 @@ extension Application {
             Exit.exit()
         }
 
+        let invalidationsTask = Task {
+            @Dependency(\.continuousClock) var continuousClock
+
+            func updates<T: Clock>(stream: AsyncStream<Void>, clock: T) -> some AsyncSequence<Void, Never> where T.Duration == Duration {
+                stream.debounce(for: .milliseconds(10), clock: clock)
+            }
+
+            for await _ in updates(stream: invalidations, clock: continuousClock) {
+                self.update()
+            }
+        }
+
         for try await _ in Exit.stream {
             break
         }
 
         sigwinchTask.cancel()
         keyInputTask.cancel()
+        invalidationsTask.cancel()
         renderer.stop()
     }
 }

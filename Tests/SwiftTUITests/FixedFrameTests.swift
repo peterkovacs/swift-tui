@@ -1,3 +1,4 @@
+import Observation
 @testable import SwiftTUI
 import Testing
 import SnapshotTesting
@@ -170,5 +171,49 @@ import SnapshotTesting
             as: .lines,
             record: record
         )
+    }
+
+    @Observable
+    class Model {
+        var size: Size = .init(width: 50, height: 50)
+
+        func update() {
+            size = .init(width: size.width / 2, height: size.height  / 2)
+        }
+    }
+
+    @Test func testObservationInvalidatesLayout() async throws {
+        struct MyView: View {
+            @State var model: Model
+
+            var body: some View {
+                Text("Hello World")
+                    .frame(width: model.size.width, height: model.size.height)
+            }
+        }
+
+        let model = Model()
+        let (application, _) = try drawView(MyView(model: model))
+
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 50x50
+          → ComposedView<MyView>
+            → FixedFrame:50x50 [(0, 0) 50x50]
+              → Text:string("Hello World") (19, 24) 11x1
+
+        """)
+
+        model.update()
+        #expect(application.invalidated[0] === application.node.children[0])
+
+        application.update()
+
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 50x50
+          → ComposedView<MyView>
+            → FixedFrame:25x25 [(12, 12) 25x25]
+              → Text:string("Hello World") (19, 24) 11x1
+
+        """)
     }
 }
