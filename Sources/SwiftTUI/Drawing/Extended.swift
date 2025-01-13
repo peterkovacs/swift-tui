@@ -36,6 +36,10 @@ public struct Extended: Equatable, Sendable {
         Extended(data: .positiveInfinity)
     }
 
+    public static var negativeInfinity: Self {
+        Extended(data: .negativeInfinity)
+    }
+
     public var intValue: Int {
         guard case let .number(a) = data else {
             fatalError("Cannot convert infinite number to int")
