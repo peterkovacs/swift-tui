@@ -131,6 +131,7 @@ final class HStackNode: Node, Control {
         let spacing: Extended
         let alignment: VerticalAlignment
         var visited: [(element: Visitor.LayoutElement, frame: Rect)]
+        var calculatedLayout: Rect?
 
         fileprivate init(spacing: Extended, alignment: VerticalAlignment, children: [Node]) {
             self.spacing = spacing
@@ -146,13 +147,14 @@ final class HStackNode: Node, Control {
         }
 
         mutating func layout(rect: Rect) -> Rect {
+            if let calculatedLayout { return calculatedLayout }
             let childrenOrder = visited
                 .indices
                 .sorted {
                     visited[$0].element.node.horizontalFlexibility(height: rect.size.height) < visited[$1].element.node.horizontalFlexibility(height: rect.size.height)
                 }
 
-            var remaining = visited.count
+            var remaining = childrenOrder.count
             var frame: Rect = .init(
                 position: rect.position,
                 size: .init(width: 0, height: rect.size.height)
@@ -183,20 +185,21 @@ final class HStackNode: Node, Control {
             for (element, var childFrame) in visited {
                 childFrame.position.column = column
 
-                if childFrame.size.width > 0 {
-                    column += childFrame.size.width
-                    column += spacing
-                }
-
                 switch alignment {
                 case .top:    childFrame.position.line = rect.minLine
                 case .center: childFrame.position.line = (rect.size.height - childFrame.size.height) / 2
                 case .bottom: childFrame.position.line = (rect.size.height - childFrame.size.height)
                 }
 
-                element.frame( childFrame )
+                childFrame = element.frame( childFrame )
+
+                if childFrame.size.width > 0 {
+                    column += childFrame.size.width
+                    column += spacing
+                }
             }
 
+            calculatedLayout = frame
             return frame
         }
     }
@@ -221,6 +224,7 @@ final class HStackNode: Node, Control {
                 )
             } frame: {
                 self.frame = $0
+                return $0
             } global: {
                 self.global
             }

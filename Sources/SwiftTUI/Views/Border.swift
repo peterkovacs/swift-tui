@@ -132,6 +132,7 @@ final class BorderNode: PaddingNode {
             window[position] = cell
         }
 
+        super.draw(rect: rect, into: &window)
         self.draw(rect: rect) { invalidated, _, frame in
             if edges.contains(.top) {
                 for i in frame.top where invalidated.contains(i) { draw(position: i, char: style.top) }
@@ -160,7 +161,6 @@ final class BorderNode: PaddingNode {
             }
         }
 
-        super.draw(rect: rect, into: &window)
     }
 
     override func draw(rect: Rect, action: (Rect, Control, Rect) -> Void) {

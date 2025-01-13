@@ -96,6 +96,7 @@ final class TextNode: ComposedNode, Control {
         visitor.visit(
             layout: .init(node: self, layout: layout(rect:)) {
                 self.frame = $0
+                return $0
             } global: {
                 self.global
             }

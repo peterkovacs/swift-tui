@@ -150,6 +150,7 @@ final class VStackNode: Node, Control {
         let spacing: Extended
         let alignment: HorizontalAlignment
         var visited: [(element: Visitor.LayoutElement, frame: Rect)]
+        var calculatedLayout: Rect?
 
         fileprivate init(spacing: Extended, alignment: HorizontalAlignment, children: [Node]) {
             self.spacing = spacing
@@ -165,6 +166,8 @@ final class VStackNode: Node, Control {
         }
 
         mutating func layout(rect: Rect) -> Rect {
+            if let calculatedLayout { return calculatedLayout }
+
             let childrenOrder = visited
                 .indices
                 .sorted {
@@ -179,7 +182,6 @@ final class VStackNode: Node, Control {
 
             // First calculate the sizes of each visited control from least flexible -> most flexible.
             for i in childrenOrder {
-                // Calculates *and sets* the frame size based on the `size(proposedSize:)` from the provided size..
                 visited[i].frame = visited[i].element.layout(
                     Rect(
                         position: .zero,
@@ -203,20 +205,21 @@ final class VStackNode: Node, Control {
             for (element, var childFrame) in visited {
                 childFrame.position.line = line
 
-                if childFrame.size.height > 0 {
-                    line += childFrame.size.height
-                    line += spacing
-                }
-
                 switch alignment {
                 case .leading:  childFrame.position.column = 0
                 case .center:   childFrame.position.column = (rect.size.width - childFrame.size.width) / 2
                 case .trailing: childFrame.position.column = (rect.size.width - childFrame.size.width)
                 }
 
-                element.frame(childFrame)
+                childFrame = element.frame(childFrame)
+
+                if childFrame.size.height > 0 {
+                    line += childFrame.size.height
+                    line += spacing
+                }
             }
 
+            calculatedLayout = frame
             return frame
         }
     }
@@ -241,6 +244,7 @@ final class VStackNode: Node, Control {
                 )
             } frame: {
                 self.frame = $0
+                return $0
             } global: {
                 self.global
             }

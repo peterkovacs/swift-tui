@@ -79,6 +79,7 @@ class SpacerNode: ComposedNode, Control {
                 }
             } frame: {
                 self.frame = $0
+                return $0
             } global: {
                 self.global
             }

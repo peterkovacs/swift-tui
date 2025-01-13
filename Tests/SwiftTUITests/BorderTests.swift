@@ -3,6 +3,8 @@ import Testing
 import SnapshotTesting
 
 @MainActor @Suite("Border Tests") struct BorderTests {
+    let record = false
+
     @Test func testBorderAroundHStack() async throws {
         struct MyView: View {
             var body: some View {
@@ -29,7 +31,8 @@ import SnapshotTesting
         """)
         assertSnapshot(
             of: (application.renderer as! TestRenderer).description,
-            as: .lines
+            as: .lines,
+            record: record
         )
     }
 
@@ -118,7 +121,8 @@ import SnapshotTesting
         """)
         assertSnapshot(
             of: (application.renderer as! TestRenderer).description,
-            as: .lines
+            as: .lines,
+            record: record
         )
     }
 
@@ -150,7 +154,8 @@ import SnapshotTesting
         """)
         assertSnapshot(
             of: (application.renderer as! TestRenderer).description,
-            as: .lines
+            as: .lines,
+            record: record
         )
 
         let bluePixels = application.renderer.window.indices.filter {
@@ -188,7 +193,8 @@ import SnapshotTesting
         """)
         assertSnapshot(
             of: (application.renderer as! TestRenderer).description,
-            as: .lines
+            as: .lines,
+            record: record
         )
 
         let bluePixels = application.renderer.window.indices.filter {
@@ -219,7 +225,68 @@ import SnapshotTesting
         """)
         assertSnapshot(
             of: (application.renderer as! TestRenderer).description,
-            as: .lines
+            as: .lines,
+            record: record
+        )
+    }
+
+    @Test func testBorderInHStack() async throws {
+        struct MyView: View {
+            var body: some View {
+                HStack {
+                    Text("Hello")
+                        .border()
+                    Text("World")
+                        .border()
+                }
+            }
+        }
+
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 15x3
+          → ComposedView<MyView>
+            → HStack<TupleView<Pack{Border<Text>, Border<Text>}>> (0, 0) 15x3
+              → TupleView<Pack{Border<Text>, Border<Text>}>
+                → Border:[(0, 0) 7x3]
+                  → Text:string("Hello") (1, 1) 5x1
+                → Border:[(8, 0) 7x3]
+                  → Text:string("World") (9, 1) 5x1
+        
+        """)
+        assertSnapshot(
+            of: (application.renderer as! TestRenderer).description,
+            as: .lines,
+            record: record
+        )
+
+    }
+
+    @Test func testBorderInVStack() async throws {
+        struct MyView: View {
+            var body: some View {
+                Text("Hello")
+                    .border()
+                Text("World")
+                    .border()
+            }
+        }
+
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 7x6
+          → ComposedView<MyView>
+            → TupleView<Pack{Border<Text>, Border<Text>}>
+              → Border:[(0, 0) 7x3]
+                → Text:string("Hello") (1, 1) 5x1
+              → Border:[(0, 3) 7x3]
+                → Text:string("World") (1, 4) 5x1
+        
+        """)
+        assertSnapshot(
+            of: (application.renderer as! TestRenderer).description,
+            as: .lines,
+            record: record
         )
 
     }
