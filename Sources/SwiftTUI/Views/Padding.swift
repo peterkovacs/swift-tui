@@ -29,6 +29,8 @@ struct Padding<Content: View>: View, PrimitiveView {
         node.set(references: self)
         node.size = size
         node.edges = edges
+
+        node.children[0].update(view: content.view)
     }
 }
 

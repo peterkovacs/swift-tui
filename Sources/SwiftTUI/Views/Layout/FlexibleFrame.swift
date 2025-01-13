@@ -46,6 +46,8 @@ struct FlexibleFrame<Content: View>: View, PrimitiveView {
         node.minSize = minSize
         node.maxSize = maxSize
         node.alignment = alignment
+
+        node.children[0].update(view: content.view)
     }
 }
 

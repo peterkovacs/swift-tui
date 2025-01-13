@@ -67,5 +67,17 @@ class ModifierNode: ComposedNode {
             visited.append(layout)
         }
     }
+
+    override func size<T>(visitor: inout T) where T : Visitor.Size {
+        for element in sizeVisitor.visited {
+            visitor.visit(size: element)
+        }
+    }
+
+    override func layout<T>(visitor: inout T) where T : Visitor.Layout {
+        for element in layoutVisitor.visited {
+            visitor.visit(layout: element)
+        }
+    }
 }
 

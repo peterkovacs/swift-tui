@@ -29,11 +29,12 @@ public struct VStack<Content: View>: View, PrimitiveView {
     func update(node: Node) {
         guard let node = node as? VStackNode else { fatalError() }
         node.view = self
-        node.children[0].update(view: content.view)
         node.alignment = alignment
         node.spacing = spacing
         node._sizeVisitor = nil
         node._layoutVisitor = nil
+
+        node.children[0].update(view: content.view)
     }
 }
 

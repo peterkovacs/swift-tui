@@ -22,6 +22,8 @@ struct Background<Content: View>: View, PrimitiveView {
     func update(node: Node) {
         guard let node = node as? BackgroundNode else { fatalError() }
         node.color = color
+
+        node.children[0].update(view: content.view)
     }
 }
 

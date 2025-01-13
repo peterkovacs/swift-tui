@@ -99,6 +99,8 @@ struct Border<Content: View>: View, PrimitiveView {
         node.style = style
         node.edges = edges
         node.color = color ?? foregroundColor
+
+        node.children[0].update(view: content.view)
     }
 }
 
