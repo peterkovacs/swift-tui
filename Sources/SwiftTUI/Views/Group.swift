@@ -7,10 +7,9 @@ public struct Group<Content: View>: View, PrimitiveView {
     }
 
     func build(parent: Node?) -> Node {
-        let node = ModifierNode(
+        let node = Node(
             view: self,
-            parent: parent,
-            content: content
+            parent: parent
         )
 
         node.add(at: 0, node: content.view.build(parent: node))

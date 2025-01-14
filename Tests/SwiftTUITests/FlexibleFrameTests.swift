@@ -271,10 +271,10 @@ import SnapshotTesting
         application.update()
 
         #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 50x50
+        → VStack<MyView> (0, 0) 25x25
           → ComposedView<MyView>
-            → FlexibleFrame:25x25/50x50 [(12, 12) 25x25]
-              → Text:string("Hello World") (19, 24) 11x1
+            → FlexibleFrame:25x25/50x50 [(0, 0) 25x25]
+              → Text:string("Hello World") (7, 12) 11x1
 
         """)
     }

@@ -2,13 +2,7 @@
 ///
 class ModifierNode: ComposedNode {
 
-    override func update(view: any GenericView) {
-        _sizeVisitor = nil
-        _layoutVisitor = nil
-        super.update(view: view)
-    }
-
-    fileprivate var _sizeVisitor: SizeVisitor? = nil
+    var _sizeVisitor: SizeVisitor? = nil
     var sizeVisitor: SizeVisitor {
         guard let _sizeVisitor else {
             let visitor = SizeVisitor(children: children) { $0.size(visitor: &$1) }
@@ -19,7 +13,7 @@ class ModifierNode: ComposedNode {
         return _sizeVisitor
     }
 
-    fileprivate var _layoutVisitor: LayoutVisitor? = nil
+    var _layoutVisitor: LayoutVisitor? = nil
     var layoutVisitor: LayoutVisitor {
         guard let _layoutVisitor else {
             let visitor = LayoutVisitor(children: children) { $0.layout(visitor: &$1) }
@@ -69,15 +63,17 @@ class ModifierNode: ComposedNode {
     }
 
     override func size<T>(visitor: inout T) where T : Visitor.Size {
-        for element in sizeVisitor.visited {
-            visitor.visit(size: element)
-        }
+        super.size(visitor: &visitor)
     }
 
     override func layout<T>(visitor: inout T) where T : Visitor.Layout {
-        for element in layoutVisitor.visited {
-            visitor.visit(layout: element)
-        }
+        super.layout(visitor: &visitor)
+    }
+
+    override func invalidateLayout() {
+        _sizeVisitor = nil
+        _layoutVisitor = nil
+        super.invalidateLayout()
     }
 }
 

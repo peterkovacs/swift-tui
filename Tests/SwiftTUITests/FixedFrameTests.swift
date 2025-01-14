@@ -129,6 +129,118 @@ import SnapshotTesting
             of: (application.renderer as! TestRenderer).description,
             as: .lines,
             named: "\(alignment.horizontalAlignment)-\(alignment.verticalAlignment)",
+            record: true
+        )
+    }
+
+    @Test func testFramedVStackInHStack() async throws {
+        struct MyView: View {
+            var body: some View {
+                HStack {
+                    VStack {
+                        Text("Hello")
+                        Text("World")
+                    }
+                    .frame(width: 20, height: 5)
+
+                    VStack {
+                        Text("Hello")
+                        Text("World")
+                    }
+                    .frame(width: 20, height: 5)
+
+                    VStack {
+                        Text("Hello")
+                        Text("World")
+                    }
+                    .frame(width: 20, height: 5)
+                }
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 62x15
+          → ComposedView<MyView>
+            → VStack<TupleView<Pack{FixedFrame<HStack<TupleView<Pack{Text, Text}>>>, FixedFrame<HStack<TupleView<Pack{Text, Text}>>>, FixedFrame<HStack<TupleView<Pack{Text, Text}>>>}>> (0, 0) 20x15
+              → TupleView<Pack{FixedFrame<HStack<TupleView<Pack{Text, Text}>>>, FixedFrame<HStack<TupleView<Pack{Text, Text}>>>, FixedFrame<HStack<TupleView<Pack{Text, Text}>>>}>
+                → FixedFrame:20x5 [(0, 0) 20x5]
+                  → HStack<TupleView<Pack{Text, Text}>> (4, 2) 11x1
+                    → TupleView<Pack{Text, Text}>
+                      → Text:string("Hello") (4, 2) 5x1
+                      → Text:string("World") (10, 2) 5x1
+                → FixedFrame:20x5 [(21, 0) 20x5]
+                  → HStack<TupleView<Pack{Text, Text}>> (4, 2) 11x1
+                    → TupleView<Pack{Text, Text}>
+                      → Text:string("Hello") (4, 2) 5x1
+                      → Text:string("World") (10, 2) 5x1
+                → FixedFrame:20x5 [(42, 0) 20x5]
+                  → HStack<TupleView<Pack{Text, Text}>> (4, 2) 11x1
+                    → TupleView<Pack{Text, Text}>
+                      → Text:string("Hello") (4, 2) 5x1
+                      → Text:string("World") (10, 2) 5x1
+
+        """)
+        assertSnapshot(
+            of: (application.renderer as! TestRenderer).description,
+            as: .lines,
+            record: record
+        )
+    }
+
+    @Test func testFramedHStackInVStack() async throws {
+        struct MyView: View {
+            var body: some View {
+                VStack {
+                    HStack {
+                        Text("Hello")
+                        Text("World")
+                    }
+                    .frame(width: 20, height: 5)
+
+                    HStack {
+                        Text("Hello")
+                        Text("World")
+                    }
+                    .frame(width: 20, height: 5)
+
+                    HStack {
+                        Text("Hello")
+                        Text("World")
+                    }
+                    .frame(width: 20, height: 5)
+                }
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 20x15
+          → ComposedView<MyView>
+            → VStack<TupleView<Pack{FixedFrame<HStack<TupleView<Pack{Text, Text}>>>, FixedFrame<HStack<TupleView<Pack{Text, Text}>>>, FixedFrame<HStack<TupleView<Pack{Text, Text}>>>}>> (0, 0) 20x15
+              → TupleView<Pack{FixedFrame<HStack<TupleView<Pack{Text, Text}>>>, FixedFrame<HStack<TupleView<Pack{Text, Text}>>>, FixedFrame<HStack<TupleView<Pack{Text, Text}>>>}>
+                → FixedFrame:20x5 [(0, 0) 20x5]
+                  → HStack<TupleView<Pack{Text, Text}>> (4, 2) 11x1
+                    → TupleView<Pack{Text, Text}>
+                      → Text:string("Hello") (4, 2) 5x1
+                      → Text:string("World") (10, 2) 5x1
+                → FixedFrame:20x5 [(0, 5) 20x5]
+                  → HStack<TupleView<Pack{Text, Text}>> (4, 7) 11x1
+                    → TupleView<Pack{Text, Text}>
+                      → Text:string("Hello") (4, 7) 5x1
+                      → Text:string("World") (10, 7) 5x1
+                → FixedFrame:20x5 [(0, 10) 20x5]
+                  → HStack<TupleView<Pack{Text, Text}>> (4, 12) 11x1
+                    → TupleView<Pack{Text, Text}>
+                      → Text:string("Hello") (4, 12) 5x1
+                      → Text:string("World") (10, 12) 5x1
+
+        """)
+        assertSnapshot(
+            of: (application.renderer as! TestRenderer).description,
+            as: .lines,
             record: record
         )
     }
@@ -209,10 +321,10 @@ import SnapshotTesting
         application.update()
 
         #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 50x50
+        → VStack<MyView> (0, 0) 25x25
           → ComposedView<MyView>
-            → FixedFrame:25x25 [(12, 12) 25x25]
-              → Text:string("Hello World") (19, 24) 11x1
+            → FixedFrame:25x25 [(0, 0) 25x25]
+              → Text:string("Hello World") (7, 12) 11x1
 
         """)
     }

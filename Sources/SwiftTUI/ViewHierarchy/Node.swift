@@ -46,11 +46,17 @@ internal class Node {
         application?.invalidate(node: self)
     }
 
+    func invalidateLayout() {
+        for child in children {
+            child.invalidateLayout()
+        }
+    }
+
     /// Update this node with a given view.
     func update(view: any GenericView) {
+        self._global = nil
         view.update(node: self)
         self.view = view
-        self._global = nil
     }
 
     /// Add a child Node to the hierarchy.

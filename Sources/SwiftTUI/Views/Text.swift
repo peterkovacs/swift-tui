@@ -94,11 +94,15 @@ final class TextNode: ComposedNode, Control {
 
     override func layout<T>(visitor: inout T) where T : Visitor.Layout {
         visitor.visit(
-            layout: .init(node: self, layout: layout(rect:)) {
-                self.frame = $0
-                return $0
-            } global: {
-                self.global
+            layout: .init(node: self) { [weak self] rect in
+                guard let self else { return .zero }
+                return layout(rect: rect)
+            } frame: { [weak self] rect in
+                guard let self else { return .zero }
+                frame = rect
+                return rect
+            } global: { [weak self] in
+                self?.global ?? .zero
             }
         )
     }

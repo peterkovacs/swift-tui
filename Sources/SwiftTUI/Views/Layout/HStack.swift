@@ -31,8 +31,6 @@ public struct HStack<Content: View>: View, PrimitiveView {
         node.view = self
         node.alignment = alignment
         node.spacing = spacing
-        node._sizeVisitor = nil
-        node._layoutVisitor = nil
 
         node.children[0].update(view: content.view)
     }
@@ -223,11 +221,11 @@ final class HStackNode: Node, Control {
                         )
                     )
                 )
-            } frame: {
-                self.frame = $0
-                return $0
-            } global: {
-                self.global
+            } frame: { [weak self] rect in
+                self?.frame = rect
+                return rect
+            } global: { [weak self] in
+                self?.global ?? .zero
             }
         )
     }
@@ -247,5 +245,11 @@ final class HStackNode: Node, Control {
 
     func size(proposedSize: Size) -> Size {
         self.sizeVisitor.size(proposedSize: proposedSize)
+    }
+
+    override func invalidateLayout() {
+        _sizeVisitor = nil
+        _layoutVisitor = nil
+        super.invalidateLayout()
     }
 }
