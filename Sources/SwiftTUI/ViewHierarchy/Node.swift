@@ -96,7 +96,7 @@ internal class Node {
         return frame
     }
 
-    func draw(rect: Rect, into window: inout CellGrid<Cell?>) {
+    func draw(rect: Rect, into window: inout Window<Cell?>) {
         guard let rect = global.intersection(rect) else { return }
         for child in children {
             child.draw(rect: rect, into: &window)

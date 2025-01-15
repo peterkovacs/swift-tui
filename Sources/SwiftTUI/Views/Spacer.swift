@@ -41,7 +41,8 @@ class SpacerNode: ComposedNode, Control {
 
     override func size<T>(visitor: inout T) where T : Visitor.Size {
         visitor.visit(
-            size: .init(node: self) { [self] proposedSize in
+            size: .init(node: self) { [weak self] proposedSize in
+                guard let self else { return .zero }
                 switch layoutAxis {
                 case .horizontal:
                     return .init(width: proposedSize.width < minLength ? minLength : proposedSize.width, height: 0)
@@ -54,10 +55,11 @@ class SpacerNode: ComposedNode, Control {
 
     override func layout<T>(visitor: inout T) where T : Visitor.Layout {
         visitor.visit(
-            layout: .init(node: self) { [self] rect in
+            layout: .init(node: self) { [weak self] rect in
+                guard let self else { return .zero }
                 switch layoutAxis {
                 case .horizontal:
-                    self.layout(
+                    return self.layout(
                         rect: .init(
                             position: rect.position,
                             size: .init(
@@ -67,7 +69,7 @@ class SpacerNode: ComposedNode, Control {
                         )
                     )
                 case .vertical:
-                    self.layout(
+                    return self.layout(
                         rect: .init(
                             position: rect.position,
                             size: .init(
@@ -77,11 +79,12 @@ class SpacerNode: ComposedNode, Control {
                         )
                     )
                 }
-            } frame: {
-                self.frame = $0
-                return $0
-            } global: {
-                self.global
+
+            } frame: { [weak self] rect in
+                self?.frame = rect
+                return rect
+            } global: { [weak self] in
+                self?.global ?? .zero
             }
         )
     }

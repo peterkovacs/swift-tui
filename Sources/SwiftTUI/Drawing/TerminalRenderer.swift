@@ -8,7 +8,7 @@ class TerminalRenderer: Renderer {
     /// drawing is currently still slow, as it involves moving the cursor
     /// position and printing a character there.
     /// This cache stores the screen content to see if printing is necessary.
-    var window: CellGrid<Cell?>
+    var window: Window<Cell?>
 
     /// Union of all frames that need to be re-drawn based on the most recent update.
     var invalidated: Rect?
@@ -76,7 +76,7 @@ class TerminalRenderer: Renderer {
 
     init(fileHandle: FileHandle = .standardOutput) {
         self.fileHandle = fileHandle
-        self.window = CellGrid<Cell?>(
+        self.window = Window<Cell?>(
             repeating: nil,
             size: .zero
         )
@@ -203,7 +203,7 @@ class TerminalRenderer: Renderer {
         }
 
         write(EscapeSequence.clearScreen)
-        window = CellGrid<Cell?>(
+        window = Window<Cell?>(
             repeating: nil,
             size: .init(
                 width: Extended(Int(size.ws_col)),

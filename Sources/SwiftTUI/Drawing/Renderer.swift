@@ -1,7 +1,7 @@
 @MainActor
 protocol Renderer: AnyObject {
     var application: Application? { get set }
-    var window: CellGrid<Cell?> { get set }
+    var window: Window<Cell?> { get set }
     var invalidated: Rect? { get set }
 
     func setSize()
@@ -36,7 +36,7 @@ extension Renderer {
     /// Draw a specific area, or the entire layer if the area is nil.
     func draw(rect: Rect? = nil) {
         guard let root = application?.node else { return }
-        var newWindow: CellGrid<Cell?>
+        var newWindow: Window<Cell?>
 
         if let rect {
             newWindow = window

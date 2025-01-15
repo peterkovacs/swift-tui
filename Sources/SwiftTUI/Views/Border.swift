@@ -123,7 +123,7 @@ final class BorderNode: PaddingNode {
         super.init(view: view, parent: parent, content: content, size: 1, edges: edges)
     }
 
-    override func draw(rect: Rect, into window: inout CellGrid<Cell?>) {
+    override func draw(rect: Rect, into window: inout Window<Cell?>) {
         // We're (potentially) drawing outside of the given `rect` to make
         // the code identifying the border pixels a little simpler.
 

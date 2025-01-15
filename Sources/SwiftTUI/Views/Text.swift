@@ -129,21 +129,20 @@ final class TextNode: ComposedNode, Control {
         }
     }
 
-    override func draw(rect: Rect, into window: inout CellGrid<Cell?>) {
+    override func draw(rect: Rect, into window: inout Window<Cell?>) {
         guard let rect = global.intersection(rect) else { return }
 
         switch text {
         case .string(let text):
             for (position, char) in zip(rect.indices, text) {
-                var result = window[position, default: .init(char: char)]
-                result.char = char
-                result.attributes.bold = bold
-                result.attributes.italic = italic
-                result.attributes.underline = underline
-                result.attributes.strikethrough = strikethrough
-                result.foregroundColor = foregroundColor
-                
-                window[position] = result
+                window.write(at: position, default: .init(char: char)) {
+                    $0.char = char
+                    $0.attributes.bold = bold
+                    $0.attributes.italic = italic
+                    $0.attributes.underline = underline
+                    $0.attributes.strikethrough = strikethrough
+                    $0.foregroundColor = foregroundColor
+                }
             }
 
         case .attributed(let text):
@@ -156,17 +155,17 @@ final class TextNode: ComposedNode, Control {
 
             for (position, bold, italic, underline, strikethrough, inverted, char) in characters {
                 guard let position else { break }
-                var result = window[position, default: .init(char: char)]
-                result.char = char
-
-                result.attributes.bold = bold ?? self.bold
-                result.attributes.italic = italic ?? self.italic
-                result.attributes.underline = underline ?? self.underline
-                result.attributes.strikethrough = strikethrough ?? self.strikethrough
-
-                if let value = inverted { result.attributes.inverted = value }
-
-                window[position] = result
+                window.write(at: position, default: .init(char: char)) {
+                    $0.char = char
+                    $0.attributes.bold = bold ?? self.bold
+                    $0.attributes.italic = italic ?? self.italic
+                    $0.attributes.underline = underline ?? self.underline
+                    $0.attributes.strikethrough = strikethrough ?? self.strikethrough
+                    if let inverted {
+                        $0.attributes.inverted = inverted
+                    }
+                    $0.foregroundColor = foregroundColor
+                }
             }
         }
     }

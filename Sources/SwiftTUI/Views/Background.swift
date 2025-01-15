@@ -41,10 +41,9 @@ final class BackgroundNode: Node {
 
     override func draw(
         rect: Rect,
-        into window: inout CellGrid<Cell?>
+        into window: inout Window<Cell?>
     ) {
         draw(rect: rect) { invalidated, node, _ in
-
             for i in invalidated.indices {
                 window[i, default: .init(char: " ")].backgroundColor = color
             }

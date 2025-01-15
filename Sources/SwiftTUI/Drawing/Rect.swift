@@ -79,7 +79,7 @@ extension Rect: CustomStringConvertible {
 
 extension Rect {
     var indices: some Collection<Position> {
-        CellGrid<Cell>.CoordinateIterator(size: size, coordinate: .zero).lazy.map { $0 + position }
+        Window<Cell>.CoordinateIterator(size: size, coordinate: .zero).lazy.map { $0 + position }
     }
 
     var top: some Collection<Position> {

@@ -9,7 +9,7 @@ import Foundation
 @testable import SwiftTUI
 
 class TestRenderer: Renderer {
-    var window: CellGrid<Cell?>
+    var window: Window<Cell?>
     var size: Size = .zero
     var invalidated: Rect?
     weak var application: Application?

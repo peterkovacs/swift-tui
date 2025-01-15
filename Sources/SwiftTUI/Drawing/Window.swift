@@ -1,4 +1,4 @@
-struct CellGrid<Element> {
+struct Window<Element> {
     var elements: [Element]
     var size: Size
 
@@ -55,9 +55,17 @@ struct CellGrid<Element> {
             yield &elements[p]!
         }
     }
+
+    mutating func write<T>(at coord: Position, default: T,  _ action: (inout T) -> Void) where Optional<T> == Element {
+        let p = (coord.line * size.width + coord.column).intValue
+        var cell = elements[p] ?? `default`
+        action(&cell)
+        elements[p] = cell
+    }
+
 }
 
-extension CellGrid: Sequence {
+extension Window: Sequence {
     struct CoordinateIterator: Sequence, IteratorProtocol {
         let size: Size
         var coordinate: Position
@@ -97,7 +105,7 @@ extension CellGrid: Sequence {
     }
 
     struct Iterator: IteratorProtocol {
-        let grid: CellGrid
+        let grid: Window
         var iterator: CoordinateIterator
 
         mutating func next() -> Element? {
@@ -114,26 +122,26 @@ extension CellGrid: Sequence {
         return CoordinateIterator(size: size, coordinate: .zero)
     }
 
-    func map<U>(_ f: (Element) throws -> U) rethrows -> CellGrid<U> {
-        return try CellGrid<U>(elements.map(f), size: size)
+    func map<U>(_ f: (Element) throws -> U) rethrows -> Window<U> {
+        return try Window<U>(elements.map(f), size: size)
     }
 
-    func flatMap<U>(_ f: (Element) throws -> U?) rethrows -> CellGrid<U>? {
+    func flatMap<U>(_ f: (Element) throws -> U?) rethrows -> Window<U>? {
         let elements = try self.elements.compactMap(f)
         guard elements.count == self.elements.count else { return nil }
-        return CellGrid<U>(elements, size: size)
+        return Window<U>(elements, size: size)
     }
 }
 
 
-extension CellGrid: Equatable where Element: Equatable {
+extension Window: Equatable where Element: Equatable {
     static func ==(lhs: Self, rhs: Self) -> Bool {
         guard lhs.size == rhs.size else { return false }
         return lhs.elementsEqual(rhs)
     }
 }
 
-extension CellGrid: CustomStringConvertible where Element: CustomStringConvertible {
+extension Window: CustomStringConvertible where Element: CustomStringConvertible {
     var description: String {
         var result = ""
 
@@ -149,7 +157,7 @@ extension CellGrid: CustomStringConvertible where Element: CustomStringConvertib
     }
 }
 
-extension CellGrid: Hashable where Element: Hashable {
+extension Window: Hashable where Element: Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(
             indices.map { self[$0] }
@@ -157,4 +165,4 @@ extension CellGrid: Hashable where Element: Hashable {
     }
 }
 
-extension CellGrid: Sendable where Element: Sendable {}
+extension Window: Sendable where Element: Sendable {}
