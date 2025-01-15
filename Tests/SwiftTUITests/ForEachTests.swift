@@ -190,19 +190,19 @@ import Testing
                 let monthOffset = calendar.component(.weekday, from: DateComponents(calendar: calendar, year: 2025, month: 1, day: 1).date!)
                 let day = index - monthOffset + 1
                 let date = DateComponents(calendar: calendar, year: 2025, month: 1, day: day).date!
-
+                
                 if index < monthOffset {
                     Text("  ")
-//                         .frame(width: 2, height: 1, alignment: .trailing)
+                        .frame(width: 2, height: 1, alignment: .trailing)
                 } else if calendar.component(.month, from: date) == 1 {
                     Text(String(format: "%2d", day))
-//                        .frame(width: 2, height: 1, alignment: .trailing)
+                        .frame(width: 2, height: 1, alignment: .trailing)
                         .underline(model.data[calendar.component(.weekday, from: date)] % 2 == 0)
                         .bold(model.data[calendar.component(.weekday, from: date)] % 2 == 0)
                         .foregroundColor( model.data[calendar.component(.weekday, from: date)] % 2 != 0 ? .gray : .default)
                 } else {
                     Text("  ")
-//                         .frame(width: 2, height: 1, alignment: .trailing)
+                        .frame(width: 2, height: 1, alignment: .trailing)
                 }
             }
 
@@ -222,28 +222,28 @@ import Testing
                             calendar(index: index)
                         }
                     }
-//                    .frame(width: 20, height: 1)
+                    .frame(width: 20, height: 1)
 
                     HStack(spacing: 1) {
                         ForEach(8...14, id: \.self) { index in
                             calendar(index: index)
                         }
                     }
-//                    .frame(width: 20, height: 1)
+                    .frame(width: 20, height: 1)
 
                     HStack(spacing: 1) {
                         ForEach(15...21, id: \.self) { index in
                             calendar(index: index)
                         }
                     }
-//                    .frame(width: 20, height: 1)
+                    .frame(width: 20, height: 1)
 
                     HStack(spacing: 1) {
                         ForEach(22...28, id: \.self) { index in
                             calendar(index: index)
                         }
                     }
-//                    .frame(width: 20, height: 1)
+                    .frame(width: 20, height: 1)
 
                     HStack(spacing: 1) {
                         ForEach(29...35, id: \.self) { index in
@@ -252,15 +252,13 @@ import Testing
                     }
                     .frame(width: 20, height: 1)
                 }
-//                .frame(width: 20, height: 6)
+                .frame(width: 20, height: 6)
             }
         }
 
         let model = Model(data: [0, 1, 2, 3, 4, 5, 6, 7 ])
 
         let (application, _) = try drawView(CalendarView(model: model, calendar: .current))
-
-        print(application.node.frameDescription)
 
         assertSnapshot(
             of: (application.renderer as! TestRenderer).description,

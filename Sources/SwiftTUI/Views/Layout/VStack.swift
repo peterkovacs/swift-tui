@@ -149,7 +149,7 @@ final class VStackNode: Node, Control {
         let spacing: Extended
         let alignment: HorizontalAlignment
         var visited: [(element: Visitor.LayoutElement, frame: Rect)]
-        var calculatedLayout: Rect?
+        var calculatedLayout: (Rect, Rect)?
 
         fileprivate init(spacing: Extended, alignment: HorizontalAlignment, children: [Node]) {
             self.spacing = spacing
@@ -165,7 +165,7 @@ final class VStackNode: Node, Control {
         }
 
         mutating func layout(rect: Rect) -> Rect {
-            if let calculatedLayout { return calculatedLayout }
+            if let (cachedRect, calculatedLayout) = calculatedLayout, cachedRect == rect { return calculatedLayout }
 
             let childrenOrder = visited
                 .indices
@@ -183,6 +183,7 @@ final class VStackNode: Node, Control {
             for i in childrenOrder {
                 visited[i].frame = visited[i].element.layout(
                     Rect(
+                        // Children are laid out relative to _this_ frame. Positions should be based on 0.
                         position: .zero,
                         size: Size(
                             width: rect.size.width,
@@ -218,7 +219,7 @@ final class VStackNode: Node, Control {
                 }
             }
 
-            calculatedLayout = frame
+            calculatedLayout = (rect, frame)
             return frame
         }
     }

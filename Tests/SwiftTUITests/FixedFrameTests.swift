@@ -129,7 +129,7 @@ import SnapshotTesting
             of: (application.renderer as! TestRenderer).description,
             as: .lines,
             named: "\(alignment.horizontalAlignment)-\(alignment.verticalAlignment)",
-            record: true
+            record: record
         )
     }
 
@@ -161,25 +161,25 @@ import SnapshotTesting
         let (application, _) = try drawView(MyView())
 
         #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 62x15
+        → VStack<MyView> (0, 0) 62x5
           → ComposedView<MyView>
-            → VStack<TupleView<Pack{FixedFrame<HStack<TupleView<Pack{Text, Text}>>>, FixedFrame<HStack<TupleView<Pack{Text, Text}>>>, FixedFrame<HStack<TupleView<Pack{Text, Text}>>>}>> (0, 0) 20x15
-              → TupleView<Pack{FixedFrame<HStack<TupleView<Pack{Text, Text}>>>, FixedFrame<HStack<TupleView<Pack{Text, Text}>>>, FixedFrame<HStack<TupleView<Pack{Text, Text}>>>}>
+            → HStack<TupleView<Pack{FixedFrame<VStack<TupleView<Pack{Text, Text}>>>, FixedFrame<VStack<TupleView<Pack{Text, Text}>>>, FixedFrame<VStack<TupleView<Pack{Text, Text}>>>}>> (0, 0) 62x5
+              → TupleView<Pack{FixedFrame<VStack<TupleView<Pack{Text, Text}>>>, FixedFrame<VStack<TupleView<Pack{Text, Text}>>>, FixedFrame<VStack<TupleView<Pack{Text, Text}>>>}>
                 → FixedFrame:20x5 [(0, 0) 20x5]
-                  → HStack<TupleView<Pack{Text, Text}>> (4, 2) 11x1
+                  → VStack<TupleView<Pack{Text, Text}>> (7, 1) 5x2
                     → TupleView<Pack{Text, Text}>
-                      → Text:string("Hello") (4, 2) 5x1
-                      → Text:string("World") (10, 2) 5x1
+                      → Text:string("Hello") (7, 1) 5x1
+                      → Text:string("World") (7, 2) 5x1
                 → FixedFrame:20x5 [(21, 0) 20x5]
-                  → HStack<TupleView<Pack{Text, Text}>> (4, 2) 11x1
+                  → VStack<TupleView<Pack{Text, Text}>> (28, 1) 5x2
                     → TupleView<Pack{Text, Text}>
-                      → Text:string("Hello") (4, 2) 5x1
-                      → Text:string("World") (10, 2) 5x1
+                      → Text:string("Hello") (28, 1) 5x1
+                      → Text:string("World") (28, 2) 5x1
                 → FixedFrame:20x5 [(42, 0) 20x5]
-                  → HStack<TupleView<Pack{Text, Text}>> (4, 2) 11x1
+                  → VStack<TupleView<Pack{Text, Text}>> (49, 1) 5x2
                     → TupleView<Pack{Text, Text}>
-                      → Text:string("Hello") (4, 2) 5x1
-                      → Text:string("World") (10, 2) 5x1
+                      → Text:string("Hello") (49, 1) 5x1
+                      → Text:string("World") (49, 2) 5x1
 
         """)
         assertSnapshot(

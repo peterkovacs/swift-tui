@@ -130,7 +130,7 @@ final class HStackNode: Node, Control {
         let spacing: Extended
         let alignment: VerticalAlignment
         var visited: [(element: Visitor.LayoutElement, frame: Rect)]
-        var calculatedLayout: Rect?
+        var calculatedLayout: (Rect, Rect)?
 
         fileprivate init(spacing: Extended, alignment: VerticalAlignment, children: [Node]) {
             self.spacing = spacing
@@ -146,7 +146,8 @@ final class HStackNode: Node, Control {
         }
 
         mutating func layout(rect: Rect) -> Rect {
-            if let calculatedLayout { return calculatedLayout }
+            if let (cachedRect, calculatedLayout) = calculatedLayout, cachedRect == rect { return calculatedLayout }
+
             let childrenOrder = visited
                 .indices
                 .sorted {
@@ -198,7 +199,7 @@ final class HStackNode: Node, Control {
                 }
             }
 
-            calculatedLayout = frame
+            calculatedLayout = (rect, frame)
             return frame
         }
     }

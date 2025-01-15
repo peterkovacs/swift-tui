@@ -120,16 +120,17 @@ final class FlexibleFrameNode: ModifierNode {
                 layout: .init(
                     node: element.node
                 ) { (rect: Rect) in
-                    let childFrame = element.layout(rect)
-                    return rect.clamped(to: childFrame)
+                    return rect.clamped(to: element.layout(rect))
                 } frame: { [weak self] rect in
                     guard let self else { return .zero }
-                    // TODO: Need a way to cache the value of `element.layout` from the previous call
-                    let childFrame = element.layout(rect)
+
+                    let childFrame = element.layout(.init(position: .zero, size: rect.size))
                     let alignment = aligned(rect: childFrame)
 
                     return .init(
-                        position: element.frame(childFrame + alignment).position - alignment,
+                        position: element.frame(
+                            childFrame + rect.position + alignment
+                        ).position - alignment,
                         size: size(child: childFrame.size)
                     )
                 } global: { [weak self] in
