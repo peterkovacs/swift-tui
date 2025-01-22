@@ -148,6 +148,8 @@ class DividerNode: ComposedNode, Control {
 
     func size(proposedSize: Size) -> Size {
         switch layoutAxis {
+        case .none:
+            return .zero
         case .horizontal:
             return .init(width: 1, height: proposedSize.height)
         case .vertical:
@@ -157,6 +159,8 @@ class DividerNode: ComposedNode, Control {
 
     override func layout(rect: Rect) -> Rect {
         switch layoutAxis {
+        case .none:
+            super.layout(rect: .zero)
         case .horizontal:
             super.layout(
                 rect: .init(
@@ -199,6 +203,7 @@ class DividerNode: ComposedNode, Control {
     override func draw(rect: Rect, into window: inout Window<Cell?>) {
         guard let rect = rect.intersection(global) else { return }
         switch layoutAxis {
+        case .none: break
         case .horizontal:
             for i in rect.indices {
                 window.write(at: i, default: .init(char: dividerStyle.vertical)) {

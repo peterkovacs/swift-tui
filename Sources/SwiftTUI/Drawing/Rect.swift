@@ -70,7 +70,6 @@ struct Rect: Equatable {
             size: size.clamped(to: bounds.size)
         )
     }
-
 }
 
 extension Rect: CustomStringConvertible {

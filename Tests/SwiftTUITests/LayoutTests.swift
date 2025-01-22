@@ -2,7 +2,7 @@
 import Testing
 import SnapshotTesting
 
-@Suite("Size Tests") @MainActor struct SizeTests {
+@Suite("Layout Tests") @MainActor struct LayoutTests {
     let record = false
 
     @Test func sizeOfSingleText() async throws {
@@ -12,7 +12,7 @@ import SnapshotTesting
             }
         }
 
-        let (application, _) = try drawView(MyView())
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
 
         do {
             let size = (application.node as? Control)?.size(proposedSize: .zero)
@@ -33,7 +33,7 @@ import SnapshotTesting
             }
         }
 
-        let (application, _) = try drawView(MyView())
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
         let size = (application.node as? Control)?.size(proposedSize: .zero)
 
         #expect(size == .init(width: 5, height: 2))
@@ -48,7 +48,7 @@ import SnapshotTesting
             }
         }
 
-        let (application, _) = try drawView(MyView())
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
 
         do {
             let size = (application.node as? Control)?.size(proposedSize: .zero)
@@ -72,7 +72,7 @@ import SnapshotTesting
             }
         }
 
-        let (application, _) = try drawView(MyView())
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
         let size = (application.node as? Control)?.size(proposedSize: .zero)
 
         #expect(size == .init(width: 5, height: 2))
@@ -88,7 +88,7 @@ import SnapshotTesting
             }
         }
 
-        let (application, _) = try drawView(MyView())
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
         let size = (application.node as? Control)?.size(proposedSize: .zero)
 
         #expect(size == .init(width: 11, height: 1))
@@ -105,7 +105,7 @@ import SnapshotTesting
             }
         }
 
-        let (application, _) = try drawView(MyView())
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
         do {
             let size = (application.node as? Control)?.size(proposedSize: .zero)
             #expect(size == .init(width: 11, height: 1))
@@ -117,7 +117,6 @@ import SnapshotTesting
 
         }
     }
-
 
     @Test func sizeOfHStackContainingVStack() async throws {
         struct MyView: View {
@@ -136,7 +135,7 @@ import SnapshotTesting
             }
         }
 
-        let (application, _) = try drawView(MyView())
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
         let size = (application.node as? Control)?.size(proposedSize: .zero)
 
         #expect(size == .init(width: 16, height: 2))
@@ -163,7 +162,7 @@ import SnapshotTesting
             }
         }
 
-        let (application, _) = try drawView(MyView())
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
         do {
             let size = (application.node as? Control)?.size(proposedSize: .zero)
             #expect(size == .init(width: 16, height: 2))
@@ -174,6 +173,23 @@ import SnapshotTesting
             #expect(size == .init(width: 100, height: 100))
         }
     }
+
+    @Test func sizeOfZStack() async throws {
+        struct MyView: View {
+            var body: some View {
+                ZStack {
+                    Text("Hello")
+                    Text("World")
+                }
+            }
+        }
+
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        let size = (application.node as? Control)?.size(proposedSize: .zero)
+
+        #expect(size == .init(width: 5, height: 1))
+    }
+
 
     @Test func layoutOfVStackLeading() async throws {
         struct MyView: View {
@@ -186,9 +202,19 @@ import SnapshotTesting
             }
         }
 
-        let (application, _) = try drawView(MyView())
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 10x3
+          → ComposedView<MyView>
+            → VStack<TupleView<Pack{Text, Text, Text}>> (0, 0) 10x3
+              → TupleView<Pack{Text, Text, Text}>
+                → Text:string("1234567890") (0, 0) 10x1
+                → Text:string("Hello") (0, 1) 5x1
+                → Text:string("World") (0, 2) 5x1
+
+        """)
         assertSnapshot(
-            of: application.node.frameDescription,
+            of: (application.renderer as! TestRenderer).description,
             as: .lines,
             record: record
         )
@@ -206,9 +232,20 @@ import SnapshotTesting
             }
         }
 
-        let (application, _) = try drawView(MyView())
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 10x20
+          → ComposedView<MyView>
+            → VStack<TupleView<Pack{Text, Text, Spacer, Text}>> (0, 0) 10x20
+              → TupleView<Pack{Text, Text, Spacer, Text}>
+                → Text:string("1234567890") (0, 0) 10x1
+                → Text:string("Hello") (0, 1) 5x1
+                → Spacer (0, 2) 10x17
+                → Text:string("World") (0, 19) 5x1
+
+        """)
         assertSnapshot(
-            of: application.node.frameDescription,
+            of: (application.renderer as! TestRenderer).description,
             as: .lines,
             record: record
         )
@@ -225,9 +262,19 @@ import SnapshotTesting
             }
         }
 
-        let (application, _) = try drawView(MyView())
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 10x3
+          → ComposedView<MyView>
+            → VStack<TupleView<Pack{Text, Text, Text}>> (0, 0) 10x3
+              → TupleView<Pack{Text, Text, Text}>
+                → Text:string("1234567890") (0, 0) 10x1
+                → Text:string("Hello") (2, 1) 5x1
+                → Text:string("World") (2, 2) 5x1
+        
+        """)
         assertSnapshot(
-            of: application.node.frameDescription,
+            of: (application.renderer as! TestRenderer).description,
             as: .lines,
             record: record
         )
@@ -245,9 +292,20 @@ import SnapshotTesting
             }
         }
 
-        let (application, _) = try drawView(MyView())
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 10x20
+          → ComposedView<MyView>
+            → VStack<TupleView<Pack{Text, Text, Spacer, Text}>> (0, 0) 10x20
+              → TupleView<Pack{Text, Text, Spacer, Text}>
+                → Text:string("1234567890") (0, 0) 10x1
+                → Text:string("Hello") (2, 1) 5x1
+                → Spacer (0, 2) 10x17
+                → Text:string("World") (2, 19) 5x1
+        
+        """)
         assertSnapshot(
-            of: application.node.frameDescription,
+            of: (application.renderer as! TestRenderer).description,
             as: .lines,
             record: record
         )
@@ -264,9 +322,19 @@ import SnapshotTesting
             }
         }
 
-        let (application, _) = try drawView(MyView())
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 10x3
+          → ComposedView<MyView>
+            → VStack<TupleView<Pack{Text, Text, Text}>> (0, 0) 10x3
+              → TupleView<Pack{Text, Text, Text}>
+                → Text:string("1234567890") (0, 0) 10x1
+                → Text:string("Hello") (5, 1) 5x1
+                → Text:string("World") (5, 2) 5x1
+        
+        """)
         assertSnapshot(
-            of: application.node.frameDescription,
+            of: (application.renderer as! TestRenderer).description,
             as: .lines,
             record: record
         )
@@ -284,9 +352,20 @@ import SnapshotTesting
             }
         }
 
-        let (application, _) = try drawView(MyView())
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 10x20
+          → ComposedView<MyView>
+            → VStack<TupleView<Pack{Text, Text, Spacer, Text}>> (0, 0) 10x20
+              → TupleView<Pack{Text, Text, Spacer, Text}>
+                → Text:string("1234567890") (0, 0) 10x1
+                → Text:string("Hello") (5, 1) 5x1
+                → Spacer (0, 2) 10x17
+                → Text:string("World") (5, 19) 5x1
+        
+        """)
         assertSnapshot(
-            of: application.node.frameDescription,
+            of: (application.renderer as! TestRenderer).description,
             as: .lines,
             record: record
         )
@@ -307,9 +386,22 @@ import SnapshotTesting
             }
         }
 
-        let (application, _) = try drawView(MyView())
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 17x2
+          → ComposedView<MyView>
+            → HStack<TupleView<Pack{VStack<TupleView<Pack{Text, Text}>>, Text, Text}>> (0, 0) 17x2
+              → TupleView<Pack{VStack<TupleView<Pack{Text, Text}>>, Text, Text}>
+                → VStack<TupleView<Pack{Text, Text}>> (0, 0) 5x2
+                  → TupleView<Pack{Text, Text}>
+                    → Text:string("Hello") (0, 0) 5x1
+                    → Text:string("World") (0, 1) 5x1
+                → Text:string("Hello") (6, 0) 5x1
+                → Text:string("World") (12, 0) 5x1
+        
+        """)
         assertSnapshot(
-            of: application.node.frameDescription,
+            of: (application.renderer as! TestRenderer).description,
             as: .lines,
             record: record
         )
@@ -331,9 +423,23 @@ import SnapshotTesting
             }
         }
 
-        let (application, _) = try drawView(MyView())
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 50x2
+          → ComposedView<MyView>
+            → HStack<TupleView<Pack{VStack<TupleView<Pack{Text, Text}>>, Text, Spacer, Text}>> (0, 0) 50x2
+              → TupleView<Pack{VStack<TupleView<Pack{Text, Text}>>, Text, Spacer, Text}>
+                → VStack<TupleView<Pack{Text, Text}>> (0, 0) 5x2
+                  → TupleView<Pack{Text, Text}>
+                    → Text:string("Hello") (0, 0) 5x1
+                    → Text:string("World") (0, 1) 5x1
+                → Text:string("Hello") (6, 0) 5x1
+                → Spacer (12, 0) 32x2
+                → Text:string("World") (45, 0) 5x1
+        
+        """)
         assertSnapshot(
-            of: application.node.frameDescription,
+            of: (application.renderer as! TestRenderer).description,
             as: .lines,
             record: record
         )
@@ -355,9 +461,23 @@ import SnapshotTesting
             }
         }
 
-        let (application, _) = try drawView(MyView())
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 17x20
+          → ComposedView<MyView>
+            → HStack<TupleView<Pack{VStack<TupleView<Pack{Text, Spacer, Text}>>, Text, Text}>> (0, 0) 17x20
+              → TupleView<Pack{VStack<TupleView<Pack{Text, Spacer, Text}>>, Text, Text}>
+                → VStack<TupleView<Pack{Text, Spacer, Text}>> (0, 0) 5x20
+                  → TupleView<Pack{Text, Spacer, Text}>
+                    → Text:string("Hello") (0, 0) 5x1
+                    → Spacer (0, 1) 5x18
+                    → Text:string("World") (0, 19) 5x1
+                → Text:string("Hello") (6, 9) 5x1
+                → Text:string("World") (12, 9) 5x1
+        
+        """)
         assertSnapshot(
-            of: application.node.frameDescription,
+            of: (application.renderer as! TestRenderer).description,
             as: .lines,
             record: record
         )
@@ -380,9 +500,24 @@ import SnapshotTesting
             }
         }
 
-        let (application, _) = try drawView(MyView())
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 50x20
+          → ComposedView<MyView>
+            → HStack<TupleView<Pack{VStack<TupleView<Pack{Text, Spacer, Text}>>, Text, Spacer, Text}>> (0, 0) 50x20
+              → TupleView<Pack{VStack<TupleView<Pack{Text, Spacer, Text}>>, Text, Spacer, Text}>
+                → VStack<TupleView<Pack{Text, Spacer, Text}>> (0, 0) 5x20
+                  → TupleView<Pack{Text, Spacer, Text}>
+                    → Text:string("Hello") (0, 0) 5x1
+                    → Spacer (0, 1) 5x18
+                    → Text:string("World") (0, 19) 5x1
+                → Text:string("Hello") (6, 9) 5x1
+                → Spacer (12, 0) 32x20
+                → Text:string("World") (45, 9) 5x1
+        
+        """)
         assertSnapshot(
-            of: application.node.frameDescription,
+            of: (application.renderer as! TestRenderer).description,
             as: .lines,
             record: record
         )
@@ -404,9 +539,23 @@ import SnapshotTesting
             }
         }
 
-        let (application, _) = try drawView(MyView())
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 17x20
+          → ComposedView<MyView>
+            → HStack<TupleView<Pack{VStack<TupleView<Pack{Text, Spacer, Text}>>, Text, Text}>> (0, 0) 17x20
+              → TupleView<Pack{VStack<TupleView<Pack{Text, Spacer, Text}>>, Text, Text}>
+                → VStack<TupleView<Pack{Text, Spacer, Text}>> (0, 0) 5x20
+                  → TupleView<Pack{Text, Spacer, Text}>
+                    → Text:string("Hello") (0, 0) 5x1
+                    → Spacer (0, 1) 5x18
+                    → Text:string("World") (0, 19) 5x1
+                → Text:string("Hello") (6, 19) 5x1
+                → Text:string("World") (12, 19) 5x1
+
+        """)
         assertSnapshot(
-            of: application.node.frameDescription,
+            of: (application.renderer as! TestRenderer).description,
             as: .lines,
             record: record
         )
@@ -416,6 +565,11 @@ import SnapshotTesting
         struct MyView: View {
             var body: some View {
                 HStack(alignment: .bottom) {
+                    VStack {
+                        Text("1")
+                        Text("2")
+                        Text("3")
+                    }
                     Text("Hello")
                     Spacer()
                     Text("World")
@@ -423,9 +577,24 @@ import SnapshotTesting
             }
         }
 
-        let (application, _) = try drawView(MyView())
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 50x3
+          → ComposedView<MyView>
+            → HStack<TupleView<Pack{VStack<TupleView<Pack{Text, Text, Text}>>, Text, Spacer, Text}>> (0, 0) 50x3
+              → TupleView<Pack{VStack<TupleView<Pack{Text, Text, Text}>>, Text, Spacer, Text}>
+                → VStack<TupleView<Pack{Text, Text, Text}>> (0, 0) 1x3
+                  → TupleView<Pack{Text, Text, Text}>
+                    → Text:string("1") (0, 0) 1x1
+                    → Text:string("2") (0, 1) 1x1
+                    → Text:string("3") (0, 2) 1x1
+                → Text:string("Hello") (2, 2) 5x1
+                → Spacer (8, 0) 36x3
+                → Text:string("World") (45, 2) 5x1
+        
+        """)
         assertSnapshot(
-            of: application.node.frameDescription,
+            of: (application.renderer as! TestRenderer).description,
             as: .lines,
             record: record
         )
@@ -452,9 +621,27 @@ import SnapshotTesting
             }
         }
 
-        let (application, _) = try drawView(MyView())
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 50x20
+          → ComposedView<MyView>
+            → HStack<TupleView<Pack{VStack<TupleView<Pack{Text, Spacer, Text}>>, Spacer, VStack<TupleView<Pack{Text, Spacer, Text}>>}>> (0, 0) 50x20
+              → TupleView<Pack{VStack<TupleView<Pack{Text, Spacer, Text}>>, Spacer, VStack<TupleView<Pack{Text, Spacer, Text}>>}>
+                → VStack<TupleView<Pack{Text, Spacer, Text}>> (0, 0) 5x20
+                  → TupleView<Pack{Text, Spacer, Text}>
+                    → Text:string("Hello") (0, 0) 5x1
+                    → Spacer (0, 1) 5x18
+                    → Text:string("World") (0, 19) 5x1
+                → Spacer (6, 0) 33x20
+                → VStack<TupleView<Pack{Text, Spacer, Text}>> (40, 0) 10x20
+                  → TupleView<Pack{Text, Spacer, Text}>
+                    → Text:string("1234567890") (40, 0) 10x1
+                    → Spacer (40, 1) 10x18
+                    → Text:string("1234567890") (40, 19) 10x1
+        
+        """)
         assertSnapshot(
-            of: application.node.frameDescription,
+            of: (application.renderer as! TestRenderer).description,
             as: .lines,
             record: record
         )
@@ -479,11 +666,369 @@ import SnapshotTesting
             }
         }
 
-        let (application, _) = try drawView(MyView())
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 50x20
+          → ComposedView<MyView>
+            → TupleView<Pack{HStack<TupleView<Pack{Text, Spacer, Text}>>, Spacer, HStack<TupleView<Pack{Text, Spacer, Text}>>}>
+              → HStack<TupleView<Pack{Text, Spacer, Text}>> (0, 0) 50x1
+                → TupleView<Pack{Text, Spacer, Text}>
+                  → Text:string("Hello") (0, 0) 5x1
+                  → Spacer (6, 0) 38x1
+                  → Text:string("World") (45, 0) 5x1
+              → Spacer (0, 1) 50x18
+              → HStack<TupleView<Pack{Text, Spacer, Text}>> (0, 19) 50x1
+                → TupleView<Pack{Text, Spacer, Text}>
+                  → Text:string("1234567890") (0, 19) 10x1
+                  → Spacer (11, 19) 28x1
+                  → Text:string("1234567890") (40, 19) 10x1
+
+        """)
         assertSnapshot(
-            of: application.node.frameDescription,
+            of: (application.renderer as! TestRenderer).description,
             as: .lines,
             record: record
         )
     }
+
+    @Test func layoutOfZStack() async throws {
+        struct MyView: View {
+            var body: some View {
+                ZStack {
+                    Text("Hello")
+                    Text("World")
+                }
+            }
+        }
+
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 5x1
+          → ComposedView<MyView>
+            → ZStack<TupleView<Pack{Text, Text}>> (0, 0) 5x1
+              → TupleView<Pack{Text, Text}>
+                → Text:string("Hello") (0, 0) 5x1
+                → Text:string("World") (0, 0) 5x1
+        
+        """)
+        assertSnapshot(
+            of: (application.renderer as! TestRenderer).description,
+            as: .lines,
+            record: record
+        )
+    }
+
+    @Test func layoutOfZStackTopLeading() async throws {
+        struct MyView: View {
+            var body: some View {
+                ZStack(alignment: .topLeading) {
+                    Text("Hello")
+
+                    VStack {
+                        Text("W")
+                        Text("o")
+                        Text("r")
+                        Text("l")
+                        Text("d")
+                    }
+                }
+            }
+        }
+
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 5x5
+          → ComposedView<MyView>
+            → ZStack<TupleView<Pack{Text, VStack<TupleView<Pack{Text, Text, Text, Text, Text}>>}>> (0, 0) 5x5
+              → TupleView<Pack{Text, VStack<TupleView<Pack{Text, Text, Text, Text, Text}>>}>
+                → Text:string("Hello") (0, 0) 5x1
+                → VStack<TupleView<Pack{Text, Text, Text, Text, Text}>> (0, 0) 1x5
+                  → TupleView<Pack{Text, Text, Text, Text, Text}>
+                    → Text:string("W") (0, 0) 1x1
+                    → Text:string("o") (0, 1) 1x1
+                    → Text:string("r") (0, 2) 1x1
+                    → Text:string("l") (0, 3) 1x1
+                    → Text:string("d") (0, 4) 1x1
+        
+        """)
+        assertSnapshot(
+            of: (application.renderer as! TestRenderer).description,
+            as: .lines,
+            record: record
+        )
+    }
+
+    @Test func layoutOfZStackTop() async throws {
+        struct MyView: View {
+            var body: some View {
+                ZStack(alignment: .top) {
+                    Text("Hello")
+
+                    VStack {
+                        Text("W")
+                        Text("o")
+                        Text("r")
+                        Text("l")
+                        Text("d")
+                    }
+                }
+            }
+        }
+
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 5x5
+          → ComposedView<MyView>
+            → ZStack<TupleView<Pack{Text, VStack<TupleView<Pack{Text, Text, Text, Text, Text}>>}>> (0, 0) 5x5
+              → TupleView<Pack{Text, VStack<TupleView<Pack{Text, Text, Text, Text, Text}>>}>
+                → Text:string("Hello") (0, 0) 5x1
+                → VStack<TupleView<Pack{Text, Text, Text, Text, Text}>> (2, 0) 1x5
+                  → TupleView<Pack{Text, Text, Text, Text, Text}>
+                    → Text:string("W") (2, 0) 1x1
+                    → Text:string("o") (2, 1) 1x1
+                    → Text:string("r") (2, 2) 1x1
+                    → Text:string("l") (2, 3) 1x1
+                    → Text:string("d") (2, 4) 1x1
+        
+        """)
+        assertSnapshot(
+            of: (application.renderer as! TestRenderer).description,
+            as: .lines,
+            record: record
+        )
+    }
+
+    @Test func layoutOfZStackTopTrailing() async throws {
+        struct MyView: View {
+            var body: some View {
+                ZStack(alignment: .topTrailing) {
+                    Text("Hello")
+
+                    VStack {
+                        Text("W")
+                        Text("o")
+                        Text("r")
+                        Text("l")
+                        Text("d")
+                    }
+                }
+            }
+        }
+
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 5x5
+          → ComposedView<MyView>
+            → ZStack<TupleView<Pack{Text, VStack<TupleView<Pack{Text, Text, Text, Text, Text}>>}>> (0, 0) 5x5
+              → TupleView<Pack{Text, VStack<TupleView<Pack{Text, Text, Text, Text, Text}>>}>
+                → Text:string("Hello") (0, 0) 5x1
+                → VStack<TupleView<Pack{Text, Text, Text, Text, Text}>> (4, 0) 1x5
+                  → TupleView<Pack{Text, Text, Text, Text, Text}>
+                    → Text:string("W") (4, 0) 1x1
+                    → Text:string("o") (4, 1) 1x1
+                    → Text:string("r") (4, 2) 1x1
+                    → Text:string("l") (4, 3) 1x1
+                    → Text:string("d") (4, 4) 1x1
+        
+        """)
+        assertSnapshot(
+            of: (application.renderer as! TestRenderer).description,
+            as: .lines,
+            record: record
+        )
+    }
+
+    @Test func layoutOfZStackLeading() async throws {
+        struct MyView: View {
+            var body: some View {
+                ZStack(alignment: .leading) {
+                    VStack {
+                        Text("Hello")
+                        Divider()
+                        Text("World")
+                    }
+
+                    Text("-->")
+                }
+            }
+        }
+
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 5x3
+          → ComposedView<MyView>
+            → ZStack<TupleView<Pack{VStack<TupleView<Pack{Text, Divider, Text}>>, Text}>> (0, 0) 5x3
+              → TupleView<Pack{VStack<TupleView<Pack{Text, Divider, Text}>>, Text}>
+                → VStack<TupleView<Pack{Text, Divider, Text}>> (0, 0) 5x3
+                  → TupleView<Pack{Text, Divider, Text}>
+                    → Text:string("Hello") (0, 0) 5x1
+                    → Divider (0, 1) 5x1
+                    → Text:string("World") (0, 2) 5x1
+                → Text:string("-->") (0, 1) 3x1
+        
+        """)
+        assertSnapshot(
+            of: (application.renderer as! TestRenderer).description,
+            as: .lines,
+            record: record
+        )
+    }
+
+    @Test func layoutOfZStackTrailing() async throws {
+        struct MyView: View {
+            var body: some View {
+                ZStack(alignment: .trailing) {
+                    VStack {
+                        Text("Hello")
+                        Divider()
+                        Text("World")
+                    }
+
+                    Text("<--")
+                }
+            }
+        }
+
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 5x3
+          → ComposedView<MyView>
+            → ZStack<TupleView<Pack{VStack<TupleView<Pack{Text, Divider, Text}>>, Text}>> (0, 0) 5x3
+              → TupleView<Pack{VStack<TupleView<Pack{Text, Divider, Text}>>, Text}>
+                → VStack<TupleView<Pack{Text, Divider, Text}>> (0, 0) 5x3
+                  → TupleView<Pack{Text, Divider, Text}>
+                    → Text:string("Hello") (0, 0) 5x1
+                    → Divider (0, 1) 5x1
+                    → Text:string("World") (0, 2) 5x1
+                → Text:string("<--") (2, 1) 3x1
+        
+        """)
+        assertSnapshot(
+            of: (application.renderer as! TestRenderer).description,
+            as: .lines,
+            record: record
+        )
+    }
+
+    @Test func layoutOfZStackBottomLeading() async throws {
+        struct MyView: View {
+            var body: some View {
+                ZStack(alignment: .bottomLeading) {
+                    Text("Hello")
+
+                    VStack {
+                        Text("W")
+                        Text("o")
+                        Text("r")
+                        Text("l")
+                        Text("d")
+                    }
+                }
+            }
+        }
+
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 5x5
+          → ComposedView<MyView>
+            → ZStack<TupleView<Pack{Text, VStack<TupleView<Pack{Text, Text, Text, Text, Text}>>}>> (0, 0) 5x5
+              → TupleView<Pack{Text, VStack<TupleView<Pack{Text, Text, Text, Text, Text}>>}>
+                → Text:string("Hello") (0, 4) 5x1
+                → VStack<TupleView<Pack{Text, Text, Text, Text, Text}>> (0, 0) 1x5
+                  → TupleView<Pack{Text, Text, Text, Text, Text}>
+                    → Text:string("W") (0, 0) 1x1
+                    → Text:string("o") (0, 1) 1x1
+                    → Text:string("r") (0, 2) 1x1
+                    → Text:string("l") (0, 3) 1x1
+                    → Text:string("d") (0, 4) 1x1
+
+        """)
+        assertSnapshot(
+            of: (application.renderer as! TestRenderer).description,
+            as: .lines,
+            record: record
+        )
+    }
+
+    @Test func layoutOfZStackBottom() async throws {
+        struct MyView: View {
+            var body: some View {
+                ZStack(alignment: .bottom) {
+                    Text("Hello")
+
+                    VStack {
+                        Text("W")
+                        Text("o")
+                        Text("r")
+                        Text("l")
+                        Text("d")
+                    }
+                }
+            }
+        }
+
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 5x5
+          → ComposedView<MyView>
+            → ZStack<TupleView<Pack{Text, VStack<TupleView<Pack{Text, Text, Text, Text, Text}>>}>> (0, 0) 5x5
+              → TupleView<Pack{Text, VStack<TupleView<Pack{Text, Text, Text, Text, Text}>>}>
+                → Text:string("Hello") (0, 4) 5x1
+                → VStack<TupleView<Pack{Text, Text, Text, Text, Text}>> (2, 0) 1x5
+                  → TupleView<Pack{Text, Text, Text, Text, Text}>
+                    → Text:string("W") (2, 0) 1x1
+                    → Text:string("o") (2, 1) 1x1
+                    → Text:string("r") (2, 2) 1x1
+                    → Text:string("l") (2, 3) 1x1
+                    → Text:string("d") (2, 4) 1x1
+
+        """)
+        assertSnapshot(
+            of: (application.renderer as! TestRenderer).description,
+            as: .lines,
+            record: record
+        )
+    }
+
+    @Test func layoutOfZStackBottomTrailing() async throws {
+        struct MyView: View {
+            var body: some View {
+                ZStack(alignment: .bottomTrailing) {
+                    Text("Hello")
+
+                    VStack {
+                        Text("W")
+                        Text("o")
+                        Text("r")
+                        Text("l")
+                        Text("d")
+                    }
+                }
+            }
+        }
+
+        let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 5x5
+          → ComposedView<MyView>
+            → ZStack<TupleView<Pack{Text, VStack<TupleView<Pack{Text, Text, Text, Text, Text}>>}>> (0, 0) 5x5
+              → TupleView<Pack{Text, VStack<TupleView<Pack{Text, Text, Text, Text, Text}>>}>
+                → Text:string("Hello") (0, 4) 5x1
+                → VStack<TupleView<Pack{Text, Text, Text, Text, Text}>> (4, 0) 1x5
+                  → TupleView<Pack{Text, Text, Text, Text, Text}>
+                    → Text:string("W") (4, 0) 1x1
+                    → Text:string("o") (4, 1) 1x1
+                    → Text:string("r") (4, 2) 1x1
+                    → Text:string("l") (4, 3) 1x1
+                    → Text:string("d") (4, 4) 1x1
+        
+        """)
+        assertSnapshot(
+            of: (application.renderer as! TestRenderer).description,
+            as: .lines,
+            record: record
+        )
+    }
+
+
 }

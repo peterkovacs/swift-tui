@@ -1,4 +1,5 @@
 public enum LayoutAxis: EnvironmentKey {
+    case none
     case vertical
     case horizontal
 

@@ -44,6 +44,7 @@ class SpacerNode: ComposedNode, Control {
             size: .init(node: self) { [weak self] proposedSize in
                 guard let self else { return .zero }
                 switch layoutAxis {
+                case .none: return .zero
                 case .horizontal:
                     return .init(width: proposedSize.width < minLength ? minLength : proposedSize.width, height: 0)
                 case .vertical:
@@ -58,6 +59,8 @@ class SpacerNode: ComposedNode, Control {
             layout: .init(node: self) { [weak self] rect in
                 guard let self else { return .zero }
                 switch layoutAxis {
+                case .none:
+                    return self.layout(rect: .zero)
                 case .horizontal:
                     return self.layout(
                         rect: .init(

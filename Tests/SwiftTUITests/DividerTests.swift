@@ -134,4 +134,37 @@ import Testing
             record: record
         )
     }
+
+    @Test func testDividerInZStack() async throws {
+        struct MyView: View {
+            var body: some View {
+                ZStack {
+                    Text("Hello")
+                    Divider()
+                    Text("World")
+                }
+                .frame(width: 50, height: 50)
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 50x50
+          → ComposedView<MyView>
+            → FixedFrame:50x50 [(0, 0) 50x50]
+              → ZStack<TupleView<Pack{Text, Divider, Text}>> (22, 24) 5x1
+                → TupleView<Pack{Text, Divider, Text}>
+                  → Text:string("Hello") (22, 24) 5x1
+                  → Divider (24, 24) 0x0
+                  → Text:string("World") (22, 24) 5x1
+        
+        """)
+        assertSnapshot(
+            of: (application.renderer as! TestRenderer).description,
+            as: .lines,
+            record: record
+        )
+
+    }
 }

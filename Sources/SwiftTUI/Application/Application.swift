@@ -34,21 +34,26 @@ import AsyncAlgorithms
     }
 
     func update() {
-        for node in invalidated {
-            renderer.invalidate(rect: node.global)
-            node.update(view: node.view)
-        }
+        // It's possible that layout could invalidate nodes (e.g. GeometryReader)
+        repeat {
+            let invalidated = self.invalidated
+            self.invalidated = []
 
-        node.invalidateLayout()
-        node.layout(
-            rect: .init(position: .zero, size: renderer.window.size)
-        )
+            for node in invalidated {
+                renderer.invalidate(rect: node.global)
+                node.update(view: node.view)
+            }
+            
+            node.invalidateLayout()
+            node.layout(
+                rect: .init(position: .zero, size: renderer.window.size)
+            )
+            
+            for node in invalidated {
+                renderer.invalidate(rect: node.global)
+            }
+        } while !invalidated.isEmpty
 
-        for node in invalidated {
-            renderer.invalidate(rect: node.global)
-        }
-
-        invalidated = []
         renderer.update()
     }
 }

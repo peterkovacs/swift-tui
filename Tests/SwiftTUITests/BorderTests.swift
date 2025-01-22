@@ -290,4 +290,38 @@ import SnapshotTesting
         )
 
     }
+
+    @Test func testBorderInZStack() async throws {
+        struct MyView: View {
+            var body: some View {
+                ZStack {
+                    Text("Hello        World")
+                        .padding()
+                        .border()
+                    Text("On Top")
+                        .border()
+                }
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 22x5
+          → ComposedView<MyView>
+            → ZStack<TupleView<Pack{Border<Padding<Text>>, Border<Text>}>> (0, 0) 22x5
+              → TupleView<Pack{Border<Padding<Text>>, Border<Text>}>
+                → Border:[(0, 0) 22x5]
+                  → Padding:[(1, 1) 20x3]
+                    → Text:string("Hello        World") (2, 2) 18x1
+                → Border:[(7, 1) 8x3]
+                  → Text:string("On Top") (8, 2) 6x1
+        
+        """)
+        assertSnapshot(
+            of: (application.renderer as! TestRenderer).description,
+            as: .lines,
+            record: record
+        )
+
+    }
 }
