@@ -59,7 +59,7 @@ class GeometryReaderNode: ZStackNode {
     override func layout<T>(visitor: inout T) where T : Visitor.Layout {
         visitor.visit(
             layout: .init(node: self) { rect in
-                self.layoutVisitor.layout(rect: rect)
+                _ = self.layoutVisitor.layout(rect: rect)
                 return rect
             } frame: {
                 self.frame = $0

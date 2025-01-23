@@ -1,4 +1,5 @@
 import Foundation
+import CUnicode
 
 @MainActor
 class TerminalRenderer: Renderer {
@@ -181,12 +182,12 @@ class TerminalRenderer: Renderer {
 
     func write(_ str: String.UTF8View) {
         let written = str.withContiguousStorageIfAvailable { ptr in
-            unistd.write(fileHandle.fileDescriptor, ptr.baseAddress, ptr.count)
+            CUnicode.write(fileHandle.fileDescriptor, ptr.baseAddress, ptr.count)
         }
 
         if written == nil {
             Array(str).withUnsafeBufferPointer { ptr in
-                _ = unistd.write(fileHandle.fileDescriptor, ptr.baseAddress, ptr.count)
+                _ = CUnicode.write(fileHandle.fileDescriptor, ptr.baseAddress, ptr.count)
             }
         }
     }
