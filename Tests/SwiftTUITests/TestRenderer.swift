@@ -1,12 +1,6 @@
-//
-//  TestRenderer.swift
-//  SwiftTUI
-//
-//  Created by Peter Kovacs on 1/6/25.
-//
-
 import Foundation
 @testable import SwiftTUI
+import SnapshotTesting
 
 class TestRenderer: Renderer {
     var window: Window<Cell?>
@@ -59,3 +53,17 @@ extension KeyParser {
         return (parser: parser, fileHandle: pipe.fileHandleForWriting)
     }
 }
+
+extension Snapshotting where Value == Renderer?, Format == String {
+    @MainActor static let rendered = Snapshotting(
+        pathExtension: "txt",
+        diffing: .lines
+    ) { value in
+        guard let renderer = value as? TestRenderer else {
+            fatalError("Renderer was not a TestRenderer")
+        }
+
+        return renderer.description
+    }
+}
+

@@ -2,7 +2,8 @@
 import Testing
 import SnapshotTesting
 
-@MainActor @Suite("Padding Tests") struct PaddingTests {
+@MainActor
+@Suite("Padding Tests", .snapshots(record: .failed)) struct PaddingTests {
     let record = false
     @Test func testPaddingAroundHStack() async throws {
         struct MyView: View {
@@ -30,10 +31,10 @@ import SnapshotTesting
                     → Text:string("World") (17, 3) 5x1
         
         """)
+
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -69,10 +70,9 @@ import SnapshotTesting
 
         let (application, _) = try drawView(MyView(edges: edges), size: .init(width: 25, height: 20))
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            named: "testPaddingEdges-\(edges.rawValue)",
-            record: record
+            of: application.renderer,
+            as: .rendered,
+            named: "testPaddingEdges-\(edges.rawValue)"
         )
     }
 
@@ -104,6 +104,7 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView(), size: .init(width: 25, height: 20))
+
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 25x20
           → ComposedView<MyView>
@@ -129,11 +130,9 @@ import SnapshotTesting
 
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
-        )
-    }
+            of: application.renderer,
+            as: .rendered
+        )    }
 
     @Test func testBackgroundBehindBorder() async throws {
         struct MyView: View {
@@ -149,6 +148,7 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView(), size: .init(width: 25, height: 20))
+
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 25x3
           → ComposedView<MyView>
@@ -162,9 +162,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
 
         let bluePixels = application.renderer.window.indices.filter {
@@ -188,6 +187,7 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView(), size: .init(width: 25, height: 20))
+
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 25x3
           → ComposedView<MyView>
@@ -201,9 +201,8 @@ import SnapshotTesting
 
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
 
         let bluePixels = application.renderer.window.indices.filter {
@@ -226,6 +225,7 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
+
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 13x9
           → ComposedView<MyView>
@@ -236,11 +236,10 @@ import SnapshotTesting
                     → Text:string("Hello") (4, 4) 5x1
         
         """)
-        assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
-        )
 
+        assertSnapshot(
+            of: application.renderer,
+            as: .rendered
+        )
     }
 }

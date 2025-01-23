@@ -18,7 +18,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/pointfreeco/swift-dependencies.git", from: "1.6.0"),
-        .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.12.0"),
+        .package(url: "https://github.com/peterkovacs/swift-snapshot-testing", branch: "main"),
         .package(url: "https://github.com/apple/swift-async-algorithms.git", from: "1.0.3"),
     ],
     targets: [
@@ -38,6 +38,9 @@ let package = Package(
             dependencies: [
                 "SwiftTUI",
                 .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
+            ],
+            exclude: [
+                "__Snapshots__"
             ]
         ),
     ]
