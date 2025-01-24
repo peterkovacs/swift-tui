@@ -28,7 +28,7 @@ public struct Spacer: View, PrimitiveView {
     }
 }
 
-class SpacerNode: ComposedNode, Control {
+class SpacerNode: DynamicPropertyNode, Control {
     var minLength: Extended
     var layoutAxis: LayoutAxis
 

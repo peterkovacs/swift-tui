@@ -1,7 +1,7 @@
 import Foundation
 
 @propertyWrapper
-public struct Environment<Wrapped: Sendable>: EnvironmentValue, Sendable {
+public struct Environment<Wrapped: Sendable>: EnvironmentValue, DynamicProperty, Sendable {
     var reference: EnvironmentReference<Wrapped>
 
     public init(_ keyPath: KeyPath<EnvironmentValues, Wrapped> & Sendable) {
@@ -12,7 +12,7 @@ public struct Environment<Wrapped: Sendable>: EnvironmentValue, Sendable {
         get { reference.wrappedValue }
     }
 
-    @MainActor func setup(node: Node) {
+    @MainActor func setup(node: DynamicPropertyNode, label: String) {
         reference.node = node
     }
 }
@@ -20,7 +20,6 @@ public struct Environment<Wrapped: Sendable>: EnvironmentValue, Sendable {
 protocol EnvironmentValue: Sendable {
     associatedtype Wrapped: Sendable
     @MainActor var wrappedValue: Wrapped { get }
-    @MainActor func setup(node: Node)
 }
 
 final class EnvironmentReference<Wrapped>: Sendable  {
@@ -29,7 +28,7 @@ final class EnvironmentReference<Wrapped>: Sendable  {
         self.keyPath = keyPath
     }
 
-    @MainActor weak var node: Node?
+    @MainActor weak var node: DynamicPropertyNode?
     @MainActor var wrappedValue: Wrapped {
         guard let node else { fatalError("Accessed Environment prior to initialization") }
         let values = values(node: node) { _ in }

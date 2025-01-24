@@ -121,7 +121,7 @@ public struct Divider: View, PrimitiveView {
     }
 }
 
-class DividerNode: ComposedNode, Control {
+class DividerNode: DynamicPropertyNode, Control {
     var layoutAxis: LayoutAxis
     var foregroundColor: Color
     var dividerStyle: DividerStyle

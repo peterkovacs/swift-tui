@@ -55,7 +55,7 @@ public struct Text: View, PrimitiveView {
     }
 }
 
-final class TextNode: ComposedNode, Control {
+final class TextNode: DynamicPropertyNode, Control {
     var text: Text.Value
     var bold: Bool = false
     var italic: Bool = false

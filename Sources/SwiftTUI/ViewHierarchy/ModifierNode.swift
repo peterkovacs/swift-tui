@@ -1,6 +1,6 @@
 /// A node that modifies Controls lower in the hierarchy. E.g. BorderNode, PaddingNode.
 ///
-class ModifierNode: ComposedNode {
+class ModifierNode: DynamicPropertyNode {
 
     var _sizeVisitor: SizeVisitor? = nil
     var sizeVisitor: SizeVisitor {

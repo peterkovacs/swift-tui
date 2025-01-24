@@ -1,6 +1,6 @@
 @MainActor
 @propertyWrapper
-public struct State<Wrapped>: StateValue {
+public struct State<Wrapped>: StateValue, DynamicProperty {
     public let initialValue: Wrapped
 
     public init(initialValue: Wrapped) {
@@ -28,7 +28,7 @@ public struct State<Wrapped>: StateValue {
         }
     }
 
-    func setup(node: ComposedNode, label: String) {
+    func setup(node: DynamicPropertyNode, label: String) {
         reference.node = node
         reference.label = label
     }
@@ -45,25 +45,27 @@ extension State where Wrapped: ExpressibleByNilLiteral {
 protocol StateValue {
     associatedtype Wrapped
     var wrappedValue: Wrapped { get nonmutating set }
-    var projectedValue: Binding<Wrapped> { get }
-    func setup(node: ComposedNode, label: String)
+    var projectedValue: Binding<Wrapped> { get }    
 }
 
 @MainActor
 class StateReference<Wrapped> {
-    weak var node: ComposedNode?
+    struct Key: Hashable {
+        let label: String
+    }
+
+    weak var node: DynamicPropertyNode?
     var label: String?
 
     var wrappedValue: Wrapped? {
         get {
             guard let node, let label else { fatalError("Accessed State prior to initialization") }
-            return node.state[label] as? Wrapped
+            return node.get(state: Key(label: label))
         }
 
         set {
-            guard let node, let label else { fatalError("Accessed State prior to initialization") }
-            node.state[label] = newValue
-            node.invalidate()
+            guard let node, let label, let newValue else { fatalError("Accessed State prior to initialization") }
+            node.set(state: Key(label: label), value: newValue)
         }
     }
 }
