@@ -1,4 +1,4 @@
-public enum LayoutAxis: EnvironmentKey {
+public enum LayoutAxis: EnvironmentKey, Sendable {
     case none
     case vertical
     case horizontal

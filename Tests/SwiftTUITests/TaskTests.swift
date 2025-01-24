@@ -15,7 +15,7 @@ import Testing
         }
 
         let isCalled = LockIsolated(false)
-        let (application, _) = try drawView(
+        let _ = try drawView(
             MyView {
                 isCalled.withValue {
                     $0 = true
@@ -27,7 +27,7 @@ import Testing
         #expect(isCalled.value == true)
     }
 
-    @MainActor @Observable
+    @Observable
     class Model {
         var isShowing = true
     }

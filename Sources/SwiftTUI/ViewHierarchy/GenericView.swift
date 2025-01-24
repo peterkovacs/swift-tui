@@ -20,6 +20,3 @@ protocol GenericView: Sendable {
     @MainActor func update(node: Node)
 
 }
-
-extension GenericView {
-}

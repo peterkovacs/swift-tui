@@ -28,8 +28,8 @@ import Testing
 
         let (application, _) = try drawView(MyView(), size: .init(width: 20, height: 5))
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines
+            of: application.renderer,
+            as: .rendered
         )
         #expect(
             (application.renderer as? TestRenderer)?.description ==

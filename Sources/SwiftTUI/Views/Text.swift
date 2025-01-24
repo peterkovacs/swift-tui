@@ -14,8 +14,6 @@ public struct Text: View, PrimitiveView {
     @Environment(\.strikethrough) var strikethrough
     @Environment(\.foregroundColor) var foregroundColor
 
-    // TODO: Read text attributes from Environment.
-
     let text: Value
 
     public init(_ text: String) {

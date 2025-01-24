@@ -13,7 +13,7 @@ public struct State<Wrapped>: StateValue {
         self.reference = .init()
     }
 
-    var reference: StateReference<Wrapped>
+    let reference: StateReference<Wrapped>
 
     public var wrappedValue: Wrapped {
         get { reference.wrappedValue ?? initialValue }
@@ -31,6 +31,13 @@ public struct State<Wrapped>: StateValue {
     func setup(node: ComposedNode, label: String) {
         reference.node = node
         reference.label = label
+    }
+}
+
+extension State: Sendable where Wrapped: Sendable {}
+extension State where Wrapped: ExpressibleByNilLiteral {
+    @inlinable public init() {
+        self.init(wrappedValue: nil as Wrapped)
     }
 }
 

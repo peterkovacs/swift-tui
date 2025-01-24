@@ -1,6 +1,5 @@
 @MainActor
-@propertyWrapper
-public struct Binding<T> {
+@propertyWrapper @dynamicMemberLookup public struct Binding<T> {
     let get: @MainActor () -> T
     let set: @MainActor (T) -> Void
 
@@ -15,4 +14,15 @@ public struct Binding<T> {
     }
 
     public var projectedValue: Binding<T> { self }
+
+    public subscript<Subject>(dynamicMember keyPath: WritableKeyPath<T, Subject> & Sendable) -> Binding<Subject> {
+        .init { [get] in
+            get()[keyPath: keyPath]
+        } set: { [get, set] value in
+            var valueToSet = get()
+            valueToSet[keyPath: keyPath] = value
+            set(valueToSet)
+        }
+    }
+
 }

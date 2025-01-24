@@ -1,11 +1,10 @@
 import Foundation
 
-@MainActor
 @propertyWrapper
-public struct Environment<Wrapped>: EnvironmentValue {
+public struct Environment<Wrapped: Sendable>: EnvironmentValue, Sendable {
     var reference: EnvironmentReference<Wrapped>
 
-    public init(_ keyPath: KeyPath<EnvironmentValues, Wrapped>) {
+    public init(_ keyPath: KeyPath<EnvironmentValues, Wrapped> & Sendable) {
         self.reference = .init(keyPath: keyPath)
     }
 
@@ -13,34 +12,31 @@ public struct Environment<Wrapped>: EnvironmentValue {
         get { reference.wrappedValue }
     }
 
-    func setup(node: Node) {
+    @MainActor func setup(node: Node) {
         reference.node = node
     }
 }
 
-@MainActor
-protocol EnvironmentValue {
-    associatedtype Wrapped
-    var wrappedValue: Wrapped { get }
-    func setup(node: Node)
+protocol EnvironmentValue: Sendable {
+    associatedtype Wrapped: Sendable
+    @MainActor var wrappedValue: Wrapped { get }
+    @MainActor func setup(node: Node)
 }
 
-@MainActor
-class EnvironmentReference<Wrapped> {
-    weak var node: Node?
-    var keyPath: KeyPath<EnvironmentValues, Wrapped>
-
-    init(keyPath: KeyPath<EnvironmentValues, Wrapped>) {
+final class EnvironmentReference<Wrapped>: Sendable  {
+    private let keyPath: KeyPath<EnvironmentValues, Wrapped> & Sendable
+    init(keyPath: KeyPath<EnvironmentValues, Wrapped> & Sendable) {
         self.keyPath = keyPath
     }
 
-    var wrappedValue: Wrapped {
+    @MainActor weak var node: Node?
+    @MainActor var wrappedValue: Wrapped {
         guard let node else { fatalError("Accessed Environment prior to initialization") }
         let values = values(node: node) { _ in }
         return values[keyPath: keyPath]
     }
 
-    private func values(
+    @MainActor private func values(
         node: Node,
         transform: (inout EnvironmentValues) -> Void
     ) -> EnvironmentValues {
