@@ -65,5 +65,49 @@ extension Snapshotting where Value == Renderer?, Format == String {
 
         return renderer.description
     }
+
+    @MainActor static let attributes = Snapshotting(
+        pathExtension: "txt",
+        diffing: .lines
+    ) { value in
+        guard let renderer = value as? TestRenderer else {
+            fatalError("Renderer was not a TestRenderer")
+        }
+
+        var result = ""
+
+        for y in 0..<renderer.window.size.height.intValue {
+            for x in 0..<renderer.window.size.width.intValue {
+                let attributes = renderer.window[
+                        .init(
+                            column: Extended(x),
+                            line: Extended(y)
+                        )
+                    ]?.attributes
+
+                if let attributes {
+                    if attributes.bold {
+                        result.append("B")
+                    } else if attributes.italic {
+                        result.append("I")
+                    } else if attributes.strikethrough {
+                        result.append("S")
+                    } else if attributes.underline {
+                        result.append("U")
+                    } else if attributes.inverted {
+                        result.append("X")
+                    } else {
+                        result.append(" ")
+                    }
+                } else {
+                    result.append(" ")
+                }
+            }
+
+            result.append("\n")
+        }
+
+        return result
+    }
 }
 

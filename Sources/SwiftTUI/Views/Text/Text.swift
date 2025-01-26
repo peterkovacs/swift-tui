@@ -115,57 +115,61 @@ final class TextNode: DynamicPropertyNode, Control {
         )
     }
 
+    func calculateSize<Text: BidirectionalCollection>(proposedSize: Size, text: Text) -> Size  where Text.Element == Character{
+        let paragraphs = text.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
+
+        let maximumWidth = Size(
+            width: paragraphs.reduce(0) { max($0, .init($1.count)) },
+            height: Extended(paragraphs.count)
+        )
+
+        // Early Out for containing sizes.
+        if proposedSize.width >= maximumWidth.width {
+            return maximumWidth
+        }
+
+        // Calculate the minimum width
+        let paragraphWords = paragraphs.map {
+            $0.split(omittingEmptySubsequences: false, whereSeparator: \.isWhitespace)
+        }
+
+        let minimumWidth: Extended = paragraphWords.reduce(into: 0) { minimumWidth, paragraph in
+            minimumWidth = paragraph.reduce(into: minimumWidth) { minimumWidth, word in
+                minimumWidth = max(minimumWidth, .init(word.count))
+            }
+        }
+
+        // Calculate the height based on the given width.
+        var size = Size(
+            width: minimumWidth > proposedSize.width ? minimumWidth : proposedSize.width,
+            height: 0
+        )
+
+        for paragraph in paragraphWords {
+            size.height += 1
+            var widthOfLine: Extended = 0
+
+            for word in paragraph {
+                let widthOfWord: Extended = .init(word.count)
+                if widthOfLine + widthOfWord <= size.width {
+                    widthOfLine += widthOfWord
+                    widthOfLine += 1 // space after word.
+                } else {
+                    size.height += 1
+                    widthOfLine = widthOfWord
+                }
+            }
+        }
+
+        return size
+    }
+
     func size(proposedSize: Size) -> Size {
         switch text {
         case .string(let text):
-            let paragraphs = text.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
-
-            let maximumWidth = Size(
-                width: paragraphs.reduce(0) { max($0, .init($1.count)) },
-                height: Extended(paragraphs.count)
-            )
-
-            // Early Out for containing sizes.
-            if proposedSize.width >= maximumWidth.width {
-                return maximumWidth
-            }
-
-            // Calculate the minimum width
-            let paragraphWords = paragraphs.map {
-                $0.split(omittingEmptySubsequences: false, whereSeparator: \.isWhitespace)
-            }
-
-            let minimumWidth: Extended = paragraphWords.reduce(into: 0) { minimumWidth, paragraph in
-                minimumWidth = paragraph.reduce(into: minimumWidth) { minimumWidth, word in
-                    minimumWidth = max(minimumWidth, .init(word.count))
-                }
-            }
-
-            // Calculate the height based on the given width.
-            var size = Size(
-                width: minimumWidth > proposedSize.width ? minimumWidth : proposedSize.width,
-                height: 0
-            )
-
-            for paragraph in paragraphWords {
-                size.height += 1
-                var widthOfLine: Extended = 0
-
-                for word in paragraph {
-                    let widthOfWord: Extended = .init(word.count)
-                    if widthOfLine + widthOfWord <= size.width {
-                        widthOfLine += widthOfWord
-                        widthOfLine += 1 // space after word.
-                    } else {
-                        size.height += 1
-                        widthOfLine = widthOfWord
-                    }
-                }
-            }
-
-            return size
+            return calculateSize(proposedSize: proposedSize, text: text)
         case .attributed(let text):
-            return .zero
+            return calculateSize(proposedSize: proposedSize, text: text.characters)
         }
     }
 
@@ -183,33 +187,38 @@ final class TextNode: DynamicPropertyNode, Control {
                     $0.attributes.strikethrough = strikethrough
                     $0.foregroundColor = foregroundColor
                 }
-
             }
-            
-            
+
         case .attributed(let text):
-            break
-            //            var position = rect.indices.makeIterator()
-            //            let characters = text.runs.lazy.flatMap { run in
-            //                text.characters[run.range].lazy.map {
-            //                    (position.next(), run.bold, run.italic, run.underline, run.strikethrough, run.inverted, $0)
-            //                }
-            //            }
-            //
-            //            for (position, bold, italic, underline, strikethrough, inverted, char) in characters {
-            //                guard let position else { break }
-            //                window.write(at: position, default: .init(char: char)) {
-            //                    $0.char = char
-            //                    $0.attributes.bold = bold ?? self.bold
-            //                    $0.attributes.italic = italic ?? self.italic
-            //                    $0.attributes.underline = underline ?? self.underline
-            //                    $0.attributes.strikethrough = strikethrough ?? self.strikethrough
-            //                    if let inverted {
-            //                        $0.attributes.inverted = inverted
-            //                    }
-            //                    $0.foregroundColor = foregroundColor
-            //                }
-            //            }
+            let iterator = AttributedLineIterator(
+                rect: global,
+                string:  text.transformingAttributes(\.inlinePresentationIntent) {
+                    switch $0.value {
+                    case .emphasized:
+                        $0.replace(with: \.italic, value: true)
+                    case .stronglyEmphasized:
+                        $0.replace(with: \.bold, value: true)
+                    case .strikethrough:
+                        $0.replace(with: \.strikethrough, value: true)
+                    default:
+                        break
+                    }
+                }
+            )
+
+            for (position, cell, attributes) in iterator where rect.contains(position) {
+                window.write(at: position, default: cell) {
+                    $0.char = cell.char
+                    $0.attributes.bold = attributes.bold ?? bold
+                    $0.attributes.italic = attributes.italic ?? italic
+                    $0.attributes.underline = attributes.underline ?? underline
+                    $0.attributes.strikethrough = attributes.strikethrough ?? strikethrough
+                    if let inverted = attributes.inverted {
+                        $0.attributes.inverted = inverted
+                    }
+                    $0.foregroundColor = foregroundColor
+                }
+            }
         }
     }
 
