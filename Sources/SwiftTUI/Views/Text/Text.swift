@@ -57,136 +57,12 @@ public struct Text: View, PrimitiveView {
 
 final class TextNode: DynamicPropertyNode, Control {
     
-    var text: Text.Value {
-        didSet { splitText(text: text) }
-    }
-
+    var text: Text.Value
     var bold: Bool = false
     var italic: Bool = false
     var underline: Bool = false
     var strikethrough: Bool = false
     var foregroundColor: Color = .default
-    let lineBreaker: KnuthPlassLineBreaker
-    var paragraphs: [[ArraySlice<Character>]] = []
-    var wordSizes: [LineBreakingInput] = []
-
-    private func splitText(text: Text.Value) {
-        paragraphs = switch text {
-        case .string(let string):
-            string.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
-                .map { $0.split(omittingEmptySubsequences: false, whereSeparator: \.isWhitespace) }
-
-        case .attributed(let string):
-           string.characters.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
-            .map {
-                $0.split(omittingEmptySubsequences: false, whereSeparator: \.isWhitespace)
-            }
-        }
-
-        wordSizes = paragraphs.map { line in
-            line.map { LineItemInput(size: Extended($0.count), spacing: 1) }
-        }
-    }
-
-    struct LineBreakIter: IteratorProtocol, Sequence {
-        /// The string that we are outputting.
-        let string: String
-        /// The index of the next character to be output.
-        var stringIndex: String.Index
-
-        /// The bounds to display the string in.
-        let frame: Rect
-        /// The current position in frame that is being written. We must write to every position in the frame, even if the line break has already happened.
-        var position: Position
-
-        /// A list of lines, one for each paragraph in the output. A paragraph consists of 0 or more lines
-        let paragraphs: [LineBreakingOutput] // == [[LineOutput]] == [[[LineItemOutput]]]
-
-        /// The current paragraph that we are iterating.
-        var paragraphsIndex: [LineBreakingOutput].Index
-        /// The current line that we are iterating.
-        var lineIndex: [LineOutput].Index
-        /// The current word that we are iterating.
-        var wordIndex: [LineItemOutput].Index
-        /// Our position within the word. When this changes, we should increment ``stringIndex``.
-        var index: Extended
-
-        init(
-            frame: Rect,
-            string: String,
-            paragraphs: [LineBreakingOutput]
-        ) {
-            self.frame = frame
-            self.position = .init(column: frame.minColumn, line: frame.minLine)
-
-            self.string = string
-            self.stringIndex = string.startIndex
-            self.paragraphs = paragraphs
-            self.paragraphsIndex = paragraphs.startIndex
-            self.lineIndex = paragraphs[paragraphs.startIndex].startIndex
-            self.wordIndex = paragraphs[paragraphs.startIndex][lineIndex].startIndex
-            self.index = 0
-        }
-
-        mutating func next() -> (Position, Cell)? {
-            // If we're done with the line then we can advance the lineIndex.
-            if position.column > frame.maxColumn {
-                lineIndex = lineIndex.advanced(by: 1)
-                position.column = frame.minColumn
-                position.line += 1
-
-                if position.line > frame.maxLine {
-                    return nil
-                }
-
-                stringIndex = string.index(stringIndex, offsetBy: 1)
-
-                // If we're done with the paragraph, we can advance the paragraphIndex
-                // This should be safe since we checked that we're still in the frame above.
-                if lineIndex >= paragraphs[paragraphsIndex].endIndex {
-                    paragraphsIndex = paragraphsIndex.advanced(by: 1)
-                    lineIndex = 0
-                }
-
-                wordIndex = 0
-                index = 0
-            }
-
-            defer {
-                position.column += 1
-            }
-
-            // Check if we're done with the current word.
-            if
-                paragraphsIndex < paragraphs.endIndex,
-                lineIndex < paragraphs[paragraphsIndex].endIndex,
-                wordIndex < paragraphs[paragraphsIndex][lineIndex].endIndex
-            {
-                let word = paragraphs[paragraphsIndex][lineIndex][wordIndex]
-                if index >= word.leadingSpace + word.size {
-                    index = 0
-                    wordIndex = wordIndex.advanced(by: 1)
-                }
-
-                if wordIndex < paragraphs[paragraphsIndex][lineIndex].endIndex {
-                    defer {
-                        index += 1
-                        stringIndex = string.index(after: stringIndex)
-                    }
-
-                    return (
-                        position,
-                        .init(char: string[stringIndex])
-                    )
-                }
-            }
-
-            return (
-                position,
-                .init(char: " ")
-            )
-        }
-    }
 
     init(
         view: Text,
@@ -199,7 +75,6 @@ final class TextNode: DynamicPropertyNode, Control {
         foregroundColor: Environment<Color>
     ) {
         self.text = text
-        self.lineBreaker = KnuthPlassLineBreaker()
         super.init(
             view: view,
             parent: parent,
@@ -210,8 +85,6 @@ final class TextNode: DynamicPropertyNode, Control {
         self.underline = underline.wrappedValue
         self.strikethrough = strikethrough.wrappedValue
         self.foregroundColor = foregroundColor.wrappedValue
-
-        splitText(text: text)
     }
 
     override func size<T>(visitor: inout T) where T : Visitor.Size {
@@ -242,59 +115,66 @@ final class TextNode: DynamicPropertyNode, Control {
         )
     }
 
-    func lineBreaks(for width: Extended) -> [LineBreakingOutput] {
-        wordSizes.map {
-            lineBreaker.wrapItemsToLines(items: $0, in: width)
-        }
-    }
-
     func size(proposedSize: Size) -> Size {
-
-        // Fast out for small strings in big sizes.
         switch text {
-        case .string(let string):
-            let width = Extended(string.count)
-            if width <= proposedSize.width {
-                return .init(width: Extended(string.count), height: 1)
+        case .string(let text):
+            let paragraphs = text.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
+
+            let maximumWidth = Size(
+                width: paragraphs.reduce(0) { max($0, .init($1.count)) },
+                height: Extended(paragraphs.count)
+            )
+
+            // Early Out for containing sizes.
+            if proposedSize.width >= maximumWidth.width {
+                return maximumWidth
             }
 
-        case .attributed(let attributed):
-            let width = Extended(attributed.characters.count)
-            if width <= proposedSize.width {
-                return .init(width: Extended(attributed.characters.count), height: 1)
+            // Calculate the minimum width
+            let paragraphWords = paragraphs.map {
+                $0.split(omittingEmptySubsequences: false, whereSeparator: \.isWhitespace)
             }
-        }
 
-        // minimum width is going to be the size of the longest word
-        let minimumWidth = Extended(
-            paragraphs.reduce(into: 0) { max, line in
-                max = line.reduce(into: max) { max, word in max = Swift.max(max, word.count) }
+            let minimumWidth: Extended = paragraphWords.reduce(into: 0) { minimumWidth, paragraph in
+                minimumWidth = paragraph.reduce(into: minimumWidth) { minimumWidth, word in
+                    minimumWidth = max(minimumWidth, .init(word.count))
+                }
             }
-        )
 
-        // Calculate line breaks based on this width.
-        let lineBreaks = lineBreaks(for: proposedSize.width < minimumWidth ? minimumWidth : proposedSize.width)
+            // Calculate the height based on the given width.
+            var size = Size(
+                width: minimumWidth > proposedSize.width ? minimumWidth : proposedSize.width,
+                height: 0
+            )
 
-        // Calculate the height and width
-        return lineBreaks.reduce(into: Size.zero) { size, lines in
-            // size.height += 1
-            size.height += Extended(lines.count)
+            for paragraph in paragraphWords {
+                size.height += 1
+                var widthOfLine: Extended = 0
 
-            size.width = lines.reduce(into: size.width) { result, line in
-                result = max(result, line.reduce(into: 0) { $0 += $1.leadingSpace + $1.size })
+                for word in paragraph {
+                    let widthOfWord: Extended = .init(word.count)
+                    if widthOfLine + widthOfWord <= size.width {
+                        widthOfLine += widthOfWord
+                        widthOfLine += 1 // space after word.
+                    } else {
+                        size.height += 1
+                        widthOfLine = widthOfWord
+                    }
+                }
             }
+
+            return size
+        case .attributed(let text):
+            return .zero
         }
     }
 
     override func draw(rect: Rect, into window: inout Window<Cell?>) {
         guard let rect = global.intersection(rect) else { return }
 
-        let lineBreaks = lineBreaks(for: frame.size.width)
-
         switch text {
         case .string(let text):
-            var iter = LineBreakIter(frame: global, string: text, paragraphs: lineBreaks)
-            for (position, cell) in iter where rect.contains(position) {
+            for (position, cell) in LineIterator(rect: global, string: text) where rect.contains(position) {
                 window.write(at: position, default: cell) {
                     $0.char = cell.char
                     $0.attributes.bold = bold
@@ -303,30 +183,33 @@ final class TextNode: DynamicPropertyNode, Control {
                     $0.attributes.strikethrough = strikethrough
                     $0.foregroundColor = foregroundColor
                 }
-            }
 
+            }
+            
+            
         case .attributed(let text):
-            var position = rect.indices.makeIterator()
-            let characters = text.runs.lazy.flatMap { run in
-                text.characters[run.range].lazy.map {
-                    (position.next(), run.bold, run.italic, run.underline, run.strikethrough, run.inverted, $0)
-                }
-            }
-
-            for (position, bold, italic, underline, strikethrough, inverted, char) in characters {
-                guard let position else { break }
-                window.write(at: position, default: .init(char: char)) {
-                    $0.char = char
-                    $0.attributes.bold = bold ?? self.bold
-                    $0.attributes.italic = italic ?? self.italic
-                    $0.attributes.underline = underline ?? self.underline
-                    $0.attributes.strikethrough = strikethrough ?? self.strikethrough
-                    if let inverted {
-                        $0.attributes.inverted = inverted
-                    }
-                    $0.foregroundColor = foregroundColor
-                }
-            }
+            break
+            //            var position = rect.indices.makeIterator()
+            //            let characters = text.runs.lazy.flatMap { run in
+            //                text.characters[run.range].lazy.map {
+            //                    (position.next(), run.bold, run.italic, run.underline, run.strikethrough, run.inverted, $0)
+            //                }
+            //            }
+            //
+            //            for (position, bold, italic, underline, strikethrough, inverted, char) in characters {
+            //                guard let position else { break }
+            //                window.write(at: position, default: .init(char: char)) {
+            //                    $0.char = char
+            //                    $0.attributes.bold = bold ?? self.bold
+            //                    $0.attributes.italic = italic ?? self.italic
+            //                    $0.attributes.underline = underline ?? self.underline
+            //                    $0.attributes.strikethrough = strikethrough ?? self.strikethrough
+            //                    if let inverted {
+            //                        $0.attributes.inverted = inverted
+            //                    }
+            //                    $0.foregroundColor = foregroundColor
+            //                }
+            //            }
         }
     }
 

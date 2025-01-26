@@ -54,30 +54,30 @@ public struct ForEach<Data, ID, Content>: View, PrimitiveView where Data : Rando
     }
 }
 
-extension ForEach where Data.Element: Hashable {
-    func update(node: Node) where Data.Element: Hashable {
-        guard let previous = node.view as? Self else { fatalError() }
-
-        let diffs = data.difference(
-            from: previous.data,
-            by: { $0[keyPath: id] == $1[keyPath: id] }
-        ).inferringMoves()
-
-        for diff in diffs {
-            switch diff {
-            case .insert(offset: let i, element: let element, associatedWith: let removal):
-                if let removal {
-                    node.children[removal].update(view: content(element).view)
-                } else {
-                    node.add(at: i, node: content(element).view.build(parent: node))
-                }
-            case .remove(offset: let i, element: let element, associatedWith: let insertion):
-                if let insertion {
-                    node.children[insertion].update(view: content(element).view)
-                } else {
-                    node.remove(at: i)
-                }
-            }
-        }
-    }
-}
+//extension ForEach where Data.Element: Hashable {
+//    func update(node: Node) where Data.Element: Hashable {
+//        guard let previous = node.view as? Self else { fatalError() }
+//
+//        let diffs = data.difference(
+//            from: previous.data,
+//            by: { $0[keyPath: id] == $1[keyPath: id] }
+//        ).inferringMoves()
+//
+//        for diff in diffs {
+//            switch diff {
+//            case .insert(offset: let i, element: let element, associatedWith: let removal):
+//                if let removal {
+//                    node.children[removal].update(view: content(element).view)
+//                } else {
+//                    node.add(at: i, node: content(element).view.build(parent: node))
+//                }
+//            case .remove(offset: let i, element: let element, associatedWith: let insertion):
+//                if let insertion {
+//                    node.children[insertion].update(view: content(element).view)
+//                } else {
+//                    node.remove(at: i)
+//                }
+//            }
+//        }
+//    }
+//}

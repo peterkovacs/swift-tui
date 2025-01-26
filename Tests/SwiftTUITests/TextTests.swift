@@ -13,47 +13,26 @@ import Testing
         At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.
         """
 
-    @Test func testLineBreak() {
-        let lines = longText.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
-            .map { substring in
-                substring.split(omittingEmptySubsequences: true, whereSeparator: \.isWhitespace)
-                    .map { word in
-                        (
-                            word,
-                            LineItemInput(
-                                size: .init(word.count),
-                                spacing: 1
-                            )
-                        )
-                    }
-            }
+    @Test(
+        arguments: [
+            Size(width: 100, height: 100),
+            Size(width: 50, height: 100),
+            Size(width: 14, height: 200),
+            Size(width: 20, height: 5)
+        ]
+    ) func testLineBreakingIterator(size: Size) {
+        let iter = LineIterator(rect: .init(position: .zero, size: size), string: longText)
 
-        #expect(lines.count == 5)
-        #expect(lines.flatMap { $0.map(\.0.count) }.max() == 14)
-
-        let lineSplitter = KnuthPlassLineBreaker()
-
-        func wrap(lines: [[(ArraySlice<String.Element>.SubSequence, LineItemInput)]], size: Extended) -> String {
-            let lines = lines.map { line in
-                lineSplitter.wrapItemsToLines(items: line.map(\.1), in: size)
-                    .map { wrapped in
-                        var result = ""
-                        for item in wrapped {
-                            result.append(contentsOf: String(repeating: " ", count: item.leadingSpace.intValue))
-                            result.append(contentsOf: line[item.index].0)
-                        }
-                        return result
-                    }
-            }
-
-            return lines.map { $0.joined(separator: "\n") }.joined(separator: "\n")
+        var window = Window<Character>(repeating: "X", size: size)
+        for (p, c) in iter {
+            window[p] = c.char
         }
 
-        // our minimum width is the size of the longest word == 14
-        assertSnapshot(of: wrap(lines: lines, size: 14), as: .lines)
-        assertSnapshot(of: wrap(lines: lines, size: 50), as: .lines)
-        assertSnapshot(of: wrap(lines: lines, size: 100), as: .lines)
-        assertSnapshot(of: wrap(lines: lines, size: .infinity), as: .lines)
+        assertSnapshot(
+            of: window.description,
+            as: .lines,
+            named: "\(size)"
+        )
     }
 
     @Test func testString() async throws {
@@ -72,7 +51,7 @@ import Testing
         )
     }
 
-    @Test func testTextLayoutInSingleLine() {
-
-    }
+//    @Test func testTextLayoutInSingleLine() {
+//
+//    }
 }
