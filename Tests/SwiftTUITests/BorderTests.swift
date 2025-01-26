@@ -2,7 +2,7 @@
 import Testing
 import SnapshotTesting
 
-@MainActor @Suite("Border Tests") struct BorderTests {
+@MainActor @Suite("Border Tests", .snapshots(record: .failed)) struct BorderTests {
     let record = false
 
     @Test func testBorderAroundHStack() async throws {
@@ -30,9 +30,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -120,9 +119,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -153,9 +151,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
 
         let bluePixels = application.renderer.window.indices.filter {
@@ -192,9 +189,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
 
         let bluePixels = application.renderer.window.indices.filter {
@@ -224,9 +220,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -255,9 +250,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
 
     }
@@ -284,9 +278,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
 
     }
@@ -318,9 +311,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
 
     }

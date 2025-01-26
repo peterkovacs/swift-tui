@@ -11,7 +11,7 @@ import Testing
             }
         }
         let (application, _) = try drawView(MyView())
-        #expect(application.node?.treeDescription == """
+        #expect(application.node.treeDescription == """
         → VStack<MyView>
           → ComposedView<MyView>
             → EmptyView
@@ -30,7 +30,7 @@ import Testing
 
         do {
             let (application, _) = try drawView(MyView(condition: true))
-            #expect(application.node?.treeDescription == """
+            #expect(application.node.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → OptionalView<Text>
@@ -40,7 +40,7 @@ import Testing
 
         do {
             let (application, _) = try drawView(MyView(condition: false))
-            #expect(application.node?.treeDescription == """
+            #expect(application.node.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → OptionalView<Text>
@@ -63,7 +63,7 @@ import Testing
 
         do {
             let (application, _) = try drawView(MyView(condition: true))
-            #expect(application.node?.treeDescription == """
+            #expect(application.node.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → ConditionalView<Text, Text>
@@ -73,7 +73,7 @@ import Testing
 
         do {
             let (application, _) = try drawView(MyView(condition: false))
-            #expect(application.node?.treeDescription == """
+            #expect(application.node.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → ConditionalView<Text, Text>
@@ -91,7 +91,7 @@ import Testing
 
         do {
             let (application, _) = try drawView(MyView())
-            #expect(application.node?.treeDescription == """
+            #expect(application.node.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → Text:string("Hello World") (0, 0) 11x1
@@ -109,7 +109,7 @@ import Testing
 
         do {
             let (application, _) = try drawView(MyView())
-            #expect(application.node?.treeDescription == """
+            #expect(application.node.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text}>
@@ -130,7 +130,7 @@ import Testing
 
         do {
             let (application, _) = try drawView(MyView())
-            #expect(application.node?.treeDescription == """
+            #expect(application.node.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text}>
@@ -153,7 +153,7 @@ import Testing
 
         do {
             let (application, _) = try drawView(MyView())
-            #expect(application.node?.treeDescription == """
+            #expect(application.node.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text}>
@@ -178,7 +178,7 @@ import Testing
 
         do {
             let (application, _) = try drawView(MyView())
-            #expect(application.node?.treeDescription == """
+            #expect(application.node.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text}>
@@ -205,7 +205,7 @@ import Testing
 
         do {
             let (application, _) = try drawView(MyView())
-            #expect(application.node?.treeDescription == """
+            #expect(application.node.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text, Text}>
@@ -234,7 +234,7 @@ import Testing
 
         do {
             let (application, _) = try drawView(MyView())
-            #expect(application.node?.treeDescription == """
+            #expect(application.node.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text, Text, Text}>
@@ -265,7 +265,7 @@ import Testing
 
         do {
             let (application, _) = try drawView(MyView())
-            #expect(application.node?.treeDescription == """
+            #expect(application.node.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text, Text, Text, Text}>
@@ -298,7 +298,7 @@ import Testing
 
         do {
             let (application, _) = try drawView(MyView())
-            #expect(application.node?.treeDescription == """
+            #expect(application.node.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text, Text, Text, Text, Text}>
@@ -333,7 +333,7 @@ import Testing
 
         do {
             let (application, _) = try drawView(MyView())
-            #expect(application.node?.treeDescription == """
+            #expect(application.node.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text, Text, Text, Text, Text, Text}>
@@ -370,7 +370,7 @@ import Testing
 
         do {
             let (application, _) = try drawView(MyView())
-            #expect(application.node?.treeDescription == """
+            #expect(application.node.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text, Text, Text, Text, Text, Text, Text}>
@@ -409,7 +409,7 @@ import Testing
 
         do {
             let (application, _) = try drawView(MyView())
-            #expect(application.node?.treeDescription == """
+            #expect(application.node.treeDescription == """
                 → VStack<MyView>
                   → ComposedView<MyView>
                     → TupleView<Pack{Text, Text, Text, Text, Text, Text, Text, Text, Text, Text, Text, Text}>

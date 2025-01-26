@@ -79,7 +79,7 @@ class ZStackNode: Node, Control {
 
         func size(proposedSize: Size) -> Size {
             return visited.reduce(into: Size.zero) {
-                $0.expand(to: $1.size($0))
+                $0.expand(to: $1.size(proposedSize))
             }
         }
     }

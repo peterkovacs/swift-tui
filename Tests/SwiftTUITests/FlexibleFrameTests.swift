@@ -4,7 +4,7 @@ import Testing
 import SnapshotTesting
 
 @MainActor
-@Suite("Flexible Frame Tests") struct FlexibleFrameTest {
+@Suite("Flexible Frame Tests", .snapshots(record: .missing)) struct FlexibleFrameTest {
     let record = false
     nonisolated static let allAlignments = [
         Alignment.top,
@@ -39,9 +39,8 @@ import SnapshotTesting
         """)
 
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -66,9 +65,8 @@ import SnapshotTesting
         """)
 
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -94,16 +92,15 @@ import SnapshotTesting
         """)
 
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
     @Test func testFrameMaxSmallerThanText() async throws {
         struct MyView: View {
             var body: some View {
-                Text("Hello World")
+                Text("HelloWorld")
                     .frame(maxWidth: 5, maxHeight: 1, alignment: .center)
                     .border()
             }
@@ -116,14 +113,13 @@ import SnapshotTesting
           → ComposedView<MyView>
             → Border:[(0, 0) 7x3]
               → FlexibleFrame:-∞x-∞/5x1 [(1, 1) 5x1]
-                → Text:string("Hello World") (-2, 1) 11x1
-
+                → Text:string("HelloWorld") (-1, 1) 10x1
+        
         """)
 
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -222,9 +218,8 @@ import SnapshotTesting
         """)
 
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 

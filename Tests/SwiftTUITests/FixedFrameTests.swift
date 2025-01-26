@@ -4,7 +4,7 @@ import Testing
 import SnapshotTesting
 
 @MainActor
-@Suite("Fixed Frame Tests") struct FixedFrameTest {
+@Suite("Fixed Frame Tests", .snapshots(record: .missing)) struct FixedFrameTest {
     let record = false
     nonisolated static let allAlignments = [
         Alignment.top,
@@ -39,16 +39,15 @@ import SnapshotTesting
         """)
 
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
     @Test func testFrameSmallerThanText() async throws {
         struct MyView: View {
             var body: some View {
-                Text("Hello World")
+                Text("HelloWorld")
                     .frame(width: 5, height: 1, alignment: .center)
                     .border()
             }
@@ -61,14 +60,13 @@ import SnapshotTesting
           → ComposedView<MyView>
             → Border:[(0, 0) 7x3]
               → FixedFrame:5x1 [(1, 1) 5x1]
-                → Text:string("Hello World") (-2, 1) 11x1
+                → Text:string("HelloWorld") (-1, 1) 10x1
 
         """)
 
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -183,9 +181,8 @@ import SnapshotTesting
 
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -239,9 +236,8 @@ import SnapshotTesting
 
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -279,9 +275,8 @@ import SnapshotTesting
         """)
 
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 

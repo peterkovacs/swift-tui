@@ -2,7 +2,7 @@
 import Testing
 import SnapshotTesting
 
-@Suite("Layout Tests") @MainActor struct LayoutTests {
+@Suite("Layout Tests", .snapshots(record: .missing)) @MainActor struct LayoutTests {
     let record = false
 
     @Test func sizeOfSingleText() async throws {
@@ -214,9 +214,8 @@ import SnapshotTesting
 
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -245,9 +244,8 @@ import SnapshotTesting
 
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -274,9 +272,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -305,9 +302,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -334,9 +330,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -365,9 +360,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -401,9 +395,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -439,9 +432,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -477,9 +469,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -517,9 +508,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -555,9 +545,8 @@ import SnapshotTesting
 
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -594,9 +583,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -641,9 +629,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -685,9 +672,8 @@ import SnapshotTesting
 
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -712,9 +698,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -752,9 +737,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -792,9 +776,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -832,9 +815,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -842,7 +824,7 @@ import SnapshotTesting
         struct MyView: View {
             var body: some View {
                 ZStack(alignment: .leading) {
-                    VStack {
+                    VStack(alignment: .leading) {
                         Text("Hello")
                         Divider()
                         Text("World")
@@ -855,22 +837,21 @@ import SnapshotTesting
 
         let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
         #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 5x3
+        → VStack<MyView> (0, 0) 50x3
           → ComposedView<MyView>
-            → ZStack<TupleView<Pack{VStack<TupleView<Pack{Text, Divider, Text}>>, Text}>> (0, 0) 5x3
+            → ZStack<TupleView<Pack{VStack<TupleView<Pack{Text, Divider, Text}>>, Text}>> (0, 0) 50x3
               → TupleView<Pack{VStack<TupleView<Pack{Text, Divider, Text}>>, Text}>
-                → VStack<TupleView<Pack{Text, Divider, Text}>> (0, 0) 5x3
+                → VStack<TupleView<Pack{Text, Divider, Text}>> (0, 0) 50x3
                   → TupleView<Pack{Text, Divider, Text}>
                     → Text:string("Hello") (0, 0) 5x1
-                    → Divider (0, 1) 5x1
+                    → Divider (0, 1) 50x1
                     → Text:string("World") (0, 2) 5x1
                 → Text:string("-->") (0, 1) 3x1
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -878,7 +859,7 @@ import SnapshotTesting
         struct MyView: View {
             var body: some View {
                 ZStack(alignment: .trailing) {
-                    VStack {
+                    VStack(alignment: .trailing) {
                         Text("Hello")
                         Divider()
                         Text("World")
@@ -891,22 +872,21 @@ import SnapshotTesting
 
         let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
         #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 5x3
+        → VStack<MyView> (0, 0) 50x3
           → ComposedView<MyView>
-            → ZStack<TupleView<Pack{VStack<TupleView<Pack{Text, Divider, Text}>>, Text}>> (0, 0) 5x3
+            → ZStack<TupleView<Pack{VStack<TupleView<Pack{Text, Divider, Text}>>, Text}>> (0, 0) 50x3
               → TupleView<Pack{VStack<TupleView<Pack{Text, Divider, Text}>>, Text}>
-                → VStack<TupleView<Pack{Text, Divider, Text}>> (0, 0) 5x3
+                → VStack<TupleView<Pack{Text, Divider, Text}>> (0, 0) 50x3
                   → TupleView<Pack{Text, Divider, Text}>
-                    → Text:string("Hello") (0, 0) 5x1
-                    → Divider (0, 1) 5x1
-                    → Text:string("World") (0, 2) 5x1
-                → Text:string("<--") (2, 1) 3x1
+                    → Text:string("Hello") (45, 0) 5x1
+                    → Divider (0, 1) 50x1
+                    → Text:string("World") (45, 2) 5x1
+                → Text:string("<--") (47, 1) 3x1
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -944,9 +924,8 @@ import SnapshotTesting
 
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -984,9 +963,8 @@ import SnapshotTesting
 
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -1024,9 +1002,8 @@ import SnapshotTesting
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 

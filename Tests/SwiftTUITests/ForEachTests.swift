@@ -5,7 +5,7 @@ import SnapshotTesting
 import Testing
 
 @MainActor
-@Suite("ForEach Tests") struct ForEachTests {
+@Suite("ForEach Tests", .snapshots(record: .missing)) struct ForEachTests {
     let record = false
     @Test func testRendersStaticArray() async throws {
         struct MyView: View {
@@ -28,9 +28,8 @@ import Testing
 
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -82,9 +81,8 @@ import Testing
 
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -125,9 +123,8 @@ import Testing
 
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -169,9 +166,8 @@ import Testing
 
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -261,17 +257,15 @@ import Testing
         let (application, _) = try drawView(CalendarView(model: model, calendar: .current))
 
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
 
         model.data = [7, 0, 1, 2, 3, 4, 5, 6]
         application.update()
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
 
     }
