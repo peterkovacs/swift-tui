@@ -190,20 +190,10 @@ final class TextNode: DynamicPropertyNode, Control {
             }
 
         case .attributed(let text):
+            
             let iterator = AttributedLineIterator(
                 rect: global,
-                string:  text.transformingAttributes(\.inlinePresentationIntent) {
-                    switch $0.value {
-                    case .emphasized:
-                        $0.replace(with: \.italic, value: true)
-                    case .stronglyEmphasized:
-                        $0.replace(with: \.bold, value: true)
-                    case .strikethrough:
-                        $0.replace(with: \.strikethrough, value: true)
-                    default:
-                        break
-                    }
-                }
+                string: text.transformed
             )
 
             for (position, cell, attributes) in iterator where rect.contains(position) {
@@ -224,5 +214,26 @@ final class TextNode: DynamicPropertyNode, Control {
 
     override var description: String {
         "Text:\(text)"
+    }
+}
+
+extension AttributedString {
+    var transformed: Self {
+#if os(macOS)
+        transformingAttributes(\.inlinePresentationIntent) {
+            switch $0.value {
+            case .emphasized:
+                $0.replace(with: \.italic, value: true)
+            case .stronglyEmphasized:
+                $0.replace(with: \.bold, value: true)
+            case .strikethrough:
+                $0.replace(with: \.strikethrough, value: true)
+            default:
+                break
+            }
+        }
+#else
+            self
+#endif
     }
 }
