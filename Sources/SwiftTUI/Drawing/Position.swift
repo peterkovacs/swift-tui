@@ -1,8 +1,8 @@
 import Foundation
 
-public struct Position: Equatable {
-    var column: Extended
-    var line: Extended
+public struct Position: Equatable, Sendable {
+    public var column: Extended
+    public var line: Extended
 
     public init(column: Extended, line: Extended) {
         self.column = column
@@ -30,5 +30,9 @@ extension Position: AdditiveArithmetic {
 
     public static func - (lhs: Position, rhs: Position) -> Position {
         Position(column: lhs.column - rhs.column, line: lhs.line - rhs.line)
+    }
+
+    public static prefix func - (p: Position) -> Position {
+        return .init(column: -p.column, line: -p.line)
     }
 }

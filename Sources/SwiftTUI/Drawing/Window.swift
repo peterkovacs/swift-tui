@@ -1,6 +1,7 @@
 struct Window<Element> {
     var elements: [Element]
     var size: Size
+    var offset: Position
 
     init(
         repeating element: Element,
@@ -8,6 +9,7 @@ struct Window<Element> {
     ) {
         self.elements = .init(repeating: element, count: size.width.intValue * size.height.intValue)
         self.size = size
+        self.offset = .zero
     }
 
     init<Seq: Sequence>(
@@ -16,11 +18,13 @@ struct Window<Element> {
     ) where Seq.Element == Element {
         self.elements = Array(input)
         self.size = size
+        self.offset = .zero
 
         assert(size.width.intValue * size.height.intValue == elements.count)
     }
 
     func isValid(_ coord: Position) -> Bool {
+        let coord = coord + offset
         return (
             coord.column < size.width &&
             coord.column >= 0 &&
@@ -30,37 +34,47 @@ struct Window<Element> {
         )
     }
 
+    mutating func with(offset: Position, _ action: (inout Self) -> Void) {
+        self.offset += offset
+        action(&self)
+        self.offset -= offset
+    }
+
     subscript(_ coord: Position) -> Element {
         _read {
-            let p = coord
+            let p = coord + offset
             assert(isValid(coord), "coordinate out of bounds")
-            yield elements[(p.line * size.width + p.column).intValue]
+            let i = (p.line * size.width + p.column).intValue
+            yield elements[i]
         }
 
         _modify {
-            let p = coord
-            yield &elements[(p.line * size.width + p.column).intValue]
+            let p = coord + offset
+            let i = (p.line * size.width + p.column).intValue
+            yield &elements[i]
         }
     }
 
     subscript<T>(_ coord: Position, default default: T) -> T where Optional<T> == Element {
         _read {
-            let p = (coord.line * size.width + coord.column).intValue
-            yield elements[p] ?? `default`
+            let p = coord + offset
+            let i = (p.line * size.width + p.column).intValue
+            yield elements[i] ?? `default`
         }
 
         _modify {
-            let p = (coord.line * size.width + coord.column).intValue
-            if elements[p] == nil { elements[p] = `default` }
-            yield &elements[p]!
+            let p = coord + offset
+            let i = (p.line * size.width + p.column).intValue
+            if elements[i] == nil { elements[i] = `default` }
+            yield &elements[i]!
         }
     }
 
     mutating func write<T>(at coord: Position, default: T,  _ action: (inout T) -> Void) where Optional<T> == Element {
-        let p = (coord.line * size.width + coord.column).intValue
-        var cell = elements[p] ?? `default`
+        let p = coord + offset
+        var cell = elements[(p.line * size.width + p.column).intValue] ?? `default`
         action(&cell)
-        elements[p] = cell
+        elements[(p.line * size.width + p.column).intValue] = cell
     }
 
 }

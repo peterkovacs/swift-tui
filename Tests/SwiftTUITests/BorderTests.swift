@@ -2,7 +2,7 @@
 import Testing
 import SnapshotTesting
 
-@MainActor @Suite("Border Tests", .snapshots(record: .failed)) struct BorderTests {
+@MainActor @Suite("Border Tests", .snapshots(record: .missing, diffTool: .ksdiff)) struct BorderTests {
     let record = false
 
     @Test func testBorderAroundHStack() async throws {

@@ -21,7 +21,8 @@ import Testing
         → VStack<MyView> (0, 0) 100x100
           → ComposedView<MyView>
             → GeometryReader<Text> (0, 0) 100x100
-              → Text:string("0x0") (0, 0) 3x1
+              → ZStack<Text> (0, 0) 3x1
+                → Text:string("0x0") (0, 0) 3x1
 
         """)
 
@@ -32,7 +33,8 @@ import Testing
         → VStack<MyView> (0, 0) 100x100
           → ComposedView<MyView>
             → GeometryReader<Text> (0, 0) 100x100
-              → Text:string("100x100") (0, 0) 7x1
+              → ZStack<Text> (0, 0) 7x1
+                → Text:string("100x100") (0, 0) 7x1
 
         """)
 
@@ -67,10 +69,11 @@ import Testing
               → TupleView<Pack{Text, GeometryReader<TupleView<Pack{Spacer, Text, Spacer}>>, Text}>
                 → Text:string("Hello") (0, 49) 5x1
                 → GeometryReader<TupleView<Pack{Spacer, Text, Spacer}>> (6, 0) 88x100
-                  → TupleView<Pack{Spacer, Text, Spacer}>
-                    → Spacer
-                    → Text:string("0x0") (6, 0) 3x1
-                    → Spacer
+                  → ZStack<TupleView<Pack{Spacer, Text, Spacer}>> (6, 0) 3x1
+                    → TupleView<Pack{Spacer, Text, Spacer}>
+                      → Spacer
+                      → Text:string("0x0") (6, 0) 3x1
+                      → Spacer
                 → Text:string("World") (95, 49) 5x1
 
         """)
@@ -85,10 +88,11 @@ import Testing
               → TupleView<Pack{Text, GeometryReader<TupleView<Pack{Spacer, Text, Spacer}>>, Text}>
                 → Text:string("Hello") (0, 49) 5x1
                 → GeometryReader<TupleView<Pack{Spacer, Text, Spacer}>> (6, 0) 88x100
-                  → TupleView<Pack{Spacer, Text, Spacer}>
-                    → Spacer
-                    → Text:string("88x100") (6, 0) 6x1
-                    → Spacer
+                  → ZStack<TupleView<Pack{Spacer, Text, Spacer}>> (6, 0) 6x1
+                    → TupleView<Pack{Spacer, Text, Spacer}>
+                      → Spacer
+                      → Text:string("88x100") (6, 0) 6x1
+                      → Spacer
                 → Text:string("World") (95, 49) 5x1
 
         """)

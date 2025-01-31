@@ -225,30 +225,11 @@ final class VStackNode: Node, Control {
     }
 
     override func size<T>(visitor: inout T) where T : Visitor.Size {
-        visitor.visit(size: .init(node: self, size: sizeVisitor.size(proposedSize:)))
+        visitor.visit(size: sizeElement)
     }
 
     override func layout<T>(visitor: inout T) where T : Visitor.Layout {
-        visitor.visit(
-            layout: .init(node: self) { rect in
-                super.layout(
-                    rect:
-                        self.layoutVisitor.layout(
-                            rect: .init(
-                                position: rect.position,
-                                size: self.sizeVisitor.size(
-                                    proposedSize: rect.size
-                                )
-                            )
-                        )
-                )
-            } frame: {
-                self.frame = $0
-                return $0
-            } global: {
-                self.global
-            }
-        )
+        visitor.visit(layout: layoutElement)
     }
 
     override func layout(rect: Rect) -> Rect {

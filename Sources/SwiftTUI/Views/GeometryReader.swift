@@ -13,7 +13,7 @@ struct GeometryReader<Content: View>: View, PrimitiveView {
             parent: parent
         )
 
-        node.add(at: 0, node: content(node.frame.size.clamped(to: .zero)).view.build(parent: node))
+        node.add(at: 0, node: ZStack(alignment: .topLeading) { content(node.frame.size.clamped(to: .zero)) }.build(parent: node))
         return node
     }
 
@@ -21,52 +21,71 @@ struct GeometryReader<Content: View>: View, PrimitiveView {
         guard let node = node as? GeometryReaderNode else { fatalError() }
 
         node.view = self
-        node.children[0].update(view: content(node.frame.size.clamped(to: .zero)).view)
+        node.children[0].update(view: ZStack(alignment: .topLeading) { content(node.frame.size.clamped(to: .zero)) }.view)
     }
 }
 
-class GeometryReaderNode: ZStackNode {
-    init(view: any GenericView, parent: Node?) {
-        super.init(view: view, parent: parent, alignment: .topLeading)
+final class GeometryReaderNode: Node, Control {
+    typealias SizeVisitor = ZStackNode.SizeVisitor
+    typealias LayoutVisitor = ZStackNode.LayoutVisitor
+
+    fileprivate var _sizeVisitor: SizeVisitor? = nil
+    var sizeVisitor: SizeVisitor {
+        let visitor = _sizeVisitor ?? SizeVisitor(children: children)
+        _sizeVisitor = visitor
+        return visitor
+    }
+
+    fileprivate var _layoutVisitor: LayoutVisitor? = nil
+    var layoutVisitor: LayoutVisitor {
+        get {
+            let visitor = _layoutVisitor ?? LayoutVisitor(
+                alignment: .topLeading,
+                children: children
+            )
+            _layoutVisitor = visitor
+            return visitor
+        }
+        set {
+            _layoutVisitor = newValue
+        }
+    }
+
+    override init(view: any GenericView, parent: Node?) {
+        super.init(view: view, parent: parent)
+        self.environment = { $0.layoutAxis = .none }
     }
 
     override var frame: Rect {
         didSet {
-            if oldValue != frame { invalidate() }
+            if oldValue.size != frame.size {
+                invalidate()
+            }
         }
     }
 
-    override func size(proposedSize: Size) -> Size {
-        return proposedSize
-    }
-
-    override func layout(rect: Rect) -> Rect {
-        super.layout(
-            rect: layoutVisitor.layout(
-                rect: rect
-            )
-        )
-    }
-
     override func size<T>(visitor: inout T) where T : Visitor.Size {
-        visitor.visit(
-            size: .init(node: self) { proposedSize in
-                proposedSize
-            }
-        )
+        visitor.visit(size: sizeElement)
     }
 
     override func layout<T>(visitor: inout T) where T : Visitor.Layout {
-        visitor.visit(
-            layout: .init(node: self) { rect in
-                _ = self.layoutVisitor.layout(rect: rect)
-                return rect
-            } frame: {
-                self.frame = $0
-                return $0
-            } global: {
-                self.global
-            }
+        visitor.visit(layout: layoutElement)
+    }
+
+    func size(proposedSize: Size) -> Size {
+        proposedSize.expanding(to: sizeVisitor.size(proposedSize: proposedSize))
+    }
+
+    override func layout(rect: Rect) -> Rect {
+
+        super.layout(
+            rect: layoutVisitor.layout(
+                rect: .init(
+                    position: rect.position,
+                    size: sizeVisitor.size(proposedSize: rect.size)
+                )
+            )
+            .union(rect)
         )
     }
 }

@@ -4,7 +4,7 @@ import SnapshotTesting
 import Testing
 
 @MainActor
-@Suite("Task Tests") struct TaskTests {
+@Suite("Task Tests", .serialized) struct TaskTests {
     @Test func testTaskExecutes() async throws {
         struct MyView: View {
             let isCalled: @Sendable () -> Void

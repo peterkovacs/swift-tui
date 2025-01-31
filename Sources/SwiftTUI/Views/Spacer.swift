@@ -40,60 +40,48 @@ class SpacerNode: DynamicPropertyNode, Control {
     }
 
     override func size<T>(visitor: inout T) where T : Visitor.Size {
-        visitor.visit(
-            size: .init(node: self) { [weak self] proposedSize in
-                guard let self else { return .zero }
-                switch layoutAxis {
-                case .none: return .zero
-                case .horizontal:
-                    return .init(width: proposedSize.width < minLength ? minLength : proposedSize.width, height: 0)
-                case .vertical:
-                    return .init(width: 0, height: proposedSize.height < minLength ? minLength : proposedSize.height)
-                }
-            }
-        )
+        visitor.visit(size: sizeElement)
     }
 
     override func layout<T>(visitor: inout T) where T : Visitor.Layout {
-        visitor.visit(
-            layout: .init(node: self) { [weak self] rect in
-                guard let self else { return .zero }
-                switch layoutAxis {
-                case .none:
-                    return self.layout(rect: .zero)
-                case .horizontal:
-                    return self.layout(
-                        rect: .init(
-                            position: rect.position,
-                            size: .init(
-                                width: rect.size.width < minLength ? minLength : rect.size.width,
-                                height: rect.size.height
-                            )
-                        )
-                    )
-                case .vertical:
-                    return self.layout(
-                        rect: .init(
-                            position: rect.position,
-                            size: .init(
-                                width: rect.size.width,
-                                height: rect.size.height < minLength ? minLength : rect.size.height
-                            )
-                        )
-                    )
-                }
-
-            } frame: { [weak self] rect in
-                self?.frame = rect
-                return rect
-            } global: { [weak self] in
-                self?.global ?? .zero
-            }
-        )
+        visitor.visit(layout: layoutElement)
     }
 
-    // This method is only called by {horizontal,vertical}Flexibility, so we'll just return back the proposed size since this is infinitely flexible.
+    override func layout(rect: Rect) -> Rect {
+        switch layoutAxis {
+        case .none:
+            return super.layout(rect: .zero)
+        case .horizontal:
+            return super.layout(
+                rect: .init(
+                    position: rect.position,
+                    size: .init(
+                        width: rect.size.width < minLength ? minLength : rect.size.width,
+                        height: rect.size.height
+                    )
+                )
+            )
+        case .vertical:
+            return super.layout(
+                rect: .init(
+                    position: rect.position,
+                    size: .init(
+                        width: rect.size.width,
+                        height: rect.size.height < minLength ? minLength : rect.size.height
+                    )
+                )
+            )
+        }
+
+    }
+
     func size(proposedSize: Size) -> Size {
-        proposedSize
+        switch layoutAxis {
+        case .none: return .zero
+        case .horizontal:
+            return .init(width: proposedSize.width < minLength ? minLength : proposedSize.width, height: 0)
+        case .vertical:
+            return .init(width: 0, height: proposedSize.height < minLength ? minLength : proposedSize.height)
+        }
     }
 }

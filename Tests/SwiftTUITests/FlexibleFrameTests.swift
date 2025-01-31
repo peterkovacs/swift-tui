@@ -33,7 +33,7 @@ import SnapshotTesting
         → VStack<MyView> (0, 0) 52x32
           → ComposedView<MyView>
             → Border:[(0, 0) 52x32]
-              → FlexibleFrame:50x30/∞x∞ [(1, 1) 50x30]
+              → FlexibleFrame:50x30/(nil)x(nil) [(1, 1) 50x30]
                 → Text:string("Hello World") (20, 15) 11x1
 
         """)
@@ -59,7 +59,7 @@ import SnapshotTesting
         → VStack<MyView> (0, 0) 13x3
           → ComposedView<MyView>
             → Border:[(0, 0) 13x3]
-              → FlexibleFrame:-∞x-∞/50x30 [(1, 1) 11x1]
+              → FlexibleFrame:(nil)x(nil)/50x30 [(1, 1) 11x1]
                 → Text:string("Hello World") (1, 1) 11x1
 
         """)
@@ -86,7 +86,7 @@ import SnapshotTesting
         → VStack<MyView> (0, 0) 13x3
           → ComposedView<MyView>
             → Border:[(0, 0) 13x3]
-              → FlexibleFrame:5x1/∞x∞ [(1, 1) 11x1]
+              → FlexibleFrame:5x1/(nil)x(nil) [(1, 1) 11x1]
                 → Text:string("Hello World") (1, 1) 11x1
 
         """)
@@ -112,7 +112,7 @@ import SnapshotTesting
         → VStack<MyView> (0, 0) 7x3
           → ComposedView<MyView>
             → Border:[(0, 0) 7x3]
-              → FlexibleFrame:-∞x-∞/5x1 [(1, 1) 5x1]
+              → FlexibleFrame:(nil)x(nil)/5x1 [(1, 1) 5x1]
                 → Text:string("HelloWorld") (-1, 1) 10x1
         
         """)
@@ -208,11 +208,11 @@ import SnapshotTesting
             → Border:[(0, 0) 38x14]
               → HStack<TupleView<Pack{Border<FlexibleFrame<Text>>, Border<FlexibleFrame<Text>>}>> (1, 1) 36x12
                 → TupleView<Pack{Border<FlexibleFrame<Text>>, Border<FlexibleFrame<Text>>}>
-                  → Border:[(1, 1) 13x7]
-                    → FlexibleFrame:10x5/30x∞ [(2, 2) 11x5]
-                      → Text:string("Hello World") (2, 4) 11x1
+                  → Border:[(1, 3) 13x7]
+                    → FlexibleFrame:10x5/30x(nil) [(2, 4) 11x5]
+                      → Text:string("Hello World") (2, 6) 11x1
                   → Border:[(15, 1) 22x12]
-                    → FlexibleFrame:20x10/∞x100 [(16, 2) 20x10]
+                    → FlexibleFrame:20x10/(nil)x100 [(16, 2) 20x10]
                       → Text:string("Goodbye World") (19, 6) 13x1
 
         """)
@@ -272,5 +272,35 @@ import SnapshotTesting
               → Text:string("Hello World") (7, 12) 11x1
 
         """)
+    }
+
+    @Test func testInfinitelyWideFrameUsesFullWidth() async throws {
+        struct MyView: View {
+            var body: some View {
+                HStack {
+                    Text("Hello")
+                        .frame(maxWidth: .infinity)
+                        .border()
+                    Text("World")
+                        .frame(maxWidth: .infinity)
+                        .border()
+                }
+            }
+        }
+        
+        let (application, _) = try drawView(MyView())
+
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 100x1
+          → ComposedView<MyView>
+            → FlexibleFrame:(nil)x(nil)/∞x(nil) [(0, 0) 100x1]
+              → Text:string("Hello World") (0, 0) 11x1
+        
+        """)
+
+        assertSnapshot(
+            of: application.renderer,
+            as: .rendered
+        )
     }
 }

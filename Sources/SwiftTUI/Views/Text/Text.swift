@@ -88,22 +88,11 @@ final class TextNode: DynamicPropertyNode, Control {
     }
 
     override func size<T>(visitor: inout T) where T : Visitor.Size {
-        visitor.visit(size: .init(node: self, size: size(proposedSize:)))
+        visitor.visit(size: sizeElement)
     }
 
     override func layout<T>(visitor: inout T) where T : Visitor.Layout {
-        visitor.visit(
-            layout: .init(node: self) { [weak self] rect in
-                guard let self else { return .zero }
-                return layout(rect: rect)
-            } frame: { [weak self] rect in
-                guard let self else { return .zero }
-                frame = rect
-                return rect
-            } global: { [weak self] in
-                self?.global ?? .zero
-            }
-        )
+        visitor.visit(layout: layoutElement)
     }
 
     override func layout(rect: Rect) -> Rect {

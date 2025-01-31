@@ -40,4 +40,22 @@ import Testing
         )
 
     }
+
+    @Test(.disabled("Not yet implemented")) func testFixedFrameWithBackground() throws {
+        struct MyView: View {
+            var body: some View {
+                Text("Hello World")
+                    .frame(width: 20, height: 20)
+                    .background(.blue)
+            }
+        }
+        
+        let (application, _) = try drawView(MyView())
+        let blueCells = application.renderer.window.indices.filter { application.renderer.window[$0]?.backgroundColor == .blue }
+        #expect(blueCells.count == 40)
+        #expect(
+            blueCells == Array(Rect(column: 0, line: 0, width: 20, height: 20).indices)
+        )
+
+    }
 }

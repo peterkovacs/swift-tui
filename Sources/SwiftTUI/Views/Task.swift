@@ -51,7 +51,7 @@ fileprivate actor TaskActor {
     static let shared = TaskActor()
 }
 
-class TaskNode<ID: Equatable>: Node {
+final class TaskNode<ID: Equatable>: Node {
     let action: @Sendable () async -> Void
     var priority: TaskPriority
     var task: Task<Void, Never>?
@@ -84,7 +84,6 @@ class TaskNode<ID: Equatable>: Node {
 
     override func layout<T>(visitor: inout T) where T : Visitor.Layout {
         super.layout(visitor: &visitor)
-
 
         if task == nil {
             task = .init(priority: priority) { @TaskActor [action] in

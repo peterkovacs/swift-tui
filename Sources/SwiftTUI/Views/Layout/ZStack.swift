@@ -28,7 +28,7 @@ public struct ZStack<Content: View>: View, PrimitiveView {
     }
 }
 
-class ZStackNode: Node, Control {
+final class ZStackNode: Node, Control {
     var alignment: Alignment
 
     fileprivate var _sizeVisitor: SizeVisitor? = nil
@@ -66,7 +66,7 @@ class ZStackNode: Node, Control {
     struct SizeVisitor: Visitor.Size {
         var visited: [Visitor.SizeElement]
 
-        fileprivate init(children: [Node]) {
+        init(children: [Node]) {
             self.visited = []
             for child in children {
                 child.size(visitor: &self)
@@ -89,7 +89,7 @@ class ZStackNode: Node, Control {
         var visited: [Visitor.LayoutElement]
         var calculatedLayout: (Rect, Rect)?
 
-        fileprivate init(alignment: Alignment, children: [Node]) {
+        init(alignment: Alignment, children: [Node]) {
             self.alignment = alignment
             self.visited = []
             for child in children {
@@ -134,30 +134,11 @@ class ZStackNode: Node, Control {
     }
 
     override func size<T>(visitor: inout T) where T : Visitor.Size {
-        visitor.visit(size: .init(node: self, size: self.sizeVisitor.size(proposedSize:)))
+        visitor.visit(size: sizeElement)
     }
 
     override func layout<T>(visitor: inout T) where T : Visitor.Layout {
-        visitor.visit(
-            layout: .init(node: self) { rect in
-                super.layout(
-                    rect:
-                        self.layoutVisitor.layout(
-                            rect: .init(
-                                position: rect.position,
-                                size: self.sizeVisitor.size(
-                                    proposedSize: rect.size
-                                )
-                            )
-                        )
-                )
-            } frame: {
-                self.frame = $0
-                return $0
-            } global: {
-                self.global
-            }
-        )
+        visitor.visit(layout: layoutElement)
     }
 
     override func layout(rect: Rect) -> Rect {
