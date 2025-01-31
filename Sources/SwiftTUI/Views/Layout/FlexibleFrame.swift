@@ -161,6 +161,7 @@ final class FlexibleFrameNode: ModifierNode {
                 } frame: { [weak self] rect in
                     // The rect here is now the correct bounds.
                     guard let self else { return .zero }
+                    frame = frame.union(.init(position: .zero, size: rect.size))
 
                     let childFrame = element.layout(.init(position: .zero, size: rect.size))
                     let alignment = aligned(rect: childFrame, bounds: rect.size)

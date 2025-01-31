@@ -323,4 +323,36 @@ import SnapshotTesting
 
         """)
     }
+
+    @Test func testInfiniteFramesTakeEntireWidth() async throws {
+        struct MyView: View {
+            var body: some View {
+                Group {
+                    Text("Hello World")
+                    Text("Goodbye World")
+                    Text("So long\nand thanks for all\nthe fish")
+                }
+                .frame(width: .infinity)
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 100x5
+          → ComposedView<MyView>
+            → FixedFrame:∞x(nil) [(0, 0) 100x1, (0, 1) 100x1, (0, 2) 100x3] (0, 0) 100x2
+              → Group<TupleView<Pack{Text, Text, Text}>>
+                → TupleView<Pack{Text, Text, Text}>
+                  → Text:string("Hello World") (44, 0) 11x1
+                  → Text:string("Goodbye World") (43, 1) 13x1
+                  → Text:string("So long\nand thanks for all\nthe fish") (41, 2) 18x3
+
+        """)
+
+        assertSnapshot(
+            of: application.renderer,
+            as: .rendered
+        )
+
+    }
 }
