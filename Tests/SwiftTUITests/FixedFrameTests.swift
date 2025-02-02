@@ -18,6 +18,60 @@ import SnapshotTesting
         .bottomTrailing
     ]
 
+    @Test func testFrameWidthSpecified() async throws {
+        struct MyView: View {
+            var body: some View {
+                Text("Hello World")
+                    .frame(width: 50, alignment: .center)
+                    .border()
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 52x3
+          → ComposedView<MyView>
+            → Border:[(0, 0) 52x3]
+              → FixedFrame:50x(nil) [50x1]
+                → Text:string("Hello World") (20, 1) 11x1
+
+        """)
+
+        assertSnapshot(
+            of: application.renderer,
+            as: .rendered
+        )
+
+    }
+
+    @Test func testFrameHeightSpecified() async throws {
+        struct MyView: View {
+            var body: some View {
+                Text("Hello World")
+                    .frame(height: 30, alignment: .center)
+                    .border()
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 13x32
+          → ComposedView<MyView>
+            → Border:[(0, 0) 13x32]
+              → FixedFrame:(nil)x30 [11x30]
+                → Text:string("Hello World") (1, 15) 11x1
+
+        """)
+
+        assertSnapshot(
+            of: application.renderer,
+            as: .rendered
+        )
+
+    }
+
     @Test func testFrameLargerThanText() async throws {
         struct MyView: View {
             var body: some View {
@@ -33,7 +87,7 @@ import SnapshotTesting
         → VStack<MyView> (0, 0) 52x32
           → ComposedView<MyView>
             → Border:[(0, 0) 52x32]
-              → FixedFrame:50x30 [(1, 1) 50x30]
+              → FixedFrame:50x30 [50x30]
                 → Text:string("Hello World") (20, 15) 11x1
 
         """)
@@ -59,7 +113,7 @@ import SnapshotTesting
         → VStack<MyView> (0, 0) 7x3
           → ComposedView<MyView>
             → Border:[(0, 0) 7x3]
-              → FixedFrame:5x1 [(1, 1) 5x1]
+              → FixedFrame:5x1 [5x1]
                 → Text:string("HelloWorld") (-1, 1) 10x1
 
         """)
@@ -163,17 +217,17 @@ import SnapshotTesting
           → ComposedView<MyView>
             → HStack<TupleView<Pack{FixedFrame<VStack<TupleView<Pack{Text, Text}>>>, FixedFrame<VStack<TupleView<Pack{Text, Text}>>>, FixedFrame<VStack<TupleView<Pack{Text, Text}>>>}>> (0, 0) 62x5
               → TupleView<Pack{FixedFrame<VStack<TupleView<Pack{Text, Text}>>>, FixedFrame<VStack<TupleView<Pack{Text, Text}>>>, FixedFrame<VStack<TupleView<Pack{Text, Text}>>>}>
-                → FixedFrame:20x5 [(0, 0) 20x5]
+                → FixedFrame:20x5 [20x5]
                   → VStack<TupleView<Pack{Text, Text}>> (7, 1) 5x2
                     → TupleView<Pack{Text, Text}>
                       → Text:string("Hello") (7, 1) 5x1
                       → Text:string("World") (7, 2) 5x1
-                → FixedFrame:20x5 [(21, 0) 20x5]
+                → FixedFrame:20x5 [20x5]
                   → VStack<TupleView<Pack{Text, Text}>> (28, 1) 5x2
                     → TupleView<Pack{Text, Text}>
                       → Text:string("Hello") (28, 1) 5x1
                       → Text:string("World") (28, 2) 5x1
-                → FixedFrame:20x5 [(42, 0) 20x5]
+                → FixedFrame:20x5 [20x5]
                   → VStack<TupleView<Pack{Text, Text}>> (49, 1) 5x2
                     → TupleView<Pack{Text, Text}>
                       → Text:string("Hello") (49, 1) 5x1
@@ -218,17 +272,17 @@ import SnapshotTesting
           → ComposedView<MyView>
             → VStack<TupleView<Pack{FixedFrame<HStack<TupleView<Pack{Text, Text}>>>, FixedFrame<HStack<TupleView<Pack{Text, Text}>>>, FixedFrame<HStack<TupleView<Pack{Text, Text}>>>}>> (0, 0) 20x15
               → TupleView<Pack{FixedFrame<HStack<TupleView<Pack{Text, Text}>>>, FixedFrame<HStack<TupleView<Pack{Text, Text}>>>, FixedFrame<HStack<TupleView<Pack{Text, Text}>>>}>
-                → FixedFrame:20x5 [(0, 0) 20x5]
+                → FixedFrame:20x5 [20x5]
                   → HStack<TupleView<Pack{Text, Text}>> (4, 2) 11x1
                     → TupleView<Pack{Text, Text}>
                       → Text:string("Hello") (4, 2) 5x1
                       → Text:string("World") (10, 2) 5x1
-                → FixedFrame:20x5 [(0, 5) 20x5]
+                → FixedFrame:20x5 [20x5]
                   → HStack<TupleView<Pack{Text, Text}>> (4, 7) 11x1
                     → TupleView<Pack{Text, Text}>
                       → Text:string("Hello") (4, 7) 5x1
                       → Text:string("World") (10, 7) 5x1
-                → FixedFrame:20x5 [(0, 10) 20x5]
+                → FixedFrame:20x5 [20x5]
                   → HStack<TupleView<Pack{Text, Text}>> (4, 12) 11x1
                     → TupleView<Pack{Text, Text}>
                       → Text:string("Hello") (4, 12) 5x1
@@ -265,11 +319,11 @@ import SnapshotTesting
             → Border:[(0, 0) 57x14]
               → HStack<TupleView<Pack{Border<FixedFrame<Text>>, Border<FixedFrame<Text>>}>> (1, 1) 55x12
                 → TupleView<Pack{Border<FixedFrame<Text>>, Border<FixedFrame<Text>>}>
-                  → Border:[(1, 1) 32x7]
-                    → FixedFrame:30x5 [(2, 2) 30x5]
-                      → Text:string("Hello World") (11, 4) 11x1
+                  → Border:[(1, 3) 32x7]
+                    → FixedFrame:30x5 [30x5]
+                      → Text:string("Hello World") (11, 6) 11x1
                   → Border:[(34, 1) 22x12]
-                    → FixedFrame:20x10 [(35, 2) 20x10]
+                    → FixedFrame:20x10 [20x10]
                       → Text:string("Goodbye World") (38, 6) 13x1
 
         """)
@@ -305,7 +359,7 @@ import SnapshotTesting
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 50x50
           → ComposedView<MyView>
-            → FixedFrame:50x50 [(0, 0) 50x50]
+            → FixedFrame:50x50 [50x50]
               → Text:string("Hello World") (19, 24) 11x1
 
         """)
@@ -318,35 +372,40 @@ import SnapshotTesting
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 25x25
           → ComposedView<MyView>
-            → FixedFrame:25x25 [(0, 0) 25x25]
+            → FixedFrame:25x25 [25x25]
               → Text:string("Hello World") (7, 12) 11x1
 
         """)
     }
 
-    @Test func testInfiniteFramesTakeEntireWidth() async throws {
+    @Test func testInfiniteWidthIsClamped() async throws {
         struct MyView: View {
             var body: some View {
                 Group {
                     Text("Hello World")
+                    Text("So long and thanks for all the fish")
+                        .frame(width: 18, height: 3)
                     Text("Goodbye World")
-                    Text("So long\nand thanks for all\nthe fish")
                 }
                 .frame(width: .infinity)
+                .border()
             }
         }
 
         let (application, _) = try drawView(MyView())
-        #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 100x5
-          → ComposedView<MyView>
-            → FixedFrame:∞x(nil) [(0, 0) 100x1, (0, 1) 100x1, (0, 2) 100x3] (0, 0) 100x2
-              → Group<TupleView<Pack{Text, Text, Text}>>
-                → TupleView<Pack{Text, Text, Text}>
-                  → Text:string("Hello World") (44, 0) 11x1
-                  → Text:string("Goodbye World") (43, 1) 13x1
-                  → Text:string("So long\nand thanks for all\nthe fish") (41, 2) 18x3
 
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 20x11
+          → ComposedView<MyView>
+            → Border:[(3, 0) 13x3, (0, 3) 20x5, (2, 8) 15x3]
+              → FixedFrame:∞x(nil) [11x1, 18x3, 13x1]
+                → Group<TupleView<Pack{Text, FixedFrame<Text>, Text}>>
+                  → TupleView<Pack{Text, FixedFrame<Text>, Text}>
+                    → Text:string("Hello World") (4, 1) 11x1
+                    → FixedFrame:18x3 [18x3]
+                      → Text:string("So long and thanks for all the fish") (1, 4) 18x2
+                    → Text:string("Goodbye World") (3, 9) 13x1
+        
         """)
 
         assertSnapshot(

@@ -90,12 +90,6 @@ internal class Node {
         }
     }
 
-    @discardableResult
-    func layout(rect: Rect) -> Rect {
-        frame = rect
-        return frame
-    }
-
     func draw(rect: Rect, into window: inout Window<Cell?>) {
         guard let rect = global.intersection(rect) else { return }
         for child in children {

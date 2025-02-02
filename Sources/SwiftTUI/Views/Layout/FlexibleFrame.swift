@@ -29,7 +29,6 @@ struct FlexibleFrame<Content: View>: View, PrimitiveView {
         let node = FlexibleFrameNode(
             view: self,
             parent: parent,
-            content: self,
             minWidth: minWidth,
             maxWidth: maxWidth,
             minHeight: minHeight,
@@ -48,7 +47,6 @@ struct FlexibleFrame<Content: View>: View, PrimitiveView {
         }
 
         node.view = self
-        node.set(references: self)
         node.minWidth = minWidth
         node.maxWidth = maxWidth
         node.minHeight = minHeight
@@ -59,17 +57,79 @@ struct FlexibleFrame<Content: View>: View, PrimitiveView {
     }
 }
 
-final class FlexibleFrameNode: ModifierNode {
+final class FlexibleFrameNode: Node {
     var minWidth: Extended? = nil
     var maxWidth: Extended? = nil
     var minHeight: Extended? = nil
     var maxHeight: Extended? = nil
     var alignment: Alignment
 
-    init<Content: View>(
+    var _sizeVisitor: SizeVisitor? = nil
+    var sizeVisitor: SizeVisitor {
+        guard let _sizeVisitor else {
+            let visitor = SizeVisitor(children: children) { $0.size(visitor: &$1) }
+            _sizeVisitor = visitor
+            return visitor
+        }
+
+        return _sizeVisitor
+    }
+
+    var _layoutVisitor: LayoutVisitor? = nil
+    var layoutVisitor: LayoutVisitor {
+        _read {
+            _layoutVisitor = _layoutVisitor ?? LayoutVisitor(children: children) { $0.layout(visitor: &$1) }
+            yield _layoutVisitor!
+        }
+
+        _modify {
+            _layoutVisitor = _layoutVisitor ?? LayoutVisitor(children: children) { $0.layout(visitor: &$1) }
+            yield &_layoutVisitor!
+        }
+    }
+
+    struct SizeVisitor: Visitor.Size {
+        var visited: [Visitor.SizeElement]
+
+        fileprivate init(
+            children: [Node],
+            action: (Node, inout Self) -> Void
+        ) {
+            self.visited = []
+
+            for child in children {
+                action(child, &self)
+            }
+        }
+
+        mutating func visit(size: Visitor.SizeElement) {
+            visited.append(size)
+        }
+    }
+
+    struct LayoutVisitor: Visitor.Layout {
+        var visited: [(element: Visitor.LayoutElement, size: Size)]
+
+        fileprivate init(
+            children: [Node],
+            action: (Node, inout Self) -> Void
+        ) {
+            self.visited = []
+
+            for child in children {
+                action(child, &self)
+            }
+        }
+
+        mutating func visit(layout: Visitor.LayoutElement) {
+            visited.append((layout, .zero))
+        }
+    }
+
+
+    init(
         view: any GenericView,
         parent: Node?,
-        content: Content,
         minWidth: Extended?,
         maxWidth: Extended?,
         minHeight: Extended?,
@@ -81,7 +141,7 @@ final class FlexibleFrameNode: ModifierNode {
         self.minHeight = minHeight
         self.maxHeight = maxHeight
         self.alignment = alignment
-        super.init(view: view, parent: parent, content: content)
+        super.init(view: view, parent: parent)
     }
 
     private func size(child childSize: Size, bounds: Size) -> Size {
@@ -112,26 +172,26 @@ final class FlexibleFrameNode: ModifierNode {
         )
     }
 
-    private func aligned(rect childFrame: Rect, bounds: Size) -> Position {
+    private func aligned(rect childFrame: Size, bounds: Size) -> Position {
         var result = Position.zero
-        let size = size(child: childFrame.size, bounds: bounds)
+        let size = size(child: childFrame, bounds: bounds)
 
         switch alignment.horizontalAlignment {
         case .leading:
             result.column = 0
         case .center:
-            result.column += (size.width - childFrame.size.width) / 2
+            result.column += (size.width - childFrame.width) / 2
         case .trailing:
-            result.column += (size.width - childFrame.size.width)
+            result.column += (size.width - childFrame.width)
         }
 
         switch alignment.verticalAlignment {
         case .top:
             result.line = 0
         case .center:
-            result.line += (size.height - childFrame.size.height) / 2
+            result.line += (size.height - childFrame.height) / 2
         case .bottom:
-            result.line += (size.height - childFrame.size.height)
+            result.line += (size.height - childFrame.height)
         }
 
         return result
@@ -139,46 +199,42 @@ final class FlexibleFrameNode: ModifierNode {
 
     private func global(_ childFrame: Rect, bounds: Size) -> Rect {
         .init(
-            position: childFrame.position - aligned(rect: childFrame, bounds: bounds),
+            position: childFrame.position - aligned(rect: childFrame.size, bounds: bounds),
             size: size(child: childFrame.size, bounds: bounds)
         )
     }
 
     override func layout<T>(visitor: inout T) where T : Visitor.Layout {
-        for element in layoutVisitor.visited {
+        for i in layoutVisitor.visited.indices {
+            let (element, _) = layoutVisitor.visited[i]
+
             visitor.visit(
                 layout: .init(
                     node: element.node
                 ) { [weak self] (rect: Rect) in
                     guard let self else { return .zero }
 
-                    // This is called to determine the size of the frame. it needs to actually be smarter than just a `clamped`.
+                    // - call layout on the control
+                    // - calculate the alignment and set using `adjust`
+                    // - store the calculated bounds for this control so that we can refer to it in `global`.
+                    // - return the full width of the frame so that the layout in which this fixedFrame appears is calculated correctly.
+
+                    let childFrame = element.layout(rect)
+                    let bounds = size(child: childFrame.size, bounds: rect.size)
+                    let alignment = aligned(rect: childFrame.size, bounds: bounds)
+
+                    element.adjust(alignment)
+                    layoutVisitor.visited[i].size = bounds
+
                     return .init(
                         position: rect.position,
-                        size: size(child: element.layout(rect).size, bounds: rect.size)
+                        size: bounds
                     )
-                    // return rect.clamped(to: element.layout(rect))
-                } frame: { [weak self] rect in
-                    // The rect here is now the correct bounds.
-                    guard let self else { return .zero }
-                    frame = frame.union(.init(position: .zero, size: rect.size))
-
-                    let childFrame = element.layout(.init(position: .zero, size: rect.size))
-                    let alignment = aligned(rect: childFrame, bounds: rect.size)
-
-                    // This returns the correct size based on the flexible (potentially infinite) layout.
-                    // However, its actually setting a potentially much smaller frame on the contained control.
-                    //
- 
-                    return .init(
-                        position: element.frame(
-                            childFrame + rect.position + alignment
-                        ).position - alignment,
-                        size: size(child: childFrame.size, bounds: rect.size)
-                    )
+                } adjust: { position in
+                    element.adjust(position)
                 } global: { [weak self] in
                     guard let self else { return .zero }
-                    return global(element.global(), bounds: frame.size)
+                    return global(element.global(), bounds: layoutVisitor.visited[i].size)
                 }
             )
         }
@@ -212,6 +268,6 @@ final class FlexibleFrameNode: ModifierNode {
         let minHeight = minHeight.map { "\($0)" } ?? "(nil)"
         let maxWidth = maxWidth.map { "\($0)" } ?? "(nil)"
         let maxHeight = maxHeight.map { "\($0)" } ?? "(nil)"
-        return  "FlexibleFrame:\(minWidth)x\(minHeight)/\(maxWidth)x\(maxHeight) \(layoutVisitor.visited.map { global($0.global(), bounds: frame.size) })"
+        return  "FlexibleFrame:\(minWidth)x\(minHeight)/\(maxWidth)x\(maxHeight) \(layoutVisitor.visited.map(\.size))"
     }
 }

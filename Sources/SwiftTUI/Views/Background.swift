@@ -12,6 +12,7 @@ struct Background<Content: View>: View, PrimitiveView {
         let node = BackgroundNode(
             view: self,
             parent: parent,
+            content: self,
             color: color
         )
 
@@ -27,24 +28,34 @@ struct Background<Content: View>: View, PrimitiveView {
     }
 }
 
-final class BackgroundNode: Node {
+final class BackgroundNode: ModifierNode {
     var color: Color = .default
 
-    init(
+    init<Content: View>(
         view: any GenericView,
         parent: Node?,
+        content: Content,
         color: Color
     ) {
         self.color = color
-        super.init(view: view, parent: parent)
+        super.init(view: view, parent: parent, content: content)
+    }
+
+    override func draw(rect: Rect, action: (Rect, any Control, Rect) -> Void) {
+        for element in layoutVisitor.visited {
+            let frame = element.global()
+            guard let invalidated = frame.intersection(rect) else { continue }
+
+            action(invalidated, element.node, frame)
+        }
     }
 
     override func draw(
         rect: Rect,
         into window: inout Window<Cell?>
     ) {
-        draw(rect: rect) { invalidated, node, _ in
-            for i in invalidated.indices {
+        draw(rect: rect) { invalidated, node, frame in
+            for i in frame.indices {
                 window[i, default: .init(char: " ")].backgroundColor = color
             }
         }

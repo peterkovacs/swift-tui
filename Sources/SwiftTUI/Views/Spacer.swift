@@ -47,32 +47,29 @@ class SpacerNode: DynamicPropertyNode, Control {
         visitor.visit(layout: layoutElement)
     }
 
-    override func layout(rect: Rect) -> Rect {
+    func layout(rect: Rect) -> Rect {
         switch layoutAxis {
         case .none:
-            return super.layout(rect: .zero)
+            frame = .zero
         case .horizontal:
-            return super.layout(
-                rect: .init(
-                    position: rect.position,
-                    size: .init(
-                        width: rect.size.width < minLength ? minLength : rect.size.width,
-                        height: rect.size.height
-                    )
+            frame = .init(
+                position: rect.position,
+                size: .init(
+                    width: rect.size.width < minLength ? minLength : rect.size.width,
+                    height: rect.size.height
                 )
             )
         case .vertical:
-            return super.layout(
-                rect: .init(
-                    position: rect.position,
-                    size: .init(
-                        width: rect.size.width,
-                        height: rect.size.height < minLength ? minLength : rect.size.height
-                    )
+            frame = .init(
+                position: rect.position,
+                size: .init(
+                    width: rect.size.width,
+                    height: rect.size.height < minLength ? minLength : rect.size.height
                 )
             )
         }
 
+        return frame
     }
 
     func size(proposedSize: Size) -> Size {

@@ -3,7 +3,7 @@ import Testing
 import SnapshotTesting
 
 @MainActor
-@Suite("Padding Tests", .snapshots(record: .failed)) struct PaddingTests {
+@Suite("Padding Tests", .snapshots(record: .missing)) struct PaddingTests {
     let record = false
     @Test func testPaddingAroundHStack() async throws {
         struct MyView: View {

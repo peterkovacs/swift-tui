@@ -6,9 +6,19 @@
     var frame: Rect { get set }
     var global: Rect { get }
     func size(proposedSize: Size) -> Size
+
+    /// Perform layout for this Control inside the specified Rect.
+    ///
+    /// Nodes must set their `frame` to be the entire Rect, but could layout in a smaller rect, which they can set as `bounds`.
+    ///
+    /// These two values are often the same thing, especially for simple controls, but may be adjusted by modifiiers like ``View/padding(_:_:)`` and ``View/frame(width:height:alignment:)``.
+    ///
+    /// - Parameter rect: The rect that this node must layout in.
+    /// - Returns: The bounds of the node.
     func layout(rect: Rect) -> Rect
     func verticalFlexibility(width: Extended) -> Extended
     func horizontalFlexibility(height: Extended) -> Extended
+
     var sizeElement: Visitor.SizeElement { get }
     var layoutElement: Visitor.LayoutElement { get }
 }
@@ -51,9 +61,8 @@ extension Control {
             node: self
         ) { [weak self] rect in
             self?.layout(rect: rect) ?? .zero
-        } frame: { [weak self] frame in
-            self?.frame = frame
-            return frame
+        } adjust: { [weak self] position in
+            self?.frame.position += position
         } global: { [weak self] in
             self?.global ?? .zero
         }

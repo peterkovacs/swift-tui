@@ -157,25 +157,23 @@ final class DividerNode: DynamicPropertyNode, Control {
         }
     }
 
-    override func layout(rect: Rect) -> Rect {
+    func layout(rect: Rect) -> Rect {
         switch layoutAxis {
         case .none:
-            super.layout(rect: .zero)
+            frame = .zero
         case .horizontal:
-            super.layout(
-                rect: .init(
-                    position: rect.position,
-                    size: .init(width: 1, height: rect.size.height)
-                )
+            frame = .init(
+                position: rect.position,
+                size: .init(width: 1, height: rect.size.height)
             )
         case .vertical:
-            super.layout(
-                rect: .init(
-                    position: rect.position,
-                    size: .init(width: rect.size.width, height: 1)
-                )
+            frame = .init(
+                position: rect.position,
+                size: .init(width: rect.size.width, height: 1)
             )
         }
+
+        return frame
     }
 
     override func size<T>(visitor: inout T) where T : Visitor.Size {

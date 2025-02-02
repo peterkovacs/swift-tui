@@ -104,25 +104,32 @@ final class ZStackNode: Node, Control {
         mutating func layout(rect: Rect) -> Rect {
             if let (cachedRect, calculatedLayout) = calculatedLayout, cachedRect == rect { return calculatedLayout }
 
-            var result = Rect.zero
-
-            for element in visited {
-                var frame = element.layout(rect)
-
-                switch alignment.horizontalAlignment {
-                case .leading:  frame.position.column = 0
-                case .center:   frame.position.column = (rect.size.width - frame.size.width) / 2
-                case .trailing: frame.position.column = (rect.size.width - frame.size.width)
+            let result = visited
+                .map {
+                    ($0.adjust, $0.layout(rect))
                 }
+                .map { (adjust, frame) in
+                    var position = Position.zero
 
-                switch alignment.verticalAlignment {
-                case .top:    frame.position.line = 0
-                case .center: frame.position.line = (rect.size.height - frame.size.height) / 2
-                case .bottom: frame.position.line = (rect.size.height - frame.size.height)
+                    switch alignment.horizontalAlignment {
+                    case .leading:  position.column = 0
+                    case .center:   position.column = (rect.size.width - frame.size.width) / 2
+                    case .trailing: position.column = (rect.size.width - frame.size.width)
+                    }
+
+                    switch alignment.verticalAlignment {
+                    case .top:    position.line = 0
+                    case .center: position.line = (rect.size.height - frame.size.height) / 2
+                    case .bottom: position.line = (rect.size.height - frame.size.height)
+                    }
+
+                    // Align the view in the ZStack
+                    adjust(position)
+
+                    return (frame + position)
                 }
+                .reduce(into: Rect.zero) { $0 = $0.union($1) }
 
-                result = result.union(element.frame(frame))
-            }
 
             calculatedLayout = (rect, result)
             return result
@@ -141,15 +148,15 @@ final class ZStackNode: Node, Control {
         visitor.visit(layout: layoutElement)
     }
 
-    override func layout(rect: Rect) -> Rect {
-        super.layout(
-            rect: layoutVisitor.layout(
-                rect: .init(
-                    position: rect.position,
-                    size: sizeVisitor.size(proposedSize: rect.size)
-                )
+    func layout(rect: Rect) -> Rect {
+        frame = layoutVisitor.layout(
+            rect: .init(
+                position: rect.position,
+                size: sizeVisitor.size(proposedSize: rect.size)
             )
         )
+
+        return frame
     }
 
     override func invalidateLayout() {

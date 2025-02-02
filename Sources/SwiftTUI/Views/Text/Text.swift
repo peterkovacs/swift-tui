@@ -95,13 +95,13 @@ final class TextNode: DynamicPropertyNode, Control {
         visitor.visit(layout: layoutElement)
     }
 
-    override func layout(rect: Rect) -> Rect {
-        super.layout(
-            rect: .init(
-                position: rect.position,
-                size: self.size(proposedSize: rect.size)
-            )
+    func layout(rect: Rect) -> Rect {
+        frame = .init(
+            position: rect.position,
+            size: self.size(proposedSize: rect.size)
         )
+
+        return frame
     }
 
     func calculateSize<Text: BidirectionalCollection>(proposedSize: Size, text: Text) -> Size  where Text.Element == Character{

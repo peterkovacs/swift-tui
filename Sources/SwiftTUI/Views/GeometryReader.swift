@@ -76,16 +76,15 @@ final class GeometryReaderNode: Node, Control {
         proposedSize.expanding(to: sizeVisitor.size(proposedSize: proposedSize))
     }
 
-    override func layout(rect: Rect) -> Rect {
-
-        super.layout(
-            rect: layoutVisitor.layout(
-                rect: .init(
-                    position: rect.position,
-                    size: sizeVisitor.size(proposedSize: rect.size)
-                )
+    func layout(rect: Rect) -> Rect {
+        frame = layoutVisitor.layout(
+            rect: .init(
+                position: rect.position,
+                size: sizeVisitor.size(proposedSize: rect.size)
             )
-            .union(rect)
         )
+        .union(rect)
+
+        return frame
     }
 }

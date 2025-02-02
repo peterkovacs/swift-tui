@@ -202,16 +202,19 @@ final class VStackNode: Node, Control {
             var line: Extended = 0
 
             // Next, set the position of each visited control based on the order in which they were defined
-            for (element, var childFrame) in visited {
-                childFrame.position.line = line
+            for (element, childFrame) in visited {
+                var position: Position = .init(
+                    column: 0,
+                    line: line
+                )
 
                 switch alignment {
-                case .leading:  childFrame.position.column = 0
-                case .center:   childFrame.position.column = (rect.size.width - childFrame.size.width) / 2
-                case .trailing: childFrame.position.column = (rect.size.width - childFrame.size.width)
+                case .leading:  position.column = rect.minColumn
+                case .center:   position.column = (rect.size.width - childFrame.size.width) / 2
+                case .trailing: position.column = (rect.size.width - childFrame.size.width)
                 }
 
-                childFrame = element.frame(childFrame)
+                element.adjust(position)
 
                 if childFrame.size.height > 0 {
                     line += childFrame.size.height
@@ -232,17 +235,17 @@ final class VStackNode: Node, Control {
         visitor.visit(layout: layoutElement)
     }
 
-    override func layout(rect: Rect) -> Rect {
-        super.layout(
-            rect: layoutVisitor.layout(
-                rect: .init(
-                    position: rect.position,
-                    size: self.sizeVisitor.size(
-                        proposedSize: rect.size
-                    )
+    func layout(rect: Rect) -> Rect {
+        frame = layoutVisitor.layout(
+            rect: .init(
+                position: rect.position,
+                size: self.sizeVisitor.size(
+                    proposedSize: rect.size
                 )
             )
         )
+
+        return frame
     }
 
     func size(proposedSize: Size) -> Size {

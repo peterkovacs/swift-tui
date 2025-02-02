@@ -18,7 +18,6 @@ struct FixedFrame<Content: View>: View, PrimitiveView {
         let node = FixedFrameNode(
             view: self,
             parent: parent,
-            content: self,
             width: width,
             height: height,
             alignment: alignment
@@ -35,7 +34,6 @@ struct FixedFrame<Content: View>: View, PrimitiveView {
         }
 
         node.view = self
-        node.set(references: self)
         node.width = width
         node.height = height
         node.alignment = alignment
@@ -44,15 +42,93 @@ struct FixedFrame<Content: View>: View, PrimitiveView {
     }
 }
 
-final class FixedFrameNode: ModifierNode {
+final class FixedFrameNode: Node {
     var width, height: Extended?
     var alignment: Alignment
 
-    init<Content: View>(view: any GenericView, parent: Node?, content: Content, width: Extended?, height: Extended?, alignment: Alignment) {
+    var _sizeVisitor: SizeVisitor? = nil
+    var sizeVisitor: SizeVisitor {
+        guard let _sizeVisitor else {
+            let visitor = SizeVisitor(children: children) { $0.size(visitor: &$1) }
+            _sizeVisitor = visitor
+            return visitor
+        }
+
+        return _sizeVisitor
+    }
+
+    var _layoutVisitor: LayoutVisitor? = nil
+    var layoutVisitor: LayoutVisitor {
+        _read {
+            _layoutVisitor = _layoutVisitor ?? LayoutVisitor(children: children) { $0.layout(visitor: &$1) }
+            yield _layoutVisitor!
+        }
+
+        _modify {
+            _layoutVisitor = _layoutVisitor ?? LayoutVisitor(children: children) { $0.layout(visitor: &$1) }
+            yield &_layoutVisitor!
+        }
+    }
+
+    struct SizeVisitor: Visitor.Size {
+        var visited: [Visitor.SizeElement]
+
+        fileprivate init(
+            children: [Node],
+            action: (Node, inout Self) -> Void
+        ) {
+            self.visited = []
+
+            for child in children {
+                action(child, &self)
+            }
+        }
+
+        mutating func visit(size: Visitor.SizeElement) {
+            visited.append(size)
+        }
+    }
+
+    struct LayoutVisitor: Visitor.Layout {
+        var visited: [(element: Visitor.LayoutElement, size: Size)]
+
+        fileprivate init(
+            children: [Node],
+            action: (Node, inout Self) -> Void
+        ) {
+            self.visited = []
+
+            for child in children {
+                action(child, &self)
+            }
+        }
+
+        mutating func visit(layout: Visitor.LayoutElement) {
+            visited.append((layout, .zero))
+        }
+    }
+
+    init(view: any GenericView, parent: Node?, width: Extended?, height: Extended?, alignment: Alignment) {
         self.width = width
         self.height = height
         self.alignment = alignment
-        super.init(view: view, parent: parent, content: content)
+        super.init(view: view, parent: parent)
+    }
+
+    private func size(child childSize: Size, bounds: Size) -> Size {
+        let width = if let width {
+            width.clamped(to: childSize.width)
+        } else {
+            childSize.width
+        }
+
+        let height = if let height {
+            height.clamped(to: childSize.height)
+        } else {
+            childSize.height
+        }
+
+        return Size(width: width, height: height)
     }
 
     private func aligned(rect childSize: Size, bounds: Size) -> Position {
@@ -80,26 +156,6 @@ final class FixedFrameNode: ModifierNode {
         return result
     }
 
-    private func size(child childSize: Size, bounds: Size) -> Size {
-        let width = if width == .infinity {
-            max(childSize.width, bounds.width)
-        } else if let width {
-            min(width, childSize.width)
-        } else {
-            childSize.width
-        }
-
-        let height = if height == .infinity {
-            max(childSize.height, bounds.height)
-        } else if let height {
-            min(height, childSize.height)
-        } else {
-            childSize.height
-        }
-
-        return Size(width: width, height: height)
-    }
-
     private func global(_ childFrame: Rect, bounds: Size) -> Rect {
         .init(
             position: childFrame.position - aligned(rect: childFrame.size, bounds: bounds),
@@ -108,30 +164,34 @@ final class FixedFrameNode: ModifierNode {
     }
 
     override func layout<T>(visitor: inout T) where T : Visitor.Layout {
-        // TODO: deal with alignment...
+        for i in layoutVisitor.visited.indices {
+            let (element, _) = layoutVisitor.visited[i]
 
-        for element in layoutVisitor.visited {
             visitor.visit(
-                layout: .init(
-                    node: element.node
-                ) { (rect: Rect) in
-                    return rect.clamped(to: element.layout(rect))
-                } frame: { [weak self] rect in
+                layout: .init(node: element.node) { [weak self] rect in
                     guard let self else { return .zero }
-                    frame = frame.union(.init(position: .zero, size: rect.size))
 
-                    let childFrame = element.layout(.init(position: .zero, size: rect.size))
-                    let alignment = aligned(rect: childFrame.size, bounds: rect.size)
+                    // - call layout on the control
+                    // - calculate the alignment and set using `adjust`
+                    // - store the calculated bounds for this control so that we can refer to it in `global`.
+                    // - return the full width of the frame so that the layout in which this fixedFrame appears is calculated correctly.
+
+                    let childFrame = element.layout(rect)
+                    let bounds = size(child: childFrame.size, bounds: rect.size)
+                    let alignment = aligned(rect: childFrame.size, bounds: bounds)
+
+                    element.adjust(alignment)
+                    layoutVisitor.visited[i].size = bounds
 
                     return .init(
-                        position: element.frame(
-                            childFrame + rect.position + alignment
-                        ).position - alignment,
-                        size: size(child: childFrame.size, bounds: rect.size)
+                        position: rect.position,
+                        size: bounds
                     )
+                } adjust: { position in
+                    element.adjust(position)
                 } global: { [weak self] in
                     guard let self else { return .zero }
-                    return global(element.global(), bounds: frame.size)
+                    return global(element.global(), bounds: layoutVisitor.visited[i].size)
                 }
             )
         }
@@ -152,6 +212,6 @@ final class FixedFrameNode: ModifierNode {
         let width = width.map { "\($0)" } ?? "(nil)"
         let height = height.map { "\($0)" } ?? "(nil)"
 
-        return "FixedFrame:\(width)x\(height) \(layoutVisitor.visited.map { global($0.global(), bounds: frame.size) })"
+        return "FixedFrame:\(width)x\(height) \(layoutVisitor.visited.map(\.size))"
     }
 }

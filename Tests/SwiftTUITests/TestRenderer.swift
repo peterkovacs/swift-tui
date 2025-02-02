@@ -109,5 +109,44 @@ extension Snapshotting where Value == Renderer?, Format == String {
 
         return result
     }
+
+    @MainActor static let background = Snapshotting(
+        pathExtension: "txt",
+        diffing: .lines
+    ) { value in
+        guard let renderer = value as? TestRenderer else {
+            fatalError("Renderer was not a TestRenderer")
+        }
+
+        var result = ""
+
+        for y in 0..<renderer.window.size.height.intValue {
+            for x in 0..<renderer.window.size.width.intValue {
+                let backgroundColor = renderer.window[
+                    .init(
+                        column: Extended(x),
+                        line: Extended(y)
+                    )
+                ]?.backgroundColor
+
+                switch backgroundColor {
+                case .black: result.append("K")
+                case .red: result.append("R")
+                case .green: result.append("G")
+                case .yellow: result.append("Y")
+                case .blue: result.append("B")
+                case .magenta: result.append("M")
+                case .cyan: result.append("C")
+                case .white: result.append("⬜️")
+                default: result.append(" ")
+                }
+            }
+
+            result.append("\n")
+        }
+
+        return result
+    }
+
 }
 

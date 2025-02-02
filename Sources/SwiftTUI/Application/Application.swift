@@ -3,7 +3,7 @@ import Foundation
 import AsyncAlgorithms
 
 @MainActor public class Application {
-    private(set) var node: Node!
+    private(set) var node: VStackNode!
     private(set) var renderer: Renderer!
     let parser: KeyParser
     var invalidated: [Node] = []
@@ -20,7 +20,7 @@ import AsyncAlgorithms
     }
 
     func setup() {
-        node.layout(
+        _ = node.layout(
             rect: .init(position: .zero, size: renderer.window.size)
         )
         renderer.draw(rect: nil)
@@ -45,7 +45,7 @@ import AsyncAlgorithms
             }
             
             node.invalidateLayout()
-            node.layout(
+            _ = node.layout(
                 rect: .init(position: .zero, size: renderer.window.size)
             )
             

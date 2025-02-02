@@ -65,8 +65,8 @@ class PaddingNode: ModifierNode {
                     node: element.node
                 ) { [paddingPosition, paddingSize] (rect: Rect) in
                     element.layout(rect + paddingPosition - paddingSize) - paddingPosition + paddingSize
-                } frame: { [paddingPosition, paddingSize] rect in
-                    element.frame(rect + paddingPosition - paddingSize) - paddingPosition + paddingSize
+                } adjust: { position in
+                    element.adjust(position)
                 } global: { [paddingPosition, paddingSize] in
                     element.global() - paddingPosition + paddingSize
                 }

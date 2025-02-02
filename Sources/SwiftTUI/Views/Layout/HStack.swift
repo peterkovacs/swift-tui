@@ -182,16 +182,19 @@ final class HStackNode: Node, Control {
             var column: Extended = 0
 
             // Next, set the position of each visited control based on the order in which they were defined
-            for (element, var childFrame) in visited {
-                childFrame.position.column = column
+            for (element, childFrame) in visited {
+                var position: Position = .init(
+                    column: column,
+                    line: 0
+                )
 
                 switch alignment {
-                case .top:    childFrame.position.line = rect.minLine
-                case .center: childFrame.position.line = (rect.size.height - childFrame.size.height) / 2
-                case .bottom: childFrame.position.line = (rect.size.height - childFrame.size.height)
+                case .top:    position.line = rect.minLine
+                case .center: position.line = (rect.size.height - childFrame.size.height) / 2
+                case .bottom: position.line = (rect.size.height - childFrame.size.height)
                 }
 
-                childFrame = element.frame( childFrame )
+                element.adjust(position)
 
                 if childFrame.size.width > 0 {
                     column += childFrame.size.width
@@ -212,17 +215,17 @@ final class HStackNode: Node, Control {
         visitor.visit(layout: layoutElement)
     }
 
-    override func layout(rect: Rect) -> Rect {
-        super.layout(
-            rect: layoutVisitor.layout(
-                rect: .init(
-                    position: rect.position,
-                    size: self.sizeVisitor.size(
-                        proposedSize: rect.size
-                    )
+    func layout(rect: Rect) -> Rect {
+        frame = layoutVisitor.layout(
+            rect: .init(
+                position: rect.position,
+                size: self.sizeVisitor.size(
+                    proposedSize: rect.size
                 )
             )
         )
+
+        return frame
     }
 
     func size(proposedSize: Size) -> Size {
