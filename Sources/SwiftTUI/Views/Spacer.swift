@@ -48,26 +48,10 @@ class SpacerNode: DynamicPropertyNode, Control {
     }
 
     func layout(rect: Rect) -> Rect {
-        switch layoutAxis {
-        case .none:
-            frame = .zero
-        case .horizontal:
-            frame = .init(
-                position: rect.position,
-                size: .init(
-                    width: rect.size.width < minLength ? minLength : rect.size.width,
-                    height: rect.size.height
-                )
-            )
-        case .vertical:
-            frame = .init(
-                position: rect.position,
-                size: .init(
-                    width: rect.size.width,
-                    height: rect.size.height < minLength ? minLength : rect.size.height
-                )
-            )
-        }
+        frame = .init(
+            position: rect.position,
+            size: size(proposedSize: rect.size).clamped(to: .zero)
+        )
 
         return frame
     }
@@ -76,9 +60,9 @@ class SpacerNode: DynamicPropertyNode, Control {
         switch layoutAxis {
         case .none: return .zero
         case .horizontal:
-            return .init(width: proposedSize.width < minLength ? minLength : proposedSize.width, height: 0)
+            return .init(width: proposedSize.width < minLength ? minLength : proposedSize.width, height: 1)
         case .vertical:
-            return .init(width: 0, height: proposedSize.height < minLength ? minLength : proposedSize.height)
+            return .init(width: 1, height: proposedSize.height < minLength ? minLength : proposedSize.height)
         }
     }
 }

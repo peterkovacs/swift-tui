@@ -3,7 +3,7 @@ import SnapshotTesting
 import Testing
 
 @MainActor
-@Suite("Divider Tests") struct DividerTests {
+@Suite("Divider Tests", .snapshots(record: .missing, diffTool: .ksdiff)) struct DividerTests {
     let record = false
 
     @Test func testHorizontalDivider() async throws {
@@ -27,9 +27,8 @@ import Testing
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -57,9 +56,8 @@ import Testing
 
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -86,9 +84,8 @@ import Testing
 
         let (application, _) = try drawView(MyView())
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
     }
 
@@ -118,7 +115,7 @@ import Testing
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 50x50
           → ComposedView<MyView>
-            → FixedFrame:50x50 [(0, 0) 50x50]
+            → FixedFrame:50x50 [50x50]
               → SetEnvironmentView<VStack<TupleView<Pack{Text, Divider, Text}>>, DividerStyle>
                 → VStack<TupleView<Pack{Text, Divider, Text}>> (0, 23) 50x3
                   → TupleView<Pack{Text, Divider, Text}>
@@ -152,7 +149,7 @@ import Testing
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 50x50
           → ComposedView<MyView>
-            → FixedFrame:50x50 [(0, 0) 50x50]
+            → FixedFrame:50x50 [50x50]
               → ZStack<TupleView<Pack{Text, Divider, Text}>> (22, 24) 5x1
                 → TupleView<Pack{Text, Divider, Text}>
                   → Text:string("Hello") (22, 24) 5x1
@@ -161,9 +158,8 @@ import Testing
         
         """)
         assertSnapshot(
-            of: (application.renderer as! TestRenderer).description,
-            as: .lines,
-            record: record
+            of: application.renderer,
+            as: .rendered
         )
 
     }

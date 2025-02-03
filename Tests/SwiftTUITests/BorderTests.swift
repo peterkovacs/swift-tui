@@ -109,7 +109,7 @@ import SnapshotTesting
                         → Text:string("Hello") (2, 2) 5x1
                         → Spacer (8, 2) 9x1
                         → Text:string("World") (18, 2) 5x1
-                  → Spacer (1, 4) 23x12
+                  → Spacer (12, 4) 1x12
                   → Border:[(1, 16) 23x3]
                     → HStack<TupleView<Pack{Text, Spacer, Text}>> (2, 17) 21x1
                       → TupleView<Pack{Text, Spacer, Text}>

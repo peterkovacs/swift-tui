@@ -15,12 +15,12 @@ import SnapshotTesting
         let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
 
         do {
-            let size = (application.node as? Control)?.size(proposedSize: .zero)
+            let size = application.node.size(proposedSize: .zero)
             #expect(size == .init(width: 5, height: 1))
         }
 
         do {
-            let size = (application.node as? Control)?.size(proposedSize: .init(width: 100, height: 100))
+            let size = application.node.size(proposedSize: .init(width: 100, height: 100))
             #expect(size == .init(width: 5, height: 1))
         }
     }
@@ -34,7 +34,7 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
-        let size = (application.node as? Control)?.size(proposedSize: .zero)
+        let size = application.node.size(proposedSize: .zero)
 
         #expect(size == .init(width: 5, height: 2))
     }
@@ -51,12 +51,12 @@ import SnapshotTesting
         let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
 
         do {
-            let size = (application.node as? Control)?.size(proposedSize: .zero)
+            let size = application.node.size(proposedSize: .zero)
             #expect(size == .init(width: 5, height: 2))
         }
 
         do {
-            let size = (application.node as? Control)?.size(proposedSize: .init(width: 100, height: 100))
+            let size = application.node.size(proposedSize: .init(width: 100, height: 100))
             #expect(size == .init(width: 5, height: 100))
         }
     }
@@ -73,7 +73,7 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
-        let size = (application.node as? Control)?.size(proposedSize: .zero)
+        let size = application.node.size(proposedSize: .zero)
 
         #expect(size == .init(width: 5, height: 2))
     }
@@ -89,7 +89,7 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
-        let size = (application.node as? Control)?.size(proposedSize: .zero)
+        let size = application.node.size(proposedSize: .zero)
 
         #expect(size == .init(width: 11, height: 1))
     }
@@ -107,12 +107,12 @@ import SnapshotTesting
 
         let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
         do {
-            let size = (application.node as? Control)?.size(proposedSize: .zero)
+            let size = application.node.size(proposedSize: .zero)
             #expect(size == .init(width: 11, height: 1))
         }
 
         do {
-            let size = (application.node as? Control)?.size(proposedSize: .init(width: 100, height: 100))
+            let size = application.node.size(proposedSize: .init(width: 100, height: 100))
             #expect(size == .init(width: 100, height: 1))
 
         }
@@ -136,7 +136,7 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
-        let size = (application.node as? Control)?.size(proposedSize: .zero)
+        let size = application.node.size(proposedSize: .zero)
 
         #expect(size == .init(width: 16, height: 2))
     }
@@ -164,12 +164,12 @@ import SnapshotTesting
 
         let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
         do {
-            let size = (application.node as? Control)?.size(proposedSize: .zero)
+            let size = application.node.size(proposedSize: .zero)
             #expect(size == .init(width: 16, height: 2))
         }
 
         do {
-            let size = (application.node as? Control)?.size(proposedSize: .init(width: 100, height: 100))
+            let size = application.node.size(proposedSize: .init(width: 100, height: 100))
             #expect(size == .init(width: 100, height: 100))
         }
     }
@@ -185,7 +185,7 @@ import SnapshotTesting
         }
 
         let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
-        let size = (application.node as? Control)?.size(proposedSize: .zero)
+        let size = application.node.size(proposedSize: .zero)
 
         #expect(size == .init(width: 5, height: 1))
     }
@@ -239,7 +239,7 @@ import SnapshotTesting
               → TupleView<Pack{Text, Text, Spacer, Text}>
                 → Text:string("1234567890") (0, 0) 10x1
                 → Text:string("Hello") (0, 1) 5x1
-                → Spacer (0, 2) 10x17
+                → Spacer (0, 2) 1x17
                 → Text:string("World") (0, 19) 5x1
 
         """)
@@ -297,7 +297,7 @@ import SnapshotTesting
               → TupleView<Pack{Text, Text, Spacer, Text}>
                 → Text:string("1234567890") (0, 0) 10x1
                 → Text:string("Hello") (2, 1) 5x1
-                → Spacer (0, 2) 10x17
+                → Spacer (4, 2) 1x17
                 → Text:string("World") (2, 19) 5x1
         
         """)
@@ -355,7 +355,7 @@ import SnapshotTesting
               → TupleView<Pack{Text, Text, Spacer, Text}>
                 → Text:string("1234567890") (0, 0) 10x1
                 → Text:string("Hello") (5, 1) 5x1
-                → Spacer (0, 2) 10x17
+                → Spacer (9, 2) 1x17
                 → Text:string("World") (5, 19) 5x1
         
         """)
@@ -427,7 +427,7 @@ import SnapshotTesting
                     → Text:string("Hello") (0, 0) 5x1
                     → Text:string("World") (0, 1) 5x1
                 → Text:string("Hello") (6, 0) 5x1
-                → Spacer (12, 0) 32x2
+                → Spacer (12, 0) 32x1
                 → Text:string("World") (45, 0) 5x1
         
         """)
@@ -462,7 +462,7 @@ import SnapshotTesting
                 → VStack<TupleView<Pack{Text, Spacer, Text}>> (0, 0) 5x20
                   → TupleView<Pack{Text, Spacer, Text}>
                     → Text:string("Hello") (0, 0) 5x1
-                    → Spacer (0, 1) 5x18
+                    → Spacer (2, 1) 1x18
                     → Text:string("World") (0, 19) 5x1
                 → Text:string("Hello") (6, 9) 5x1
                 → Text:string("World") (12, 9) 5x1
@@ -500,10 +500,10 @@ import SnapshotTesting
                 → VStack<TupleView<Pack{Text, Spacer, Text}>> (0, 0) 5x20
                   → TupleView<Pack{Text, Spacer, Text}>
                     → Text:string("Hello") (0, 0) 5x1
-                    → Spacer (0, 1) 5x18
+                    → Spacer (2, 1) 1x18
                     → Text:string("World") (0, 19) 5x1
                 → Text:string("Hello") (6, 9) 5x1
-                → Spacer (12, 0) 32x20
+                → Spacer (12, 9) 32x1
                 → Text:string("World") (45, 9) 5x1
         
         """)
@@ -538,7 +538,7 @@ import SnapshotTesting
                 → VStack<TupleView<Pack{Text, Spacer, Text}>> (0, 0) 5x20
                   → TupleView<Pack{Text, Spacer, Text}>
                     → Text:string("Hello") (0, 0) 5x1
-                    → Spacer (0, 1) 5x18
+                    → Spacer (2, 1) 1x18
                     → Text:string("World") (0, 19) 5x1
                 → Text:string("Hello") (6, 19) 5x1
                 → Text:string("World") (12, 19) 5x1
@@ -578,7 +578,7 @@ import SnapshotTesting
                     → Text:string("2") (0, 1) 1x1
                     → Text:string("3") (0, 2) 1x1
                 → Text:string("Hello") (2, 2) 5x1
-                → Spacer (8, 0) 36x3
+                → Spacer (8, 2) 36x1
                 → Text:string("World") (45, 2) 5x1
         
         """)
@@ -618,13 +618,13 @@ import SnapshotTesting
                 → VStack<TupleView<Pack{Text, Spacer, Text}>> (0, 0) 5x20
                   → TupleView<Pack{Text, Spacer, Text}>
                     → Text:string("Hello") (0, 0) 5x1
-                    → Spacer (0, 1) 5x18
+                    → Spacer (2, 1) 1x18
                     → Text:string("World") (0, 19) 5x1
-                → Spacer (6, 0) 33x20
+                → Spacer (6, 9) 33x1
                 → VStack<TupleView<Pack{Text, Spacer, Text}>> (40, 0) 10x20
                   → TupleView<Pack{Text, Spacer, Text}>
                     → Text:string("1234567890") (40, 0) 10x1
-                    → Spacer (40, 1) 10x18
+                    → Spacer (44, 1) 1x18
                     → Text:string("1234567890") (40, 19) 10x1
         
         """)
@@ -663,7 +663,7 @@ import SnapshotTesting
                   → Text:string("Hello") (0, 0) 5x1
                   → Spacer (6, 0) 38x1
                   → Text:string("World") (45, 0) 5x1
-              → Spacer (0, 1) 50x18
+              → Spacer (24, 1) 1x18
               → HStack<TupleView<Pack{Text, Spacer, Text}>> (0, 19) 50x1
                 → TupleView<Pack{Text, Spacer, Text}>
                   → Text:string("1234567890") (0, 19) 10x1

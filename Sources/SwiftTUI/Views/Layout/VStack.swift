@@ -36,7 +36,7 @@ public struct VStack<Content: View>: View, PrimitiveView {
     }
 }
 
-final class VStackNode: Node, Control {
+class VStackNode: Node, Control {
     var alignment: HorizontalAlignment
     var spacing: Extended
 
