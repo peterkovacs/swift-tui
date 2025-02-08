@@ -57,7 +57,7 @@ public struct Text: View, PrimitiveView {
 
 final class TextNode: DynamicPropertyNode, Control {
     
-    var text: Text.Value
+    var text: Text.Value { didSet { invalidateLayout() } }
     var bold: Bool = false
     var italic: Bool = false
     var underline: Bool = false

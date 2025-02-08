@@ -29,9 +29,11 @@ public struct ConditionalView<TrueContent: View, FalseContent: View>: View, Prim
         case (.b, .a(let newValue)):
             node.remove(at: 0)
             node.add(at: 0, node: newValue.view.build(parent: node))
+            node.invalidateLayout()
         case (.a, .b(let newValue)):
             node.remove(at: 0)
             node.add(at: 0, node: newValue.view.build(parent: node))
+            node.invalidateLayout()
         }
     }
 }

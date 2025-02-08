@@ -37,8 +37,17 @@ public struct VStack<Content: View>: View, PrimitiveView {
 }
 
 class VStackNode: Node, Control {
-    var alignment: HorizontalAlignment
-    var spacing: Extended
+    var alignment: HorizontalAlignment {
+        didSet {
+            invalidateLayout()
+        }
+    }
+
+    var spacing: Extended {
+        didSet {
+            invalidateLayout()
+        }
+    }
 
     fileprivate var _sizeVisitor: SizeVisitor? = nil
     var sizeVisitor: SizeVisitor {
@@ -98,6 +107,7 @@ class VStackNode: Node, Control {
     struct SizeVisitor: Visitor.Size {
         let spacing: Extended
         var visited: [Visitor.SizeElement]
+        
 
         fileprivate init(spacing: Extended, children: [Node]) {
             self.spacing = spacing

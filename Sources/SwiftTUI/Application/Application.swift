@@ -44,7 +44,6 @@ import AsyncAlgorithms
                 node.update(view: node.view)
             }
             
-            node.invalidateLayout()
             _ = node.layout(
                 rect: .init(position: .zero, size: renderer.window.size)
             )

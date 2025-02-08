@@ -50,8 +50,8 @@ private struct PlaceholderColorEnvironmentKey: EnvironmentKey {
 }
 
 final class TextFieldNode: DynamicPropertyNode, Control {
-    @Binding var text: String
-    var placeholder: String
+    @Binding var text: String { didSet { invalidateLayout() } }
+    var placeholder: String { didSet { invalidateLayout() } }
     var placeholderColor: Color
     var action: (String) -> Void
 

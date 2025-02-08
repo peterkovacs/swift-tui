@@ -29,7 +29,11 @@ public struct ZStack<Content: View>: View, PrimitiveView {
 }
 
 final class ZStackNode: Node, Control {
-    var alignment: Alignment
+    var alignment: Alignment {
+        didSet {
+            invalidateLayout()
+        }
+    }
 
     fileprivate var _sizeVisitor: SizeVisitor? = nil
     var sizeVisitor: SizeVisitor {

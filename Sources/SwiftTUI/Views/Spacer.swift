@@ -29,7 +29,7 @@ public struct Spacer: View, PrimitiveView {
 }
 
 class SpacerNode: DynamicPropertyNode, Control {
-    var minLength: Extended
+    var minLength: Extended { didSet { invalidateLayout() } }
     var layoutAxis: LayoutAxis
 
     init(view: Spacer, parent: Node?, minLength: Extended, layoutAxis: Environment<LayoutAxis>) {

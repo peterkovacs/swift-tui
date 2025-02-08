@@ -72,7 +72,7 @@ public struct BorderStyle: Equatable, Sendable {
 struct Border<Content: View>: View, PrimitiveView {
     @Environment(\.foregroundColor) var foregroundColor
     var style: BorderStyle
-    var edges: Edges
+    var edges: Edges 
     var color: Color?
     let content: Content
 

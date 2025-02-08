@@ -37,8 +37,16 @@ public struct HStack<Content: View>: View, PrimitiveView {
 }
 
 final class HStackNode: Node, Control {
-    var alignment: VerticalAlignment
-    var spacing: Extended
+    var alignment: VerticalAlignment {
+        didSet {
+            invalidateLayout()
+        }
+    }
+    var spacing: Extended {
+        didSet {
+            invalidateLayout()
+        }
+    }
 
     fileprivate var _sizeVisitor: SizeVisitor? = nil
     var sizeVisitor: SizeVisitor {

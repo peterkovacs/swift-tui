@@ -1,7 +1,8 @@
 @MainActor
 @propertyWrapper
-public struct State<Wrapped>: StateValue, DynamicProperty {
+public struct State<Wrapped>: DynamicProperty {
     public let initialValue: Wrapped
+    private let reference: DynamicPropertyReference<Wrapped>
 
     public init(initialValue: Wrapped) {
         self.initialValue = initialValue
@@ -13,7 +14,6 @@ public struct State<Wrapped>: StateValue, DynamicProperty {
         self.reference = .init()
     }
 
-    let reference: StateReference<Wrapped>
 
     public var wrappedValue: Wrapped {
         get { reference.wrappedValue ?? initialValue }
@@ -42,16 +42,15 @@ extension State where Wrapped: ExpressibleByNilLiteral {
 }
 
 @MainActor
-protocol StateValue {
-    associatedtype Wrapped
-    var wrappedValue: Wrapped { get nonmutating set }
-    var projectedValue: Binding<Wrapped> { get }    
-}
-
-@MainActor
-class StateReference<Wrapped> {
+class DynamicPropertyReference<Wrapped> {
     struct Key: Hashable {
+        let type: ObjectIdentifier
         let label: String
+
+        init(label: String) {
+            self.type = ObjectIdentifier(Wrapped.self)
+            self.label = label
+        }
     }
 
     weak var node: DynamicPropertyNode?

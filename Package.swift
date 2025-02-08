@@ -17,9 +17,9 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/pointfreeco/swift-dependencies.git", from: "1.6.0"),
+        .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.6.0"),
         .package(url: "https://github.com/peterkovacs/swift-snapshot-testing", branch: "main"),
-        .package(url: "https://github.com/apple/swift-async-algorithms.git", from: "1.0.3"),
+        .package(url: "https://github.com/apple/swift-async-algorithms", from: "1.0.3"),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -29,7 +29,7 @@ let package = Package(
             dependencies: [
                 "CUnicode",
                 .product(name: "Dependencies", package: "swift-dependencies"),
-                .product(name: "AsyncAlgorithms", package: "swift-async-algorithms")
+                .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
             ]
         ),
         .target(name: "CUnicode"),

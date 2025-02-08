@@ -47,9 +47,7 @@ internal class Node {
     }
 
     func invalidateLayout() {
-        for child in children {
-            child.invalidateLayout()
-        }
+        parent?.invalidateLayout()
     }
 
     /// Update this node with a given view.

@@ -43,8 +43,9 @@ struct FixedFrame<Content: View>: View, PrimitiveView {
 }
 
 final class FixedFrameNode: Node {
-    var width, height: Extended?
-    var alignment: Alignment
+    var width: Extended? { didSet { invalidateLayout() } }
+    var height: Extended? { didSet { invalidateLayout() } }
+    var alignment: Alignment { didSet { invalidateLayout() } }
 
     var _sizeVisitor: SizeVisitor? = nil
     var sizeVisitor: SizeVisitor {
@@ -213,5 +214,11 @@ final class FixedFrameNode: Node {
         let height = height.map { "\($0)" } ?? "(nil)"
 
         return "FixedFrame:\(width)x\(height) \(layoutVisitor.visited.map(\.size))"
+    }
+
+    override func invalidateLayout() {
+        _sizeVisitor = nil
+        _layoutVisitor = nil
+        super.invalidateLayout()
     }
 }

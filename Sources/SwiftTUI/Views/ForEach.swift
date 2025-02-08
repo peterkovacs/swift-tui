@@ -43,6 +43,10 @@ public struct ForEach<Data, ID, Content>: View, PrimitiveView where Data : Rando
             by: { $0[keyPath: id] == $1[keyPath: id] }
         )
 
+        if diffs.isEmpty { return }
+
+        node.invalidateLayout()
+
         for diff in diffs {
             switch diff {
             case .insert(offset: let i, element: let element, _):
