@@ -74,6 +74,12 @@ internal class Node {
         // TODO: Do we need to maintain the `index` invariant on children? If so, update here.
     }
 
+    func focus<T: Visitor.Focus>(visitor: inout T) {
+        for child in children {
+            child.focus(visitor: &visitor)
+        }
+    }
+
     /// Calculate the size of a node hierarchy by visiting each node. Control nodes should override this method with a method that actually calculates it's size.
     func size<T: Visitor.Size>(visitor: inout T) {
         for child in children {

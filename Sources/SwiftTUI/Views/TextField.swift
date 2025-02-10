@@ -50,10 +50,11 @@ private struct PlaceholderColorEnvironmentKey: EnvironmentKey {
 }
 
 final class TextFieldNode: DynamicPropertyNode, Control {
-    @Binding var text: String { didSet { invalidateLayout() } }
+    @Binding var text: String
     var placeholder: String { didSet { invalidateLayout() } }
     var placeholderColor: Color
     var action: (String) -> Void
+    var isFocused: Bool = false
 
     var cursorPosition: String.Index
 
@@ -80,6 +81,10 @@ final class TextFieldNode: DynamicPropertyNode, Control {
 
     override func layout<T>(visitor: inout T) where T : Visitor.Layout {
         visitor.visit(layout: layoutElement)
+    }
+
+    override func focus<T: Visitor.Focus>(visitor: inout T) {
+        visitor.visit(focus: focusableElement)
     }
 
     func layout(rect: Rect) -> Rect {
@@ -140,6 +145,7 @@ final class TextFieldNode: DynamicPropertyNode, Control {
             self.text = ""
             self.cursorPosition = text.startIndex
             invalidate()
+            invalidateLayout()
             return true
 
         case Key(.backspace):
@@ -147,6 +153,7 @@ final class TextFieldNode: DynamicPropertyNode, Control {
                 cursorPosition = text.index(before: cursorPosition)
                 text.remove(at: cursorPosition)
                 invalidate()
+                invalidateLayout()
             }
             return true
 
@@ -155,6 +162,7 @@ final class TextFieldNode: DynamicPropertyNode, Control {
                 cursorPosition = text.index(before: cursorPosition)
                 text.remove(at: cursorPosition)
                 invalidate()
+                invalidateLayout()
             }
             return true
 
@@ -190,6 +198,7 @@ final class TextFieldNode: DynamicPropertyNode, Control {
             if cursorPosition != text.endIndex {
                 text.removeSubrange(cursorPosition...)
                 invalidate()
+                invalidateLayout()
             }
             return true
 
@@ -202,6 +211,8 @@ final class TextFieldNode: DynamicPropertyNode, Control {
                 cursorPosition = startOfWord
 
                 invalidate()
+                invalidateLayout()
+
                 return true
             }
             return true
@@ -212,6 +223,7 @@ final class TextFieldNode: DynamicPropertyNode, Control {
                 text = ""
                 cursorPosition = text.endIndex
                 invalidate()
+                invalidateLayout()
             }
             return true
 
@@ -234,6 +246,7 @@ final class TextFieldNode: DynamicPropertyNode, Control {
             if case .char(let value) = key.key {
                 text.insert(.init(value), at: cursorPosition)
                 cursorPosition = text.index(after: cursorPosition)
+                invalidateLayout()
                 invalidate()
                 return true
             }
@@ -252,8 +265,7 @@ final class TextFieldNode: DynamicPropertyNode, Control {
             for (position, character) in zip(global.indices, placeholder.indices) where rect.contains(position) {
                 window.write(at: position, default: .init(char: placeholder[character])) {
                     $0.char = placeholder[character]
-                    // TODO: Only do this if we're the focused element.
-                    $0.attributes.inverted = character == placeholder.startIndex
+                    $0.attributes.inverted = isFocused && character == cursorPosition
                     $0.foregroundColor = placeholderColor
                 }
             }
@@ -261,12 +273,29 @@ final class TextFieldNode: DynamicPropertyNode, Control {
             for (position, character) in zip(global.indices, text.indices) where rect.contains(position) {
                 window.write(at: position, default: .init(char: text[character])) {
                     $0.char = text[character]
-                    // TODO: Only do this if we're the focused element.
-                    $0.attributes.inverted = character == cursorPosition
+                    $0.attributes.inverted = isFocused && character == cursorPosition
                     $0.foregroundColor = placeholderColor
                 }
             }
 
         }
     }
+
+    override var description: String {
+        "TextField:\"\(String(describing: text))\" (\(cursorPosition.utf16Offset(in: text)))\(isFocused ? " FOCUSED" : "")"
+    }
+}
+
+extension TextFieldNode: Focusable {
+    func becomeFirstResponder() {
+        isFocused = true
+        invalidate()
+    }
+    
+    func resignFirstResponder() {
+        isFocused = false
+        invalidate()
+    }
+    
+    var isFocusable: Bool { true }
 }

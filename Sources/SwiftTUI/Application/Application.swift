@@ -5,8 +5,10 @@ import AsyncAlgorithms
 @MainActor public class Application {
     private(set) var node: VStackNode!
     private(set) var renderer: Renderer!
+    private(set) var focusManager: FocusManager!
     let parser: KeyParser
     var invalidated: [Node] = []
+
 
     init<T: View>(
         root: T,
@@ -14,12 +16,16 @@ import AsyncAlgorithms
         parser: KeyParser = .init(fileHandle: .standardInput)
     ) {
         self.parser = parser
+        self.node = nil
+        self.focusManager = nil
         self.node = VStackNode(root: root, application: self)
+        self.focusManager = FocusManager(root: node)
         self.renderer = renderer
         self.renderer.application = self
     }
 
     func setup() {
+        focusManager.evaluate(focus: node)
         _ = node.layout(
             rect: .init(position: .zero, size: renderer.window.size)
         )
@@ -53,6 +59,7 @@ import AsyncAlgorithms
             }
         } while !invalidated.isEmpty
 
+        focusManager.evaluate(focus: node)
         renderer.update()
     }
 }
@@ -103,6 +110,10 @@ extension Application {
 
         let keyInputTask = Task {
             for try await key in parser {
+                if focusManager.handle(key: key) == true {
+                    continue
+                }
+
                 switch key {
                 case Key(.char("d"), modifiers: .ctrl):
                     Exit.exit()
