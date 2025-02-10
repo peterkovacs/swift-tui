@@ -39,11 +39,13 @@ import Testing
         try input.write(contentsOf: Key("w", modifiers: .ctrl).bytes())
         try input.write(contentsOf: Array("Goodbye ".utf8))
         await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 250)
+        await Task.megaYield(count: 500)
         await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 250)
+        await Task.megaYield(count: 500)
         await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 250)
+        await Task.megaYield(count: 500)
+        await updateClock.advance(by: .seconds(1))
+        await Task.megaYield(count: 500)
 
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 14x1
@@ -102,9 +104,13 @@ import Testing
 
         try input.write(contentsOf: Array("Hello World".utf8))
         await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 250)
+        await Task.megaYield(count: 500)
         await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 250)
+        await Task.megaYield(count: 500)
+        await updateClock.advance(by: .seconds(1))
+        await Task.megaYield(count: 500)
+        await updateClock.advance(by: .seconds(1))
+        await Task.megaYield(count: 500)
 
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 12x1
@@ -118,7 +124,7 @@ import Testing
         model.items = [ "Hello", "World" ]
 
         await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 250)
+        await Task.megaYield(count: 500)
 
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 12x3
@@ -174,11 +180,13 @@ import Testing
 
         try input.write(contentsOf: Array("Hello World".utf8))
         await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 250)
+        await Task.megaYield(count: 500)
         await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 250)
+        await Task.megaYield(count: 500)
         await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 250)
+        await Task.megaYield(count: 500)
+        await updateClock.advance(by: .seconds(1))
+        await Task.megaYield(count: 500)
 
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 12x1
@@ -192,7 +200,7 @@ import Testing
         model.items = [ "Hello", "World" ]
 
         await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 250)
+        await Task.megaYield(count: 500)
 
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 12x3
@@ -260,9 +268,11 @@ import Testing
         }
 
         await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 250)
+        await Task.megaYield(count: 500)
         await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 250)
+        await Task.megaYield(count: 500)
+        await updateClock.advance(by: .seconds(1))
+        await Task.megaYield(count: 500)
 
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 2x4
@@ -283,9 +293,9 @@ import Testing
         model2.items = [ "Z" ]
 
         await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 250)
+        await Task.megaYield(count: 500)
         await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 250)
+        await Task.megaYield(count: 500)
 
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 2x4
@@ -304,11 +314,11 @@ import Testing
 
 
 //        await updateClock.advance(by: .seconds(1))
-//        await Task.megaYield(count: 250)
+//        await Task.megaYield(count: 500)
 //        await updateClock.advance(by: .seconds(1))
-//        await Task.megaYield(count: 250)
+//        await Task.megaYield(count: 500)
 //        await updateClock.advance(by: .seconds(1))
-//        await Task.megaYield(count: 250)
+//        await Task.megaYield(count: 500)
 //
 //        #expect(application.node.frameDescription == """
 //        → VStack<MyView> (0, 0) 12x1
