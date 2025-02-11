@@ -97,7 +97,11 @@ final class TextFieldNode: DynamicPropertyNode, Control {
     }
 
     func size(proposedSize: Size) -> Size {
-        return Size(width: Extended(max(text.count, placeholder.count)) + 1, height: 1)
+        let minimumSize = Extended(max(text.count, placeholder.count)) + 1
+        return Size(
+            width: max(proposedSize.width, minimumSize),
+            height: 1
+        )
     }
 
     private func word(before: String.Index) -> String.Index {

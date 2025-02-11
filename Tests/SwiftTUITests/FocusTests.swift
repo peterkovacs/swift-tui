@@ -20,10 +20,10 @@ import Testing
         let (application, _) = try drawView(MyView())
 
         #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 1x1
+        → VStack<MyView> (0, 0) 100x1
           → ComposedView<MyView>
-            → TextField:"" (0) FOCUSED (0, 0) 1x1
-
+            → TextField:"" (0) FOCUSED (0, 0) 100x1
+        
         """)
 
         let clock = TestClock()
@@ -39,9 +39,9 @@ import Testing
         application.process(keys: "Goodbye ")
 
         #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 14x1
+        → VStack<MyView> (0, 0) 100x1
           → ComposedView<MyView>
-            → TextField:"Goodbye World" (8) FOCUSED (0, 0) 14x1
+            → TextField:"Goodbye World" (8) FOCUSED (0, 0) 100x1
 
         """)
 
@@ -77,21 +77,21 @@ import Testing
         let (application, _) = try drawView(MyView(items: model))
 
         #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 1x1
+        → VStack<MyView> (0, 0) 100x1
           → ComposedView<MyView>
             → TupleView<Pack{ForEach<Array<String>, String, TextField>, TextField}>
               → ForEach<Array<String>, String, TextField>
-              → TextField:"" (0) FOCUSED (0, 0) 1x1
+              → TextField:"" (0) FOCUSED (0, 0) 100x1
 
         """)
 
         application.process(keys: "Hello World")
         #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 12x1
+        → VStack<MyView> (0, 0) 100x1
           → ComposedView<MyView>
             → TupleView<Pack{ForEach<Array<String>, String, TextField>, TextField}>
               → ForEach<Array<String>, String, TextField>
-              → TextField:"Hello World" (11) FOCUSED (0, 0) 12x1
+              → TextField:"Hello World" (11) FOCUSED (0, 0) 100x1
 
         """)
 
@@ -99,13 +99,13 @@ import Testing
         application.update()
 
         #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 12x3
+        → VStack<MyView> (0, 0) 100x3
           → ComposedView<MyView>
             → TupleView<Pack{ForEach<Array<String>, String, TextField>, TextField}>
               → ForEach<Array<String>, String, TextField>
-                → TextField:"Hello" (5) (3, 0) 6x1
-                → TextField:"World" (5) (3, 1) 6x1
-              → TextField:"Hello World" (11) FOCUSED (0, 2) 12x1
+                → TextField:"Hello" (5) (0, 0) 100x1
+                → TextField:"World" (5) (0, 1) 100x1
+              → TextField:"Hello World" (11) FOCUSED (0, 2) 100x1
 
         """)
 
@@ -132,10 +132,10 @@ import Testing
         let (application, _) = try drawView(MyView(items: model))
 
         #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 1x1
+        → VStack<MyView> (0, 0) 100x1
           → ComposedView<MyView>
             → TupleView<Pack{TextField, ForEach<Array<String>, String, TextField>}>
-              → TextField:"" (0) FOCUSED (0, 0) 1x1
+              → TextField:"" (0) FOCUSED (0, 0) 100x1
               → ForEach<Array<String>, String, TextField>
 
         """)
@@ -143,10 +143,10 @@ import Testing
         application.process(keys: "Hello World")
 
         #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 12x1
+        → VStack<MyView> (0, 0) 100x1
           → ComposedView<MyView>
             → TupleView<Pack{TextField, ForEach<Array<String>, String, TextField>}>
-              → TextField:"Hello World" (11) FOCUSED (0, 0) 12x1
+              → TextField:"Hello World" (11) FOCUSED (0, 0) 100x1
               → ForEach<Array<String>, String, TextField>
 
         """)
@@ -155,13 +155,13 @@ import Testing
         application.update()
 
         #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 12x3
+        → VStack<MyView> (0, 0) 100x3
           → ComposedView<MyView>
             → TupleView<Pack{TextField, ForEach<Array<String>, String, TextField>}>
-              → TextField:"Hello World" (11) FOCUSED (0, 0) 12x1
+              → TextField:"Hello World" (11) FOCUSED (0, 0) 100x1
               → ForEach<Array<String>, String, TextField>
-                → TextField:"Hello" (5) (3, 1) 6x1
-                → TextField:"World" (5) (3, 2) 6x1
+                → TextField:"Hello" (5) (0, 1) 100x1
+                → TextField:"World" (5) (0, 2) 100x1
 
         """)
 
@@ -195,34 +195,34 @@ import Testing
         let (application, _) = try drawView(MyView(model1: model1, model2: model2))
 
         #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 2x4
+        → VStack<MyView> (0, 0) 100x4
           → ComposedView<MyView>
             → TupleView<Pack{ForEach<Array<String>, String, TextField>, TaskView<Int, SetFocusView<TextField, Bool>>, ForEach<Array<String>, String, TextField>}>
               → ForEach<Array<String>, String, TextField>
-                → TextField:"A" (1) FOCUSED (0, 0) 2x1
+                → TextField:"A" (1) FOCUSED (0, 0) 100x1
               → TaskView<Int, SetFocusView<TextField, Bool>>
                 → SetFocusView<TextField, Bool>
-                  → TextField:"" (0) (0, 1) 1x1
+                  → TextField:"" (0) (0, 1) 100x1
               → ForEach<Array<String>, String, TextField>
-                → TextField:"B" (1) (0, 2) 2x1
-                → TextField:"C" (1) (0, 3) 2x1
+                → TextField:"B" (1) (0, 2) 100x1
+                → TextField:"C" (1) (0, 3) 100x1
         
         """)
 
         await application.waitForTasksToComplete()
 
         #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 2x4
+        → VStack<MyView> (0, 0) 100x4
           → ComposedView<MyView>
             → TupleView<Pack{ForEach<Array<String>, String, TextField>, TaskView<Int, SetFocusView<TextField, Bool>>, ForEach<Array<String>, String, TextField>}>
               → ForEach<Array<String>, String, TextField>
-                → TextField:"A" (1) (0, 0) 2x1
+                → TextField:"A" (1) (0, 0) 100x1
               → TaskView<Int, SetFocusView<TextField, Bool>>
                 → SetFocusView<TextField, Bool>
-                  → TextField:"" (0) FOCUSED (0, 1) 1x1
+                  → TextField:"" (0) FOCUSED (0, 1) 100x1
               → ForEach<Array<String>, String, TextField>
-                → TextField:"B" (1) (0, 2) 2x1
-                → TextField:"C" (1) (0, 3) 2x1
+                → TextField:"B" (1) (0, 2) 100x1
+                → TextField:"C" (1) (0, 3) 100x1
 
         """)
 
@@ -231,36 +231,148 @@ import Testing
         application.update()
 
         #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 2x4
+        → VStack<MyView> (0, 0) 100x4
           → ComposedView<MyView>
             → TupleView<Pack{ForEach<Array<String>, String, TextField>, TaskView<Int, SetFocusView<TextField, Bool>>, ForEach<Array<String>, String, TextField>}>
               → ForEach<Array<String>, String, TextField>
-                → TextField:"X" (1) (0, 0) 2x1
-                → TextField:"Y" (1) (0, 1) 2x1
+                → TextField:"X" (1) (0, 0) 100x1
+                → TextField:"Y" (1) (0, 1) 100x1
               → TaskView<Int, SetFocusView<TextField, Bool>>
                 → SetFocusView<TextField, Bool>
-                  → TextField:"" (0) FOCUSED (0, 2) 1x1
+                  → TextField:"" (0) FOCUSED (0, 2) 100x1
               → ForEach<Array<String>, String, TextField>
-                → TextField:"Z" (1) (0, 3) 2x1
-
+                → TextField:"Z" (1) (0, 3) 100x1
+        
         """)
 
         application.process(keys: "Hello World")
 
         #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 12x4
+        → VStack<MyView> (0, 0) 100x4
           → ComposedView<MyView>
             → TupleView<Pack{ForEach<Array<String>, String, TextField>, TaskView<Int, SetFocusView<TextField, Bool>>, ForEach<Array<String>, String, TextField>}>
               → ForEach<Array<String>, String, TextField>
-                → TextField:"X" (1) (5, 0) 2x1
-                → TextField:"Y" (1) (5, 1) 2x1
+                → TextField:"X" (1) (0, 0) 100x1
+                → TextField:"Y" (1) (0, 1) 100x1
               → TaskView<Int, SetFocusView<TextField, Bool>>
                 → SetFocusView<TextField, Bool>
-                  → TextField:"Hello World" (11) FOCUSED (0, 2) 12x1
+                  → TextField:"Hello World" (11) FOCUSED (0, 2) 100x1
               → ForEach<Array<String>, String, TextField>
-                → TextField:"Z" (1) (5, 3) 2x1
+                → TextField:"Z" (1) (0, 3) 100x1
         
         """)
+    }
+
+    @Observable
+    class Model2 {
+        var isShowing = true
+        var text: String = ""
+        var text2: String = ""
+    }
+
+    @Test func testFocusedItemsIsRemoved() async throws {
+        struct MyView: View {
+            @State var model: Model2
+            var body: some View {
+                if model.isShowing {
+                    TextField(text: $model.text) { _ in }
+                }
+
+                TextField(text: $model.text2) { _ in }
+            }
+        }
+
+        let model = Model2()
+        let (application, _) = try drawView(MyView(model: model))
+
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 100x2
+          → ComposedView<MyView>
+            → TupleView<Pack{OptionalView<TextField>, TextField}>
+              → OptionalView<TextField>
+                → TextField:"" (0) FOCUSED (0, 0) 100x1
+              → TextField:"" (0) (0, 1) 100x1
+
+        """)
+
+        model.isShowing = false
+        application.update()
+
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 100x1
+          → ComposedView<MyView>
+            → TupleView<Pack{OptionalView<TextField>, TextField}>
+              → OptionalView<TextField>
+              → TextField:"" (0) FOCUSED (0, 0) 100x1
+
+        """)
+    }
+
+    @Test func testTabChangesFocus() async throws {
+        struct MyView: View {
+            @State var text1: String = ""
+            @State var text2: String = ""
+
+            var body: some View {
+                TextField(text: $text1) { _ in }
+                TextField(text: $text2) { _ in }
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 100x2
+          → ComposedView<MyView>
+            → TupleView<Pack{TextField, TextField}>
+              → TextField:"" (0) FOCUSED (0, 0) 100x1
+              → TextField:"" (0) (0, 1) 100x1
+
+        """)
+
+        application.process(key: .init(.tab))
+
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 100x2
+          → ComposedView<MyView>
+            → TupleView<Pack{TextField, TextField}>
+              → TextField:"" (0) (0, 0) 100x1
+              → TextField:"" (0) FOCUSED (0, 1) 100x1
+
+        """)
+
+        application.process(key: .init(.tab))
+
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 100x2
+          → ComposedView<MyView>
+            → TupleView<Pack{TextField, TextField}>
+              → TextField:"" (0) FOCUSED (0, 0) 100x1
+              → TextField:"" (0) (0, 1) 100x1
+
+        """)
+
+        application.process(key: .init(.tab, modifiers: .shift))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 100x2
+          → ComposedView<MyView>
+            → TupleView<Pack{TextField, TextField}>
+              → TextField:"" (0) (0, 0) 100x1
+              → TextField:"" (0) FOCUSED (0, 1) 100x1
+
+        """)
+
+        application.process(key: .init(.tab, modifiers: .shift))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 100x2
+          → ComposedView<MyView>
+            → TupleView<Pack{TextField, TextField}>
+              → TextField:"" (0) FOCUSED (0, 0) 100x1
+              → TextField:"" (0) (0, 1) 100x1
+
+        """)
+
+
+
 
     }
 }
