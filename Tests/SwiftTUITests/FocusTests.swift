@@ -17,7 +17,7 @@ import Testing
         }
 
         
-        let (application, input) = try drawView(MyView())
+        let (application, _) = try drawView(MyView())
 
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 1x1
@@ -26,26 +26,17 @@ import Testing
 
         """)
 
-        let updateClock = TestClock()
-
+        let clock = TestClock()
         let handle = withDependencies {
-            $0.continuousClock = updateClock
+            $0.continuousClock = clock
         } operation: {
             Task { try await application.start() }
         }
 
-        try input.write(contentsOf: Array("Hello World".utf8))
-        try input.write(contentsOf: Key(.left, modifiers: .ctrl).bytes())
-        try input.write(contentsOf: Key("w", modifiers: .ctrl).bytes())
-        try input.write(contentsOf: Array("Goodbye ".utf8))
-        await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 500)
-        await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 500)
-        await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 500)
-        await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 500)
+        application.process(keys: "Hello World")
+        application.process(key: .init(.left, modifiers: .ctrl))
+        application.process(key: .init("w", modifiers: .ctrl))
+        application.process(keys: "Goodbye ")
 
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 14x1
@@ -83,7 +74,7 @@ import Testing
         }
 
         let model = Model(items: [])
-        let (application, input) = try drawView(MyView(items: model))
+        let (application, _) = try drawView(MyView(items: model))
 
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 1x1
@@ -94,24 +85,7 @@ import Testing
 
         """)
 
-        let updateClock = TestClock()
-
-        let handle = withDependencies {
-            $0.continuousClock = updateClock
-        } operation: {
-            Task { try await application.start() }
-        }
-
-        try input.write(contentsOf: Array("Hello World".utf8))
-        await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 500)
-        await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 500)
-        await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 500)
-        await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 500)
-
+        application.process(keys: "Hello World")
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 12x1
           → ComposedView<MyView>
@@ -122,9 +96,7 @@ import Testing
         """)
 
         model.items = [ "Hello", "World" ]
-
-        await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 500)
+        application.update()
 
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 12x3
@@ -138,8 +110,6 @@ import Testing
         """)
 
         #expect((application.focusManager.focusedElement?.node as? TextFieldNode)?.description == #"TextField:"Hello World" (11) FOCUSED"#)
-
-        _ = handle
     }
 
     @Test func testItemsInsertedAfterFocus() async throws {
@@ -159,7 +129,7 @@ import Testing
         }
 
         let model = Model(items: [])
-        let (application, input) = try drawView(MyView(items: model))
+        let (application, _) = try drawView(MyView(items: model))
 
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 1x1
@@ -170,23 +140,7 @@ import Testing
 
         """)
 
-        let updateClock = TestClock()
-
-        let handle = withDependencies {
-            $0.continuousClock = updateClock
-        } operation: {
-            Task { try await application.start() }
-        }
-
-        try input.write(contentsOf: Array("Hello World".utf8))
-        await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 500)
-        await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 500)
-        await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 500)
-        await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 500)
+        application.process(keys: "Hello World")
 
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 12x1
@@ -198,9 +152,7 @@ import Testing
         """)
 
         model.items = [ "Hello", "World" ]
-
-        await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 500)
+        application.update()
 
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 12x3
@@ -214,8 +166,6 @@ import Testing
         """)
 
         #expect((application.focusManager.focusedElement?.node as? TextFieldNode)?.description == #"TextField:"Hello World" (11) FOCUSED"#)
-
-        _ = handle
     }
 
     @Test func testItemsRemovedAndAddedAroundFocus() async throws {
@@ -242,7 +192,7 @@ import Testing
         }
 
         let (model1, model2) = (Model(items: ["A"]), Model(items: ["B", "C"]))
-        let (application, input) = try drawView(MyView(model1: model1, model2: model2))
+        let (application, _) = try drawView(MyView(model1: model1, model2: model2))
 
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 2x4
@@ -256,23 +206,10 @@ import Testing
               → ForEach<Array<String>, String, TextField>
                 → TextField:"B" (1) (0, 2) 2x1
                 → TextField:"C" (1) (0, 3) 2x1
-
+        
         """)
 
-        let updateClock = TestClock()
-
-        let handle = withDependencies {
-            $0.continuousClock = updateClock
-        } operation: {
-            Task { try await application.start() }
-        }
-
-        await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 500)
-        await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 500)
-        await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 500)
+        await application.waitForTasksToComplete()
 
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 2x4
@@ -291,11 +228,7 @@ import Testing
 
         model1.items = [ "X", "Y" ]
         model2.items = [ "Z" ]
-
-        await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 500)
-        await updateClock.advance(by: .seconds(1))
-        await Task.megaYield(count: 500)
+        application.update()
 
         #expect(application.node.frameDescription == """
         → VStack<MyView> (0, 0) 2x4
@@ -312,22 +245,22 @@ import Testing
 
         """)
 
+        application.process(keys: "Hello World")
 
-//        await updateClock.advance(by: .seconds(1))
-//        await Task.megaYield(count: 500)
-//        await updateClock.advance(by: .seconds(1))
-//        await Task.megaYield(count: 500)
-//        await updateClock.advance(by: .seconds(1))
-//        await Task.megaYield(count: 500)
-//
-//        #expect(application.node.frameDescription == """
-//        → VStack<MyView> (0, 0) 12x1
-//          → ComposedView<MyView>
-//            → TupleView<Pack{TextField, ForEach<Array<String>, String, TextField>}>
-//              → TextField:"Hello World" (11) FOCUSED (0, 0) 12x1
-//              → ForEach<Array<String>, String, TextField>
-//
-//        """)
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 12x4
+          → ComposedView<MyView>
+            → TupleView<Pack{ForEach<Array<String>, String, TextField>, TaskView<Int, SetFocusView<TextField, Bool>>, ForEach<Array<String>, String, TextField>}>
+              → ForEach<Array<String>, String, TextField>
+                → TextField:"X" (1) (5, 0) 2x1
+                → TextField:"Y" (1) (5, 1) 2x1
+              → TaskView<Int, SetFocusView<TextField, Bool>>
+                → SetFocusView<TextField, Bool>
+                  → TextField:"Hello World" (11) FOCUSED (0, 2) 12x1
+              → ForEach<Array<String>, String, TextField>
+                → TextField:"Z" (1) (5, 3) 2x1
+        
+        """)
 
     }
 }

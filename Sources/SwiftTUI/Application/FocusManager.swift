@@ -67,7 +67,7 @@ class FocusManager {
 
         }
 
-        return focusedElement?.node.handle(key: key) ?? false
+        return focusedElement?.handle(key) ?? false
     }
 
     func remove(focus: Visitor.FocusableElement?) {

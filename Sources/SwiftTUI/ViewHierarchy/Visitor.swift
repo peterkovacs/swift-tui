@@ -38,6 +38,9 @@ enum Visitor {
         /// A method that calculates if an element is currently focusable.
         let isFocusable: () -> Bool
 
+        /// A method that handles a Key event.
+        let handle: (_ key: Key) -> Bool
+
         /// A method that resigns the firstResponder 
         let resignFirstResponder: () -> Void
         let becomeFirstResponder: () -> Void

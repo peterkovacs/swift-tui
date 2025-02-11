@@ -96,6 +96,8 @@ final class SetFocusNode<Value: Hashable>: Node {
             visitor.visit(
                 focus: .init(node: visited.node) {
                     visited.isFocusable()
+                } handle: { key in
+                    return visited.handle(key)
                 } resignFirstResponder: { [weak self] in
                     guard let self else { return }
                     binding.wrappedValue = nil

@@ -21,6 +21,8 @@ extension Focusable {
     var focusableElement: Visitor.FocusableElement {
         .init(node: self) { [weak self] in
             self?.isFocusable ?? false
+        } handle: { [weak self] key in
+            self?.handle(key: key) ?? false
         } resignFirstResponder: { [weak self] in
             self?.resignFirstResponder()
         } becomeFirstResponder: { [weak self] in

@@ -47,11 +47,16 @@ struct TaskView<ID: Equatable, Content: View>: View, PrimitiveView {
 }
 
 @globalActor
-fileprivate actor TaskActor {
+actor TaskActor {
     static let shared = TaskActor()
 }
 
-final class TaskNode<ID: Equatable>: Node {
+@MainActor
+protocol Taskable {
+    var task: Task<Void, Never>? { get }
+}
+
+final class TaskNode<ID: Equatable>: Node, Taskable {
     let action: @Sendable () async -> Void
     var priority: TaskPriority
     var task: Task<Void, Never>?

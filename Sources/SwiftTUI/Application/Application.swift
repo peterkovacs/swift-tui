@@ -49,17 +49,18 @@ import AsyncAlgorithms
                 renderer.invalidate(rect: node.global)
                 node.update(view: node.view)
             }
-            
+
             _ = node.layout(
                 rect: .init(position: .zero, size: renderer.window.size)
             )
-            
+
             for node in invalidated {
                 renderer.invalidate(rect: node.global)
             }
+
+            focusManager.evaluate(focus: node)
         } while !invalidated.isEmpty
 
-        focusManager.evaluate(focus: node)
         renderer.update()
     }
 }
@@ -145,6 +146,32 @@ extension Application {
         keyInputTask.cancel()
         invalidationsTask.cancel()
         renderer.stop()
+    }
+
+    func process(key: Key) {
+        _ = focusManager.handle(key: key)
+        update()
+    }
+
+    func process(keys: String) {
+        for byte in keys.unicodeScalars {
+            process(key: .init(.char(byte)))
+        }
+    }
+
+    func waitForTasksToComplete() async {
+        func visit(node: Node) async {
+            if let node = node as? Taskable, let task = node.task {
+                await task.value
+            }
+
+            for child in node.children {
+                await visit(node: child)
+            }
+        }
+
+        await visit(node: node)
+        update()
     }
 }
 
