@@ -15,7 +15,7 @@ import Testing
         }
 
         let isCalled = LockIsolated(false)
-        let _ = try drawView(
+        let (application, _) = try drawView(
             MyView {
                 isCalled.withValue {
                     $0 = true
@@ -23,7 +23,7 @@ import Testing
             }
         )
 
-        await Task.megaYield()
+        await application.waitForTasksToComplete()
         #expect(isCalled.value == true)
     }
 
@@ -67,7 +67,7 @@ import Testing
         application.update()
 
         // Give task time to actually cancel
-        await Task.megaYield()
+        await application.waitForTasksToComplete()
 
         #expect(isCalled.value == true)
     }
@@ -96,7 +96,7 @@ import Testing
         )
 
         // Give task time to start
-        await Task.megaYield()
+        await application.waitForTasksToComplete()
 
         #expect(isCalled.value == [true])
         model.isShowing.toggle()
@@ -105,7 +105,7 @@ import Testing
         application.update()
 
         // Give task time to actually cancel
-        await Task.megaYield()
+        await application.waitForTasksToComplete()
 
         #expect(isCalled.value == [true, false])
 
