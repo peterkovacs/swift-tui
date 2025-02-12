@@ -4,6 +4,7 @@ public struct TextField: View, PrimitiveView {
     public let onSubmit: (String) -> Void
 
     @Environment(\.placeholderColor) private var placeholderColor: Color
+    @Environment(\.foregroundColor) private var foregroundColor: Color
 
     public init(
         _ placeholder: String? = nil,
@@ -22,6 +23,7 @@ public struct TextField: View, PrimitiveView {
             text: text,
             placeholder: placeholder ?? "",
             placeholderColor: _placeholderColor,
+            foregroundColor: _foregroundColor,
             action: onSubmit
         )
 
@@ -34,6 +36,7 @@ public struct TextField: View, PrimitiveView {
         node.set(references: self)
         node.placeholder = placeholder ?? ""
         node.placeholderColor = placeholderColor
+        node.foregroundColor = foregroundColor
         node.action = onSubmit
     }
 }
@@ -53,6 +56,7 @@ final class TextFieldNode: DynamicPropertyNode, Control {
     @Binding var text: String
     var placeholder: String { didSet { invalidateLayout() } }
     var placeholderColor: Color
+    var foregroundColor: Color
     var action: (String) -> Void
     var isFocused: Bool = false
 
@@ -64,6 +68,7 @@ final class TextFieldNode: DynamicPropertyNode, Control {
         text: Binding<String>,
         placeholder: String,
         placeholderColor: Environment<Color>,
+        foregroundColor: Environment<Color>,
         action: @escaping (String) -> Void
     ) {
         self.placeholder = placeholder
@@ -71,8 +76,10 @@ final class TextFieldNode: DynamicPropertyNode, Control {
         self._text = text
         self.cursorPosition = text.wrappedValue.endIndex
         self.placeholderColor = .default
+        self.foregroundColor = .default
         super.init(view: view.view, parent: parent, content: view)
         self.placeholderColor = placeholderColor.wrappedValue
+        self.foregroundColor = foregroundColor.wrappedValue
     }
 
     override func size<T>(visitor: inout T) where T : Visitor.Size {
@@ -97,9 +104,8 @@ final class TextFieldNode: DynamicPropertyNode, Control {
     }
 
     func size(proposedSize: Size) -> Size {
-        let minimumSize = Extended(max(text.count, placeholder.count)) + 1
         return Size(
-            width: max(proposedSize.width, minimumSize),
+            width: proposedSize.width == 0 ? 1 : proposedSize.width,
             height: 1
         )
     }
@@ -274,14 +280,14 @@ final class TextFieldNode: DynamicPropertyNode, Control {
                 }
             }
         } else {
+            let text = text + " "
             for (position, character) in zip(global.indices, text.indices) where rect.contains(position) {
                 window.write(at: position, default: .init(char: text[character])) {
                     $0.char = text[character]
                     $0.attributes.inverted = isFocused && character == cursorPosition
-                    $0.foregroundColor = placeholderColor
+                    $0.foregroundColor = foregroundColor
                 }
             }
-
         }
     }
 
