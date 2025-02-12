@@ -68,6 +68,8 @@ import Testing
 
         // Give task time to actually cancel
         await application.waitForTasksToComplete()
+        // Give time for our code to get called?
+        await Task.megaYield()
 
         #expect(isCalled.value == true)
     }
