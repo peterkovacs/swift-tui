@@ -41,7 +41,7 @@ import Testing
                     Text("Hello, World!")
                         .task {
                             do {
-                                try await Task.sleep(for: .seconds(1))
+                                try await Task.sleep(for: .seconds(60))
                             } catch is CancellationError {
                                 isCalled()
                             } catch {}
