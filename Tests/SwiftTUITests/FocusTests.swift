@@ -51,7 +51,6 @@ import Testing
     @Observable
     class Model {
         var items: [String]
-
         init(items: [String]) {
             self.items = items
         }
@@ -266,7 +265,7 @@ import Testing
     @Observable
     class Model2 {
         var isShowing = true
-        var text: String = ""
+        var text1: String = ""
         var text2: String = ""
     }
 
@@ -275,7 +274,7 @@ import Testing
             @State var model: Model2
             var body: some View {
                 if model.isShowing {
-                    TextField(text: $model.text) { _ in }
+                    TextField(text: $model.text1) { _ in }
                 }
 
                 TextField(text: $model.text2) { _ in }
@@ -526,4 +525,201 @@ import Testing
         """)
 
     }
+
+    @Test func skipsOverUnfocusableViews() async throws {
+        struct MyView: View {
+            @State var text1 = ""
+            @State var text2 = ""
+            @State var text3 = ""
+
+            var body: some View {
+                TextField(text: $text1) { _ in }
+
+                VStack {
+                    TextField(text: $text2) { _ in }
+                    TextField(text: $text2) { _ in }
+                }
+                .focusable(false)
+
+                VStack {
+                    TextField(text: $text3) { _ in }
+                        .focusable(false)
+                    TextField(text: $text3) { _ in }
+                }
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 100x5
+          → ComposedView<MyView>
+            → TupleView<Pack{TextField, FocusableView<VStack<TupleView<Pack{TextField, TextField}>>>, VStack<TupleView<Pack{FocusableView<TextField>, TextField}>>}>
+              → TextField:"" (0) FOCUSED (0, 0) 100x1
+              → FocusableView<VStack<TupleView<Pack{TextField, TextField}>>>
+                → VStack<TupleView<Pack{TextField, TextField}>> (0, 1) 100x2
+                  → TupleView<Pack{TextField, TextField}>
+                    → TextField:"" (0) (0, 1) 100x1
+                    → TextField:"" (0) (0, 2) 100x1
+              → VStack<TupleView<Pack{FocusableView<TextField>, TextField}>> (0, 3) 100x2
+                → TupleView<Pack{FocusableView<TextField>, TextField}>
+                  → FocusableView<TextField>
+                    → TextField:"" (0) (0, 3) 100x1
+                  → TextField:"" (0) (0, 4) 100x1
+        
+        """)
+
+        application.process(key: .init(.tab))
+
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 100x5
+          → ComposedView<MyView>
+            → TupleView<Pack{TextField, FocusableView<VStack<TupleView<Pack{TextField, TextField}>>>, VStack<TupleView<Pack{FocusableView<TextField>, TextField}>>}>
+              → TextField:"" (0) (0, 0) 100x1
+              → FocusableView<VStack<TupleView<Pack{TextField, TextField}>>>
+                → VStack<TupleView<Pack{TextField, TextField}>> (0, 1) 100x2
+                  → TupleView<Pack{TextField, TextField}>
+                    → TextField:"" (0) (0, 1) 100x1
+                    → TextField:"" (0) (0, 2) 100x1
+              → VStack<TupleView<Pack{FocusableView<TextField>, TextField}>> (0, 3) 100x2
+                → TupleView<Pack{FocusableView<TextField>, TextField}>
+                  → FocusableView<TextField>
+                    → TextField:"" (0) (0, 3) 100x1
+                  → TextField:"" (0) FOCUSED (0, 4) 100x1
+        
+        """)
+    }
+
+    @Observable
+    class Model3 {
+        var isFocusable = true
+        var text1 = ""
+        var text2 = ""
+    }
+
+    @Test func clearFocusStateWhenNotFocusable() async throws {
+        struct MyView: View {
+            @State var model: Model3
+            @FocusState var focus: Field? = nil
+
+            enum Field {
+                case text1
+                case text2
+            }
+
+            var body: some View {
+                TextField(text: $model.text1) { _ in }
+                    .focusable(model.isFocusable)
+                    .focus($focus, equals: .text1)
+
+                TextField(text: $model.text2) { _ in }
+                    .focus($focus, equals: .text2)
+            }
+        }
+
+        let model = Model3()
+        let (application, _) = try drawView(MyView(model: model))
+
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 100x2
+          → ComposedView<MyView>
+            → TupleView<Pack{FocusView<FocusableView<TextField>, Optional<Field>>, FocusView<TextField, Optional<Field>>}>
+              → FocusView<FocusableView<TextField>, Optional<Field>>: text1 == text1
+                → FocusableView<TextField>
+                  → TextField:"" (0) FOCUSED (0, 0) 100x1
+              → FocusView<TextField, Optional<Field>>: text2 != text1
+                → TextField:"" (0) (0, 1) 100x1
+        
+        """)
+
+        model.isFocusable = false
+        application.update()
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 100x2
+          → ComposedView<MyView>
+            → TupleView<Pack{FocusView<FocusableView<TextField>, Optional<Field>>, FocusView<TextField, Optional<Field>>}>
+              → FocusView<FocusableView<TextField>, Optional<Field>>: text1 != (nil)
+                → FocusableView<TextField>
+                  → TextField:"" (0) (0, 0) 100x1
+              → FocusView<TextField, Optional<Field>>: text2 != (nil)
+                → TextField:"" (0) (0, 1) 100x1
+        
+        """)
+
+        application.process(key: .init(.tab))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 100x2
+          → ComposedView<MyView>
+            → TupleView<Pack{FocusView<FocusableView<TextField>, Optional<Field>>, FocusView<TextField, Optional<Field>>}>
+              → FocusView<FocusableView<TextField>, Optional<Field>>: text1 != text2
+                → FocusableView<TextField>
+                  → TextField:"" (0) (0, 0) 100x1
+              → FocusView<TextField, Optional<Field>>: text2 == text2
+                → TextField:"" (0) FOCUSED (0, 1) 100x1
+        
+        """)
+
+    }
+
+
+    @Test func removesFocusWhenFocusableIsFalse() async throws {
+        struct MyView: View {
+            @State var model: Model3
+
+            var body: some View {
+                TextField(text: $model.text1) { _ in }
+                    .focusable(model.isFocusable)
+                TextField(text: $model.text2) { _ in }
+            }
+        }
+
+        let model = Model3()
+        let (application, _) = try drawView(MyView(model: model))
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 100x2
+          → ComposedView<MyView>
+            → TupleView<Pack{FocusableView<TextField>, TextField}>
+              → FocusableView<TextField>
+                → TextField:"" (0) FOCUSED (0, 0) 100x1
+              → TextField:"" (0) (0, 1) 100x1
+        
+        """)
+
+        model.isFocusable = false
+        application.update()
+
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 100x2
+          → ComposedView<MyView>
+            → TupleView<Pack{FocusableView<TextField>, TextField}>
+              → FocusableView<TextField>
+                → TextField:"" (0) (0, 0) 100x1
+              → TextField:"" (0) (0, 1) 100x1
+        
+        """)
+        #expect(application.focusManager.focusedElement == nil)
+    }
+
+    @Test func defaultFocusSkipsOverUnfocusable() async throws {
+        struct MyView: View {
+            @State var text1 = ""
+            var body: some View {
+                TextField(text: $text1) { _ in }
+                    .focusable(false)
+                TextField(text: $text1) { _ in }
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+        #expect(application.node.frameDescription == """
+        → VStack<MyView> (0, 0) 100x2
+          → ComposedView<MyView>
+            → TupleView<Pack{FocusableView<TextField>, TextField}>
+              → FocusableView<TextField>
+                → TextField:"" (0) (0, 0) 100x1
+              → TextField:"" (0) FOCUSED (0, 1) 100x1
+        
+        """)
+    }
+
 }

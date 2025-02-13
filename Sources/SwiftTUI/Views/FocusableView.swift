@@ -31,7 +31,13 @@ struct FocusableView<Content: View>: View, PrimitiveView {
 }
 
 final class FocusableNode: Node {
-    var isFocusable: Bool
+    var isFocusable: Bool {
+        didSet {
+            if !isFocusable, oldValue {
+                evaluate()
+            }
+        }
+    }
 
     init(view: any GenericView, parent: Node?, isFocusable: Bool) {
         self.isFocusable = isFocusable
@@ -88,5 +94,11 @@ final class FocusableNode: Node {
     override func invalidateLayout() {
         _focusVisitor = nil
         super.invalidateLayout()
+    }
+
+    func evaluate() {
+        if !isFocusable, let focused = focusVisitor.visited.first(where: { $0.node.isFocused }) {
+            application?.focusManager.remove(focus: focused)
+        }
     }
 }
