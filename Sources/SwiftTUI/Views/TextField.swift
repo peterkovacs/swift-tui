@@ -58,7 +58,13 @@ final class TextFieldNode: DynamicPropertyNode, Control {
     var placeholderColor: Color
     var foregroundColor: Color
     var action: (String) -> Void
-    var isFocused: Bool = false
+    var isFocused: Bool = false {
+        didSet {
+            if oldValue != isFocused {
+                invalidate()
+            }
+        }
+    }
 
     var cursorPosition: String.Index
 
@@ -299,12 +305,10 @@ final class TextFieldNode: DynamicPropertyNode, Control {
 extension TextFieldNode: Focusable {
     func becomeFirstResponder() {
         isFocused = true
-        invalidate()
     }
     
     func resignFirstResponder() {
         isFocused = false
-        invalidate()
     }
     
     var isFocusable: Bool { true }

@@ -5,8 +5,8 @@ class FocusManager {
     private var focusedElementIndex: Array<Visitor.FocusableElement>.Index? {
         didSet {
             if !evaluatingFocus {
-                oldValue.map { focusVisitor.visited[$0] }?.node.resignFirstResponder()
-                focusedElementIndex.map { focusVisitor.visited[$0] }?.node.becomeFirstResponder()
+                oldValue.map { focusVisitor.visited[$0] }?.resignFirstResponder()
+                focusedElementIndex.map { focusVisitor.visited[$0] }?.becomeFirstResponder()
             }
         }
     }
@@ -16,9 +16,14 @@ class FocusManager {
     }
 
     init(root: Node) {
-        self.focusVisitor = .init(visiting: root)
         // TODO: Deal with prefersDefaultFocus
-        // self.focusedElementIndex = focusVisitor.visited.firstIndex { $0.isFocusable() }
+
+        self.focusVisitor = .init(visiting: root)
+        self.focusedElementIndex = nil
+    }
+
+    func defaultFocus() {
+        self.focusedElementIndex = self.focusVisitor.visited.firstIndex { $0.isFocusable() }
     }
 
     func handle(key: Key) -> Bool {
@@ -96,12 +101,12 @@ class FocusManager {
         // 2. focusedElementIndex moves to another spot in `visited`.
         // 3. The element that focusedElementIndex refers to is removed.
 
+        var elementRemoved: Bool = false
         if let focusedElementIndex {
             let differences = focusVisitor.visited.difference(from: self.focusVisitor.visited).inferringMoves()
 
             var offset = 0
             var elementMovedTo: Int? = nil
-            var elementRemoved: Bool = false
 
             for difference in differences {
                 switch difference {
@@ -135,7 +140,7 @@ class FocusManager {
         }
 
         self.focusVisitor = focusVisitor
-        if focusedElementIndex == nil {
+        if elementRemoved, focusedElementIndex == nil {
             focusedElementIndex = focusVisitor.visited.firstIndex { $0.isFocusable() }
         }
     }

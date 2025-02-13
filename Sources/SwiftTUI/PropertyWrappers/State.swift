@@ -63,7 +63,7 @@ class DynamicPropertyReference<Wrapped> {
         }
 
         set {
-            guard let node, let label, let newValue else { fatalError("Accessed State prior to initialization") }
+            guard let node, let label else { fatalError("Accessed State prior to initialization") }
             node.set(state: Key(label: label), value: newValue)
         }
     }

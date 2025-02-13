@@ -25,7 +25,7 @@ import AsyncAlgorithms
     }
 
     func setup() {
-        focusManager.evaluate(focus: node)
+        focusManager.defaultFocus()
         _ = node.layout(
             rect: .init(position: .zero, size: renderer.window.size)
         )
