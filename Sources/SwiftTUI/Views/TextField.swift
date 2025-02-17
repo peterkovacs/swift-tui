@@ -54,7 +54,7 @@ private struct PlaceholderColorEnvironmentKey: EnvironmentKey {
 
 final class TextFieldNode: DynamicPropertyNode, Control {
     @Binding var text: String
-    var placeholder: String { didSet { invalidateLayout() } }
+    var placeholder: String { didSet { if placeholder != oldValue { invalidateLayout() } } }
     var placeholderColor: Color
     var foregroundColor: Color
     var action: (String) -> Void
@@ -200,7 +200,6 @@ extension TextFieldNode: Focusable {
             self.text = ""
             self.cursorPosition = text.startIndex
             invalidate()
-            invalidateLayout()
             return true
 
         case Key(.backspace):
@@ -208,7 +207,6 @@ extension TextFieldNode: Focusable {
                 cursorPosition = text.index(before: cursorPosition)
                 text.remove(at: cursorPosition)
                 invalidate()
-                invalidateLayout()
             }
             return true
 
@@ -217,7 +215,6 @@ extension TextFieldNode: Focusable {
                 cursorPosition = text.index(before: cursorPosition)
                 text.remove(at: cursorPosition)
                 invalidate()
-                invalidateLayout()
             }
             return true
 
@@ -253,7 +250,6 @@ extension TextFieldNode: Focusable {
             if cursorPosition != text.endIndex {
                 text.removeSubrange(cursorPosition...)
                 invalidate()
-                invalidateLayout()
             }
             return true
 
@@ -266,7 +262,6 @@ extension TextFieldNode: Focusable {
                 cursorPosition = startOfWord
 
                 invalidate()
-                invalidateLayout()
 
                 return true
             }
@@ -278,7 +273,6 @@ extension TextFieldNode: Focusable {
                 text = ""
                 cursorPosition = text.endIndex
                 invalidate()
-                invalidateLayout()
             }
             return true
 
@@ -301,7 +295,6 @@ extension TextFieldNode: Focusable {
             if case .char(let value) = key.key {
                 text.insert(.init(value), at: cursorPosition)
                 cursorPosition = text.index(after: cursorPosition)
-                invalidateLayout()
                 invalidate()
                 return true
             }

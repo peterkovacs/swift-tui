@@ -58,11 +58,11 @@ struct FlexibleFrame<Content: View>: View, PrimitiveView {
 }
 
 final class FlexibleFrameNode: Node {
-    var minWidth: Extended? = nil { didSet { invalidateLayout() } }
-    var maxWidth: Extended? = nil { didSet { invalidateLayout() } }
-    var minHeight: Extended? = nil { didSet { invalidateLayout() } }
-    var maxHeight: Extended? = nil { didSet { invalidateLayout() } }
-    var alignment: Alignment { didSet { invalidateLayout() } }
+    var minWidth: Extended? = nil { didSet { if minWidth != oldValue { invalidateLayout() } } }
+    var maxWidth: Extended? = nil { didSet { if maxWidth != oldValue { invalidateLayout() } } }
+    var minHeight: Extended? = nil { didSet { if minHeight != oldValue { invalidateLayout() } } }
+    var maxHeight: Extended? = nil { didSet { if maxHeight != oldValue { invalidateLayout() } } }
+    var alignment: Alignment { didSet { if alignment != oldValue { invalidateLayout() } } }
 
     var _sizeVisitor: SizeVisitor? = nil
     var sizeVisitor: SizeVisitor {

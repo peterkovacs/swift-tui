@@ -3,7 +3,7 @@ import Foundation
 /// A basic single line of text.
 ///
 public struct Text: View, PrimitiveView {
-    enum Value {
+    enum Value: Equatable {
         case string(String)
         case attributed(AttributedString)
     }
@@ -57,7 +57,7 @@ public struct Text: View, PrimitiveView {
 
 final class TextNode: DynamicPropertyNode, Control {
     
-    var text: Text.Value { didSet { invalidateLayout() } }
+    var text: Text.Value { didSet { if text != oldValue { invalidateLayout() } } }
     var bold: Bool = false
     var italic: Bool = false
     var underline: Bool = false

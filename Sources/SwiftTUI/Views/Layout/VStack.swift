@@ -38,21 +38,8 @@ public struct VStack<Content: View>: View, PrimitiveView {
 
 /// A Vertical Stack Control with an alignment and spacing.
 class VStackNode: Node, Control {
-    var alignment: HorizontalAlignment {
-        didSet {
-            if alignment != oldValue {
-                invalidateLayout()
-            }
-        }
-    }
-
-    var spacing: Extended {
-        didSet {
-            if spacing != oldValue {
-                invalidateLayout()
-            }
-        }
-    }
+    var alignment: HorizontalAlignment { didSet { if alignment != oldValue { invalidateLayout() } } }
+    var spacing: Extended { didSet { if spacing != oldValue { invalidateLayout() } } }
 
     fileprivate var _sizeVisitor: SizeVisitor? = nil
     var sizeVisitor: SizeVisitor {

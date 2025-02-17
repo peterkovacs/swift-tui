@@ -43,9 +43,9 @@ struct FixedFrame<Content: View>: View, PrimitiveView {
 }
 
 final class FixedFrameNode: Node {
-    var width: Extended? { didSet { invalidateLayout() } }
-    var height: Extended? { didSet { invalidateLayout() } }
-    var alignment: Alignment { didSet { invalidateLayout() } }
+    var width: Extended? { didSet { if width != oldValue { invalidateLayout() } } }
+    var height: Extended? { didSet { if height != oldValue { invalidateLayout() } } }
+    var alignment: Alignment { didSet { if alignment != oldValue { invalidateLayout() } } }
 
     var _sizeVisitor: SizeVisitor? = nil
     var sizeVisitor: SizeVisitor {

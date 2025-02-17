@@ -31,13 +31,7 @@ struct FocusableView<Content: View>: View, PrimitiveView {
 }
 
 final class FocusableNode: Node {
-    var isFocusable: Bool {
-        didSet {
-            if oldValue != isFocusable {
-                evaluate()
-            }
-        }
-    }
+    var isFocusable: Bool { didSet { if oldValue != isFocusable { evaluate() } } }
 
     init(view: any GenericView, parent: Node?, isFocusable: Bool) {
         self.isFocusable = isFocusable

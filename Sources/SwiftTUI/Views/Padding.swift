@@ -35,8 +35,8 @@ struct Padding<Content: View>: View, PrimitiveView {
 }
 
 class PaddingNode: ModifierNode {
-    var size: Extended { didSet { invalidateLayout() } }
-    var edges: Edges { didSet { invalidateLayout() } }
+    var size: Extended { didSet { if size != oldValue { invalidateLayout() } } }
+    var edges: Edges { didSet { if edges != oldValue { invalidateLayout() } } }
 
     var paddingSize: Size {
         Size(
