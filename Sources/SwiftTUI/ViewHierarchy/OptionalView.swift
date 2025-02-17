@@ -19,10 +19,13 @@ public struct OptionalView<Wrapped: View>: View, PrimitiveView, GenericView {
             break
         case (.none, .some(let newValue)):
             node.add(at: 0, node: newValue.view.build(parent: node))
+            node.invalidateLayout()
         case (.some, .none):
             node.remove(at: 0)
+            node.invalidateLayout()
         case (.some, .some(let newValue)):
             node.children[0].update(view: newValue.view)
+            node.invalidateLayout()
         }
     }
 }

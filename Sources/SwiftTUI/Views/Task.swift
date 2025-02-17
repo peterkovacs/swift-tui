@@ -65,6 +65,9 @@ final class TaskNode<ID: Equatable>: Node, Taskable {
             if oldValue != id {
                 task?.cancel()
                 task = nil
+
+                // TODO: Find a better way to make the task start again.
+                invalidateLayout()
             }
         }
     }
@@ -89,7 +92,6 @@ final class TaskNode<ID: Equatable>: Node, Taskable {
 
     override func layout<T>(visitor: inout T) where T : Visitor.Layout {
         super.layout(visitor: &visitor)
-
         if task == nil {
             task = .init(priority: priority) { @TaskActor [action] in
                 await action()
