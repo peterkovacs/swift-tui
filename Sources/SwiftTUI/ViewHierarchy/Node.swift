@@ -2,13 +2,25 @@
 @MainActor
 internal class Node {
     var view: any GenericView
-
-    private(set) var application: Application?
+    private(set) var root: RootNode?
     private(set) weak var parent: Node? = nil
     private(set) var children: [Node] = []
 
     /// Manipulation of this EnvironmentValues passing through this level.
     var environment: ((inout EnvironmentValues) -> Void)?
+
+    init<T: View>(root view: T) {
+        self.view = view.view
+    }
+
+    /// Construct a Node for a given view.
+    init(view: any GenericView, parent: Node?) {
+        self.view = view
+        self.parent = parent
+        self.root = parent?.root
+    }
+
+
 
     /// Frame of this node, if it is a control, relative to its containing control frame.
     var frame: Rect = .zero {
@@ -21,29 +33,15 @@ internal class Node {
     private var _global: Rect?
     var global: Rect {
         guard let _global else {
-            let frame = frame.relative(to: parent)
+            let frame = relative(to: root)
             _global = frame
             return frame
         }
 
         return _global
     }
-
-    /// Construct the root Node of an application, should only be called by the top-level Layout node.
-    init(root view: any GenericView, application: Application?) {
-        self.view = view
-        self.application = application
-    }
-
-    /// Construct a Node for a given view.
-    init(view: any GenericView, parent: Node?) {
-        self.view = view
-        self.parent = parent
-        self.application = parent?.application
-    }
-
     func invalidate() {
-        application?.invalidate(node: self)
+        root?.invalidate(node: self)
     }
 
     func invalidateLayout() {
@@ -122,21 +120,25 @@ internal class Node {
     var description: String {
         "\(type(of: self.view))"
     }
-}
 
-fileprivate extension Rect {
-    @MainActor func relative(to node: Node?) -> Rect {
-        if let node {
-            return .init(
-                position: node.global.position + position,
-                size: size
-            )
-        } else {
-            return self
+    func relative(to ancestor: Node?) -> Rect {
+        guard let ancestor, ancestor !== self else {
+            return frame
         }
+
+        var node = self
+        var result = frame
+
+        while let parent = node.parent, ancestor !== parent {
+            result.position += parent.frame.position
+            node = parent
+        }
+
+        result.position += node.frame.position
+
+        return result
     }
 }
-
 
 extension Node {
     private func treeDescription(level: Int) -> String {

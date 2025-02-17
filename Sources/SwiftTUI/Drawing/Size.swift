@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Size: Sendable, Equatable, CustomStringConvertible {
+public struct Size: Sendable, CustomStringConvertible, Hashable {
     public var width: Extended
     public var height: Extended
 

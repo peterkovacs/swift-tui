@@ -1,7 +1,8 @@
 import Foundation
+import InlineSnapshotTesting
 import Observation
-@testable import SwiftTUI
 import SnapshotTesting
+@testable import SwiftTUI
 import Testing
 
 @MainActor
@@ -18,15 +19,18 @@ import Testing
 
         let (application, _) = try drawView(MyView())
 
-        #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 1x3
-          → ComposedView<MyView>
-            → ForEach<Array<Int>, Int, Text>
-              → Text:string("1") (0, 0) 1x1
-              → Text:string("2") (0, 1) 1x1
-              → Text:string("3") (0, 2) 1x1
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 1x3
+              → ComposedView<MyView>
+                → ForEach<Array<Int>, Int, Text>
+                  → Text:string("1") (0, 0) 1x1
+                  → Text:string("2") (0, 1) 1x1
+                  → Text:string("3") (0, 2) 1x1
 
-        """)
+            """
+        }
+
         assertSnapshot(
             of: application.renderer,
             as: .rendered
@@ -55,31 +59,36 @@ import Testing
         let model = Model<Int>(data: [1, 2, 3])
         let (application, _) = try drawView(MyView(model: model))
 
-        #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 1x3
-          → ComposedView<MyView>
-            → ForEach<Array<Int>, Int, Text>
-              → Text:string("1") (0, 0) 1x1
-              → Text:string("2") (0, 1) 1x1
-              → Text:string("3") (0, 2) 1x1
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 1x3
+              → ComposedView<MyView>
+                → ForEach<Array<Int>, Int, Text>
+                  → Text:string("1") (0, 0) 1x1
+                  → Text:string("2") (0, 1) 1x1
+                  → Text:string("3") (0, 2) 1x1
 
-        """)
+            """
+        }
 
         model.data.append(4)
         #expect(application.invalidated.count == 1)
-        #expect(application.invalidated[0] === application.node.children[0])
+        #expect(application.invalidated.first?.node === application.node.children[0])
         application.update()
 
-        #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 1x4
-          → ComposedView<MyView>
-            → ForEach<Array<Int>, Int, Text>
-              → Text:string("1") (0, 0) 1x1
-              → Text:string("2") (0, 1) 1x1
-              → Text:string("3") (0, 2) 1x1
-              → Text:string("4") (0, 3) 1x1
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 1x4
+              → ComposedView<MyView>
+                → ForEach<Array<Int>, Int, Text>
+                  → Text:string("1") (0, 0) 1x1
+                  → Text:string("2") (0, 1) 1x1
+                  → Text:string("3") (0, 2) 1x1
+                  → Text:string("4") (0, 3) 1x1
 
-        """)
+            """
+        }
+
         assertSnapshot(
             of: application.renderer,
             as: .rendered
@@ -99,29 +108,33 @@ import Testing
         let model = Model<Int>(data: [1, 2, 3])
         let (application, _) = try drawView(MyView(model: model))
 
-        #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 1x3
-          → ComposedView<MyView>
-            → ForEach<Array<Int>, Int, Text>
-              → Text:string("1") (0, 0) 1x1
-              → Text:string("2") (0, 1) 1x1
-              → Text:string("3") (0, 2) 1x1
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 1x3
+              → ComposedView<MyView>
+                → ForEach<Array<Int>, Int, Text>
+                  → Text:string("1") (0, 0) 1x1
+                  → Text:string("2") (0, 1) 1x1
+                  → Text:string("3") (0, 2) 1x1
 
-        """)
+            """
+        }
 
         model.data = [1, 2]
         #expect(application.invalidated.count == 1)
-        #expect(application.invalidated[0] === application.node.children[0])
+        #expect(application.invalidated.first?.node === application.node.children[0])
         application.update()
 
-        #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 1x2
-          → ComposedView<MyView>
-            → ForEach<Array<Int>, Int, Text>
-              → Text:string("1") (0, 0) 1x1
-              → Text:string("2") (0, 1) 1x1
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 1x2
+              → ComposedView<MyView>
+                → ForEach<Array<Int>, Int, Text>
+                  → Text:string("1") (0, 0) 1x1
+                  → Text:string("2") (0, 1) 1x1
 
-        """)
+            """
+        }
         assertSnapshot(
             of: application.renderer,
             as: .rendered
@@ -141,30 +154,34 @@ import Testing
         let model = Model<Int>(data: [1, 2, 3])
         let (application, _) = try drawView(MyView(model: model))
 
-        #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 1x3
-          → ComposedView<MyView>
-            → ForEach<Array<Int>, Int, Text>
-              → Text:string("1") (0, 0) 1x1
-              → Text:string("2") (0, 1) 1x1
-              → Text:string("3") (0, 2) 1x1
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 1x3
+              → ComposedView<MyView>
+                → ForEach<Array<Int>, Int, Text>
+                  → Text:string("1") (0, 0) 1x1
+                  → Text:string("2") (0, 1) 1x1
+                  → Text:string("3") (0, 2) 1x1
 
-        """)
+            """
+        }
 
         model.data = [1, 4, 3]
         #expect(application.invalidated.count == 1)
-        #expect(application.invalidated[0] === application.node.children[0])
+        #expect(application.invalidated.first?.node === application.node.children[0])
         application.update()
 
-        #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 1x3
-          → ComposedView<MyView>
-            → ForEach<Array<Int>, Int, Text>
-              → Text:string("1") (0, 0) 1x1
-              → Text:string("4") (0, 1) 1x1
-              → Text:string("3") (0, 2) 1x1
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 1x3
+              → ComposedView<MyView>
+                → ForEach<Array<Int>, Int, Text>
+                  → Text:string("1") (0, 0) 1x1
+                  → Text:string("4") (0, 1) 1x1
+                  → Text:string("3") (0, 2) 1x1
 
-        """)
+            """
+        }
         assertSnapshot(
             of: application.renderer,
             as: .rendered

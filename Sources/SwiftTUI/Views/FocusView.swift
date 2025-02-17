@@ -100,12 +100,12 @@ final class FocusNode<Value: Hashable>: Node {
 
         if !isFocused, value == binding.wrappedValue {
             if !isFocused, let focus = focusable.first {
-                application?.focusManager.change(focus: focus)
+                root?.focusManager?.change(focus: focus)
             } else {
                 binding.wrappedValue = unset
             }
         } else if isFocused, unset == binding.wrappedValue {
-            application?.focusManager.remove(focus: focusable.first { $0.node.isFocused })
+            root?.focusManager?.remove(focus: focusable.first { $0.node.isFocused })
             binding.wrappedValue = unset
         }
     }

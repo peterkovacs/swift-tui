@@ -33,7 +33,7 @@ enum Visitor {
     }
 
     struct FocusableElement {
-        let node: any Focusable
+        let node: any Focusable & Control
 
         /// A method that calculates if an element is currently focusable.
         let isFocusable: () -> Bool

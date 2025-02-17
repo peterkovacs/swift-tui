@@ -30,6 +30,7 @@ extension Renderer {
     }
 
     func invalidate(rect: Rect) {
+        guard rect.size.isZero == false else { return }
         invalidated = invalidated?.union(rect) ?? rect
     }
 
@@ -50,10 +51,24 @@ extension Renderer {
 
         root.draw(rect: rect, into: &newWindow)
 
+        #if DEBUG_RENDERER
+        newWindow.indices.forEach { newWindow[$0]?.backgroundColor = nil }
+
+        for i in rect.indices {
+            newWindow[i]?.backgroundColor = .red
+        }
+
+        for position in newWindow.indices {
+            if newWindow[position] != window[position] {
+                drawPixel(newWindow[position], at: position)
+            }
+        }
+        #else
         for position in rect.indices {
             if newWindow[position] != window[position] {
                 drawPixel(newWindow[position], at: position)
             }
         }
+        #endif
     }
 }

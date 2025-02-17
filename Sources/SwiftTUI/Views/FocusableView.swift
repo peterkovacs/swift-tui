@@ -33,7 +33,7 @@ struct FocusableView<Content: View>: View, PrimitiveView {
 final class FocusableNode: Node {
     var isFocusable: Bool {
         didSet {
-            if !isFocusable, oldValue {
+            if oldValue != isFocusable {
                 evaluate()
             }
         }
@@ -98,7 +98,9 @@ final class FocusableNode: Node {
 
     func evaluate() {
         if !isFocusable, let focused = focusVisitor.visited.first(where: { $0.node.isFocused }) {
-            application?.focusManager.remove(focus: focused)
+            root?.focusManager?.remove(focus: focused)
         }
+
+        invalidateLayout()
     }
 }

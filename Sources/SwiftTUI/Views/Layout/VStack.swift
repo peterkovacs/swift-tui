@@ -36,24 +36,35 @@ public struct VStack<Content: View>: View, PrimitiveView {
     }
 }
 
+/// A Vertical Stack Control with an alignment and spacing.
 class VStackNode: Node, Control {
     var alignment: HorizontalAlignment {
         didSet {
-            invalidateLayout()
+            if alignment != oldValue {
+                invalidateLayout()
+            }
         }
     }
 
     var spacing: Extended {
         didSet {
-            invalidateLayout()
+            if spacing != oldValue {
+                invalidateLayout()
+            }
         }
     }
 
     fileprivate var _sizeVisitor: SizeVisitor? = nil
     var sizeVisitor: SizeVisitor {
-        let visitor = _sizeVisitor ?? SizeVisitor(spacing: spacing, children: children)
-        _sizeVisitor = visitor
-        return visitor
+        get {
+            let visitor = _sizeVisitor ?? SizeVisitor(spacing: spacing, children: children)
+            _sizeVisitor = visitor
+            return visitor
+        }
+
+        set {
+            _sizeVisitor = newValue
+        }
     }
 
     fileprivate var _layoutVisitor: LayoutVisitor? = nil
@@ -72,22 +83,10 @@ class VStackNode: Node, Control {
         }
     }
 
-    init<T: View>(
-        root view: T,
-        application: Application?
-    ) {
+    override init<T: View>(root view: T) {
         self.alignment = .center
         self.spacing = 0
-        super.init(
-            root: VStack { view }.view,
-            application: application
-        )
-
-        self.environment = {
-            $0.layoutAxis = .vertical
-        }
-
-        add(at: 0, node: view.view.build(parent: self))
+        super.init(root: view)
     }
 
     init(
@@ -107,11 +106,14 @@ class VStackNode: Node, Control {
     struct SizeVisitor: Visitor.Size {
         let spacing: Extended
         var visited: [Visitor.SizeElement]
-        
+        var cache: [Size: Size]
+
 
         fileprivate init(spacing: Extended, children: [Node]) {
             self.spacing = spacing
             self.visited = []
+            self.cache = [:]
+
             for child in children {
                 child.size(visitor: &self)
             }
@@ -121,7 +123,11 @@ class VStackNode: Node, Control {
             visited.append(size)
         }
 
-        func size(proposedSize: Size) -> Size {
+        mutating func size(proposedSize: Size) -> Size {
+            if let cached = cache[proposedSize] {
+                return cached
+            }
+
             let children = visited
                 .map { (size: $0.size, flexibility: $0.node.verticalFlexibility(width: proposedSize.width)) }
                 .sorted { $0.flexibility < $1.flexibility }
@@ -151,6 +157,7 @@ class VStackNode: Node, Control {
                 remaining -= 1
             }
 
+            cache[proposedSize] = resultSize
             return resultSize
         }
     }
@@ -159,12 +166,13 @@ class VStackNode: Node, Control {
         let spacing: Extended
         let alignment: HorizontalAlignment
         var visited: [(element: Visitor.LayoutElement, frame: Rect)]
-        var calculatedLayout: (Rect, Rect)?
+        var cache: [Rect: Rect]
 
         fileprivate init(spacing: Extended, alignment: HorizontalAlignment, children: [Node]) {
             self.spacing = spacing
             self.alignment = alignment
             self.visited = []
+            self.cache = [:]
             for child in children {
                 child.layout(visitor: &self)
             }
@@ -175,7 +183,7 @@ class VStackNode: Node, Control {
         }
 
         mutating func layout(rect: Rect) -> Rect {
-            if let (cachedRect, calculatedLayout) = calculatedLayout, cachedRect == rect { return calculatedLayout }
+            if let cache = cache[rect] { return cache }
 
             let childrenOrder = visited
                 .indices
@@ -232,7 +240,7 @@ class VStackNode: Node, Control {
                 }
             }
 
-            calculatedLayout = (rect, frame)
+            cache[rect] = frame
             return frame
         }
     }

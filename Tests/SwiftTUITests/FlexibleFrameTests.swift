@@ -1,7 +1,8 @@
+import InlineSnapshotTesting
 import Observation
+import SnapshotTesting
 @testable import SwiftTUI
 import Testing
-import SnapshotTesting
 
 @MainActor
 @Suite("Flexible Frame Tests", .snapshots(record: .missing)) struct FlexibleFrameTest {
@@ -29,15 +30,16 @@ import SnapshotTesting
 
         let (application, _) = try drawView(MyView())
 
-        #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 52x32
-          → ComposedView<MyView>
-            → Border:[(0, 0) 52x32]
-              → FlexibleFrame:50x30/(nil)x(nil) [50x30]
-                → Text:string("Hello World") (20, 15) 11x1
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 52x32
+              → ComposedView<MyView>
+                → Border:[(0, 0) 52x32]
+                  → FlexibleFrame:50x30/(nil)x(nil) [50x30]
+                    → Text:string("Hello World") (20, 15) 11x1
 
-        """)
-
+            """
+        }
         assertSnapshot(
             of: application.renderer,
             as: .rendered
@@ -55,15 +57,16 @@ import SnapshotTesting
 
         let (application, _) = try drawView(MyView())
 
-        #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 13x3
-          → ComposedView<MyView>
-            → Border:[(0, 0) 13x3]
-              → FlexibleFrame:(nil)x(nil)/50x30 [11x1]
-                → Text:string("Hello World") (1, 1) 11x1
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 13x3
+              → ComposedView<MyView>
+                → Border:[(0, 0) 13x3]
+                  → FlexibleFrame:(nil)x(nil)/50x30 [11x1]
+                    → Text:string("Hello World") (1, 1) 11x1
 
-        """)
-
+            """
+        }
         assertSnapshot(
             of: application.renderer,
             as: .rendered
@@ -82,15 +85,16 @@ import SnapshotTesting
 
         let (application, _) = try drawView(MyView())
 
-        #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 13x3
-          → ComposedView<MyView>
-            → Border:[(0, 0) 13x3]
-              → FlexibleFrame:5x1/(nil)x(nil) [11x1]
-                → Text:string("Hello World") (1, 1) 11x1
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 13x3
+              → ComposedView<MyView>
+                → Border:[(0, 0) 13x3]
+                  → FlexibleFrame:5x1/(nil)x(nil) [11x1]
+                    → Text:string("Hello World") (1, 1) 11x1
 
-        """)
-
+            """
+        }
         assertSnapshot(
             of: application.renderer,
             as: .rendered
@@ -108,15 +112,16 @@ import SnapshotTesting
 
         let (application, _) = try drawView(MyView())
 
-        #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 7x3
-          → ComposedView<MyView>
-            → Border:[(0, 0) 7x3]
-              → FlexibleFrame:(nil)x(nil)/5x1 [5x1]
-                → Text:string("HelloWorld") (-1, 1) 10x1
-        
-        """)
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 7x3
+              → ComposedView<MyView>
+                → Border:[(0, 0) 7x3]
+                  → FlexibleFrame:(nil)x(nil)/5x1 [5x1]
+                    → Text:string("HelloWorld") (-1, 1) 10x1
 
+            """
+        }
         assertSnapshot(
             of: application.renderer,
             as: .rendered
@@ -179,21 +184,22 @@ import SnapshotTesting
         
 
         let (application, _) = try drawView(MyView())
-        #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 38x14
-          → ComposedView<MyView>
-            → Border:[(0, 0) 38x14]
-              → HStack<TupleView<Pack{Border<FlexibleFrame<Text>>, Border<FlexibleFrame<Text>>}>> (1, 1) 36x12
-                → TupleView<Pack{Border<FlexibleFrame<Text>>, Border<FlexibleFrame<Text>>}>
-                  → Border:[(1, 3) 13x7]
-                    → FlexibleFrame:10x5/30x(nil) [11x5]
-                      → Text:string("Hello World") (2, 6) 11x1
-                  → Border:[(15, 1) 22x12]
-                    → FlexibleFrame:20x10/(nil)x100 [20x10]
-                      → Text:string("Goodbye World") (19, 6) 13x1
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 38x14
+              → ComposedView<MyView>
+                → Border:[(0, 0) 38x14]
+                  → HStack<TupleView<Pack{Border<FlexibleFrame<Text>>, Border<FlexibleFrame<Text>>}>> (1, 1) 36x12
+                    → TupleView<Pack{Border<FlexibleFrame<Text>>, Border<FlexibleFrame<Text>>}>
+                      → Border:[(1, 3) 13x7]
+                        → FlexibleFrame:10x5/30x(nil) [11x5]
+                          → Text:string("Hello World") (2, 6) 11x1
+                      → Border:[(15, 1) 22x12]
+                        → FlexibleFrame:20x10/(nil)x100 [20x10]
+                          → Text:string("Goodbye World") (19, 6) 13x1
 
-        """)
-
+            """
+        }
         assertSnapshot(
             of: application.renderer,
             as: .rendered
@@ -229,26 +235,29 @@ import SnapshotTesting
         let model = Model()
         let (application, _) = try drawView(MyView(model: model))
 
-        #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 50x50
-          → ComposedView<MyView>
-            → FlexibleFrame:50x50/100x100 [50x50]
-              → Text:string("Hello World") (19, 24) 11x1
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 50x50
+              → ComposedView<MyView>
+                → FlexibleFrame:50x50/100x100 [50x50]
+                  → Text:string("Hello World") (19, 24) 11x1
 
-        """)
-
+            """
+        }
         model.update()
-        #expect(application.invalidated[0] === application.node.children[0])
+        #expect(application.invalidated.first?.node === application.node.children[0])
 
         application.update()
 
-        #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 25x25
-          → ComposedView<MyView>
-            → FlexibleFrame:25x25/50x50 [25x25]
-              → Text:string("Hello World") (7, 12) 11x1
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 25x25
+              → ComposedView<MyView>
+                → FlexibleFrame:25x25/50x50 [25x25]
+                  → Text:string("Hello World") (7, 12) 11x1
 
-        """)
+            """
+        }
     }
 
     @Test func testInfinitelyWideFrameUsesFullWidth() async throws {
@@ -267,20 +276,21 @@ import SnapshotTesting
         
         let (application, _) = try drawView(MyView())
 
-        #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 100x3
-          → ComposedView<MyView>
-            → HStack<TupleView<Pack{Border<FlexibleFrame<Text>>, Border<FlexibleFrame<Text>>}>> (0, 0) 100x3
-              → TupleView<Pack{Border<FlexibleFrame<Text>>, Border<FlexibleFrame<Text>>}>
-                → Border:[(0, 0) 50x3]
-                  → FlexibleFrame:(nil)x(nil)/∞x(nil) [48x1]
-                    → Text:string("Hello") (22, 1) 5x1
-                → Border:[(51, 0) 49x3]
-                  → FlexibleFrame:(nil)x(nil)/∞x(nil) [47x1]
-                    → Text:string("World") (73, 1) 5x1
-        
-        """)
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 100x3
+              → ComposedView<MyView>
+                → HStack<TupleView<Pack{Border<FlexibleFrame<Text>>, Border<FlexibleFrame<Text>>}>> (0, 0) 100x3
+                  → TupleView<Pack{Border<FlexibleFrame<Text>>, Border<FlexibleFrame<Text>>}>
+                    → Border:[(0, 0) 50x3]
+                      → FlexibleFrame:(nil)x(nil)/∞x(nil) [48x1]
+                        → Text:string("Hello") (22, 1) 5x1
+                    → Border:[(51, 0) 49x3]
+                      → FlexibleFrame:(nil)x(nil)/∞x(nil) [47x1]
+                        → Text:string("World") (73, 1) 5x1
 
+            """
+        }
         assertSnapshot(
             of: application.renderer,
             as: .rendered
@@ -301,19 +311,20 @@ import SnapshotTesting
 
         let (application, _) = try drawView(MyView())
 
-        #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 15x100
-          → ComposedView<MyView>
-            → TupleView<Pack{Border<FlexibleFrame<Text>>, Border<FlexibleFrame<Text>>}>
-              → Border:[(1, 0) 13x50]
-                → FlexibleFrame:(nil)x(nil)/(nil)x∞ [11x48]
-                  → Text:string("Hello World") (2, 24) 11x1
-              → Border:[(0, 50) 15x50]
-                → FlexibleFrame:(nil)x(nil)/(nil)x∞ [13x48]
-                  → Text:string("Goodbye World") (1, 74) 13x1
-        
-        """)
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 15x100
+              → ComposedView<MyView>
+                → TupleView<Pack{Border<FlexibleFrame<Text>>, Border<FlexibleFrame<Text>>}>
+                  → Border:[(1, 0) 13x50]
+                    → FlexibleFrame:(nil)x(nil)/(nil)x∞ [11x48]
+                      → Text:string("Hello World") (2, 24) 11x1
+                  → Border:[(0, 50) 15x50]
+                    → FlexibleFrame:(nil)x(nil)/(nil)x∞ [13x48]
+                      → Text:string("Goodbye World") (1, 74) 13x1
 
+            """
+        }
         assertSnapshot(
             of: application.renderer,
             as: .rendered
@@ -334,19 +345,20 @@ import SnapshotTesting
 
         let (application, _) = try drawView(MyView())
 
-        #expect(application.node.frameDescription == """
-        → VStack<MyView> (0, 0) 100x100
-          → ComposedView<MyView>
-            → TupleView<Pack{Border<FlexibleFrame<Text>>, Border<FlexibleFrame<Text>>}>
-              → Border:[(0, 0) 100x50]
-                → FlexibleFrame:(nil)x(nil)/∞x∞ [98x48]
-                  → Text:string("Hello World") (44, 24) 11x1
-              → Border:[(0, 50) 100x50]
-                → FlexibleFrame:(nil)x(nil)/∞x∞ [98x48]
-                  → Text:string("Goodbye World") (43, 74) 13x1
-        
-        """)
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 100x100
+              → ComposedView<MyView>
+                → TupleView<Pack{Border<FlexibleFrame<Text>>, Border<FlexibleFrame<Text>>}>
+                  → Border:[(0, 0) 100x50]
+                    → FlexibleFrame:(nil)x(nil)/∞x∞ [98x48]
+                      → Text:string("Hello World") (44, 24) 11x1
+                  → Border:[(0, 50) 100x50]
+                    → FlexibleFrame:(nil)x(nil)/∞x∞ [98x48]
+                      → Text:string("Goodbye World") (43, 74) 13x1
 
+            """
+        }
         assertSnapshot(
             of: application.renderer,
             as: .rendered

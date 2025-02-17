@@ -116,7 +116,7 @@ final class FixedFrameNode: Node {
         super.init(view: view, parent: parent)
     }
 
-    private func size(child childSize: Size, bounds: Size) -> Size {
+    private func size(child childSize: Size) -> Size {
         let width = if let width {
             width.clamped(to: childSize.width)
         } else {
@@ -134,7 +134,7 @@ final class FixedFrameNode: Node {
 
     private func aligned(rect childSize: Size, bounds: Size) -> Position {
         var result = Position.zero
-        let size = size(child: childSize, bounds: bounds)
+        let size = size(child: childSize)
 
         switch alignment.horizontalAlignment {
         case .leading:
@@ -160,7 +160,7 @@ final class FixedFrameNode: Node {
     private func global(_ childFrame: Rect, bounds: Size) -> Rect {
         .init(
             position: childFrame.position - aligned(rect: childFrame.size, bounds: bounds),
-            size: size(child: childFrame.size, bounds: bounds)
+            size: size(child: childFrame.size)
         )
     }
 
@@ -177,8 +177,13 @@ final class FixedFrameNode: Node {
                     // - store the calculated bounds for this control so that we can refer to it in `global`.
                     // - return the full width of the frame so that the layout in which this fixedFrame appears is calculated correctly.
 
+                    // TODO: We're not limiting the incoming `rect` here to be the bounds that we need until after we call layout on our child. This at the very least means that we need to adjust the incoming size?
+
+                    var rect = rect
+                    rect.size = size(child: rect.size)
+
                     let childFrame = element.layout(rect)
-                    let bounds = size(child: childFrame.size, bounds: rect.size)
+                    let bounds = size(child: childFrame.size)
                     let alignment = aligned(rect: childFrame.size, bounds: bounds)
 
                     element.adjust(alignment)
@@ -203,7 +208,7 @@ final class FixedFrameNode: Node {
             visitor.visit(
                 size: .init(node: element.node) { [weak self] proposedSize in
                     guard let self else { return .zero }
-                    return size(child: element.size(proposedSize), bounds: proposedSize)
+                    return size(child: element.size(size(child: proposedSize)))
                 }
             )
         }

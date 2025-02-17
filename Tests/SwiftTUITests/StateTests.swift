@@ -26,7 +26,7 @@ import Testing
 
         view.count += 1
         #expect(application.invalidated.count == 1)
-        #expect(application.invalidated.first === application.node.children[0])
+        #expect(application.invalidated.first?.node === application.node.children[0])
 
         application.update()
         #expect(

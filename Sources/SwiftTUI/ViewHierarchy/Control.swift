@@ -21,6 +21,8 @@
 
     var sizeElement: Visitor.SizeElement { get }
     var layoutElement: Visitor.LayoutElement { get }
+    var parent: Node? { get }
+    func relative(to: Node?) -> Rect
 }
 
 extension Control {

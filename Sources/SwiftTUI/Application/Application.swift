@@ -3,11 +3,10 @@ import Foundation
 import AsyncAlgorithms
 
 @MainActor public class Application {
-    private(set) var node: VStackNode!
+    private(set) var node: RootNode!
     private(set) var renderer: Renderer!
-    private(set) var focusManager: FocusManager!
     let parser: KeyParser
-    var invalidated: [Node] = []
+    var invalidated: [(node: Node, frame: (Node) -> Rect)] = []
 
 
     init<T: View>(
@@ -17,25 +16,23 @@ import AsyncAlgorithms
     ) {
         self.parser = parser
         self.node = nil
-        self.focusManager = nil
-        self.node = VStackNode(root: root, application: self)
-        self.focusManager = FocusManager(root: node)
+        self.node = RootNode(root: root, application: self)
         self.renderer = renderer
         self.renderer.application = self
     }
 
     func setup() {
-        focusManager.defaultFocus()
         _ = node.layout(
             rect: .init(position: .zero, size: renderer.window.size)
         )
+        node.focusManager?.defaultFocus()
         renderer.draw(rect: nil)
     }
 
     private let (invalidations, invalidate) = AsyncStream<Void>.makeStream()
 
-    func invalidate(node: Node) {
-        invalidated.append(node)
+    func invalidate(node: Node, frame: @escaping (Node) -> Rect) {
+        invalidated.append((node, frame))
         invalidate.yield()
     }
 
@@ -45,8 +42,8 @@ import AsyncAlgorithms
             let invalidated = self.invalidated
             self.invalidated = []
 
-            for node in invalidated {
-                renderer.invalidate(rect: node.global)
+            for (node, frame) in invalidated {
+                renderer.invalidate(rect: frame(node))
                 node.update(view: node.view)
             }
 
@@ -54,11 +51,9 @@ import AsyncAlgorithms
                 rect: .init(position: .zero, size: renderer.window.size)
             )
 
-            for node in invalidated {
-                renderer.invalidate(rect: node.global)
+            for (node, frame) in invalidated {
+                renderer.invalidate(rect: frame(node))
             }
-
-            focusManager.evaluate(focus: node)
         } while !invalidated.isEmpty
 
         renderer.update()
@@ -111,11 +106,14 @@ extension Application {
 
         let keyInputTask = Task {
             for try await key in parser {
-                if focusManager.handle(key: key) == true {
+                if node.focusManager?.handle(key: key) == true {
                     continue
                 }
 
                 switch key {
+                case Key(.char("l"), modifiers: .ctrl):
+                    self.handleWindowSizeChange()
+
                 case Key(.char("d"), modifiers: .ctrl):
                     Exit.exit()
                 default:
@@ -149,7 +147,7 @@ extension Application {
     }
 
     func process(key: Key) {
-        _ = focusManager.handle(key: key)
+        _ = node.focusManager?.handle(key: key)
         update()
     }
 

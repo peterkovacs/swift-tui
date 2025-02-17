@@ -219,6 +219,9 @@ final class FlexibleFrameNode: Node {
                     // - store the calculated bounds for this control so that we can refer to it in `global`.
                     // - return the full width of the frame so that the layout in which this fixedFrame appears is calculated correctly.
 
+                    var rect = rect
+                    rect.size = size(child: rect.size, bounds: rect.size)
+
                     let childFrame = element.layout(rect)
                     let bounds = size(child: childFrame.size, bounds: rect.size)
                     let alignment = aligned(rect: childFrame.size, bounds: bounds)

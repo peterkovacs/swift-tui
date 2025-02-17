@@ -17,7 +17,7 @@ protocol Focusable: AnyObject {
     var focusableElement: Visitor.FocusableElement { get }
 }
 
-extension Focusable {
+extension Focusable where Self: Control {
     var focusableElement: Visitor.FocusableElement {
         .init(node: self) { [weak self] in
             self?.isFocusable ?? false

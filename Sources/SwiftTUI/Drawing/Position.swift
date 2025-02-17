@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Position: Equatable, Sendable {
+public struct Position: Hashable, Sendable {
     public var column: Extended
     public var line: Extended
 

@@ -111,7 +111,7 @@ final class TextFieldNode: DynamicPropertyNode, Control {
 
     func size(proposedSize: Size) -> Size {
         return Size(
-            width: proposedSize.width == 0 ? 1 : proposedSize.width,
+            width: max(1, proposedSize.width),
             height: 1
         )
     }
@@ -146,6 +146,45 @@ final class TextFieldNode: DynamicPropertyNode, Control {
 
         return text.endIndex
     }
+
+    override func draw(rect: Rect, into window: inout Window<Cell?>) {
+        guard let rect = global.intersection(rect) else { return }
+
+        if text.isEmpty {
+            for (position, character) in zip(global.indices, placeholder.indices) where rect.contains(position) {
+                window.write(at: position, default: .init(char: placeholder[character])) {
+                    $0.char = placeholder[character]
+                    $0.attributes.inverted = isFocused && character == cursorPosition
+                    $0.foregroundColor = placeholderColor
+                }
+            }
+        } else {
+            let text = text + " "
+            for (position, character) in zip(global.indices, text.indices) where rect.contains(position) {
+                window.write(at: position, default: .init(char: text[character])) {
+                    $0.char = text[character]
+                    $0.attributes.inverted = isFocused && character == cursorPosition
+                    $0.foregroundColor = foregroundColor
+                }
+            }
+        }
+    }
+
+    override var description: String {
+        "TextField:\"\(String(describing: text))\" (\(cursorPosition.utf16Offset(in: text)))\(isFocused ? " FOCUSED" : "")"
+    }
+}
+
+extension TextFieldNode: Focusable {
+    func becomeFirstResponder() {
+        isFocused = true
+    }
+    
+    func resignFirstResponder() {
+        isFocused = false
+    }
+    
+    var isFocusable: Bool { true }
 
     func handle(key: Key) -> Bool {
         if !text.indices.contains(cursorPosition) {
@@ -273,43 +312,4 @@ final class TextFieldNode: DynamicPropertyNode, Control {
 
         return false
     }
-
-    override func draw(rect: Rect, into window: inout Window<Cell?>) {
-        guard let rect = global.intersection(rect) else { return }
-
-        if text.isEmpty {
-            for (position, character) in zip(global.indices, placeholder.indices) where rect.contains(position) {
-                window.write(at: position, default: .init(char: placeholder[character])) {
-                    $0.char = placeholder[character]
-                    $0.attributes.inverted = isFocused && character == cursorPosition
-                    $0.foregroundColor = placeholderColor
-                }
-            }
-        } else {
-            let text = text + " "
-            for (position, character) in zip(global.indices, text.indices) where rect.contains(position) {
-                window.write(at: position, default: .init(char: text[character])) {
-                    $0.char = text[character]
-                    $0.attributes.inverted = isFocused && character == cursorPosition
-                    $0.foregroundColor = foregroundColor
-                }
-            }
-        }
-    }
-
-    override var description: String {
-        "TextField:\"\(String(describing: text))\" (\(cursorPosition.utf16Offset(in: text)))\(isFocused ? " FOCUSED" : "")"
-    }
-}
-
-extension TextFieldNode: Focusable {
-    func becomeFirstResponder() {
-        isFocused = true
-    }
-    
-    func resignFirstResponder() {
-        isFocused = false
-    }
-    
-    var isFocusable: Bool { true }
 }

@@ -54,6 +54,10 @@ extension KeyParser {
     }
 }
 
+extension SimplySnapshotting where Value == Application, Format == String {
+    @MainActor static let frameDescription = SimplySnapshotting.lines.pullback(\Application.node.frameDescription)
+}
+
 extension Snapshotting where Value == Renderer?, Format == String {
     @MainActor static let rendered = Snapshotting(
         pathExtension: "txt",

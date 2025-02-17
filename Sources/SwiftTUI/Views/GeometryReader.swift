@@ -13,47 +13,30 @@ struct GeometryReader<Content: View>: View, PrimitiveView {
             parent: parent
         )
 
-        node.add(at: 0, node: ZStack(alignment: .topLeading) { content(node.frame.size.clamped(to: .zero)) }.build(parent: node))
+        let frame = node.frame.size.clamped(to: .zero)
+
+        node.add(
+            at: 0,
+            node: content(frame).view.build(parent: node)
+        )
+
         return node
     }
 
     func update(node: Node) {
         guard let node = node as? GeometryReaderNode else { fatalError() }
 
+        let frame = node.frame.size.clamped(to: .zero)
+
         node.view = self
-        node.children[0].update(view: ZStack(alignment: .topLeading) { content(node.frame.size.clamped(to: .zero)) }.view)
+        node.children[0].update(view: content(frame).view)
     }
 }
 
-final class GeometryReaderNode: Node, Control {
-    typealias SizeVisitor = ZStackNode.SizeVisitor
-    typealias LayoutVisitor = ZStackNode.LayoutVisitor
+final class GeometryReaderNode: ZStackNode {
 
-    fileprivate var _sizeVisitor: SizeVisitor? = nil
-    var sizeVisitor: SizeVisitor {
-        let visitor = _sizeVisitor ?? SizeVisitor(children: children)
-        _sizeVisitor = visitor
-        return visitor
-    }
-
-    fileprivate var _layoutVisitor: LayoutVisitor? = nil
-    var layoutVisitor: LayoutVisitor {
-        get {
-            let visitor = _layoutVisitor ?? LayoutVisitor(
-                alignment: .topLeading,
-                children: children
-            )
-            _layoutVisitor = visitor
-            return visitor
-        }
-        set {
-            _layoutVisitor = newValue
-        }
-    }
-
-    override init(view: any GenericView, parent: Node?) {
-        super.init(view: view, parent: parent)
-        self.environment = { $0.layoutAxis = .none }
+    init(view: any GenericView, parent: Node?) {
+        super.init(view: view, parent: parent, alignment: .topLeading)
     }
 
     override var frame: Rect {
@@ -72,11 +55,11 @@ final class GeometryReaderNode: Node, Control {
         visitor.visit(layout: layoutElement)
     }
 
-    func size(proposedSize: Size) -> Size {
+    override func size(proposedSize: Size) -> Size {
         proposedSize.expanding(to: sizeVisitor.size(proposedSize: proposedSize))
     }
 
-    func layout(rect: Rect) -> Rect {
+    override func layout(rect: Rect) -> Rect {
         frame = layoutVisitor.layout(
             rect: .init(
                 position: rect.position,

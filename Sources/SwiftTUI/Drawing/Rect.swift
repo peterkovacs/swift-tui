@@ -1,6 +1,6 @@
 import Foundation
 
-struct Rect: Equatable {
+struct Rect: Hashable {
     var position: Position
     var size: Size
 

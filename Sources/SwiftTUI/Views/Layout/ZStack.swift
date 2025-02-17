@@ -28,7 +28,7 @@ public struct ZStack<Content: View>: View, PrimitiveView {
     }
 }
 
-final class ZStackNode: Node, Control {
+class ZStackNode: Node, Control {
     var alignment: Alignment {
         didSet {
             invalidateLayout()
@@ -37,9 +37,14 @@ final class ZStackNode: Node, Control {
 
     fileprivate var _sizeVisitor: SizeVisitor? = nil
     var sizeVisitor: SizeVisitor {
-        let visitor = _sizeVisitor ?? SizeVisitor(children: children)
-        _sizeVisitor = visitor
-        return visitor
+        get {
+            let visitor = _sizeVisitor ?? SizeVisitor(children: children)
+            _sizeVisitor = visitor
+            return visitor
+        }
+        set {
+            _sizeVisitor = newValue
+        }
     }
 
     fileprivate var _layoutVisitor: LayoutVisitor? = nil
@@ -69,9 +74,11 @@ final class ZStackNode: Node, Control {
 
     struct SizeVisitor: Visitor.Size {
         var visited: [Visitor.SizeElement]
+        var cache: [Size: Size]
 
         init(children: [Node]) {
             self.visited = []
+            self.cache = [:]
             for child in children {
                 child.size(visitor: &self)
             }
@@ -81,21 +88,26 @@ final class ZStackNode: Node, Control {
             visited.append(size)
         }
 
-        func size(proposedSize: Size) -> Size {
-            return visited.reduce(into: Size.zero) {
+        mutating func size(proposedSize: Size) -> Size {
+            if let cache = cache[proposedSize] { return cache }
+            let result = visited.reduce(into: Size.zero) {
                 $0.expand(to: $1.size(proposedSize))
             }
+
+            cache[proposedSize] = result
+            return result
         }
     }
 
     struct LayoutVisitor: Visitor.Layout {
         let alignment: Alignment
         var visited: [Visitor.LayoutElement]
-        var calculatedLayout: (Rect, Rect)?
+        var cache: [Rect: Rect]
 
         init(alignment: Alignment, children: [Node]) {
             self.alignment = alignment
             self.visited = []
+            self.cache = [:]
             for child in children {
                 child.layout(visitor: &self)
             }
@@ -106,7 +118,7 @@ final class ZStackNode: Node, Control {
         }
 
         mutating func layout(rect: Rect) -> Rect {
-            if let (cachedRect, calculatedLayout) = calculatedLayout, cachedRect == rect { return calculatedLayout }
+            if let cache = cache[rect] { return cache }
 
             let result = visited
                 .map {
@@ -135,7 +147,7 @@ final class ZStackNode: Node, Control {
                 .reduce(into: Rect.zero) { $0 = $0.union($1) }
 
 
-            calculatedLayout = (rect, result)
+            cache[rect] = result
             return result
         }
     }
