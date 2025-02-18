@@ -36,7 +36,7 @@ public struct HStack<Content: View>: View, PrimitiveView {
     }
 }
 
-final class HStackNode: Node, Control {
+class HStackNode: Node, Control {
     var alignment: VerticalAlignment { didSet { if alignment != oldValue { invalidateLayout() } } }
     var spacing: Extended { didSet { if spacing != oldValue { invalidateLayout() } } }
 
