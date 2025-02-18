@@ -1,9 +1,25 @@
+public enum ScrollIndicatorVisibility: Sendable, Hashable {
+    case automatic
+    case hidden
+    case visible
+
+    func size(if notHidden: Bool) -> Extended {
+        switch self {
+        case .automatic: notHidden ? 1 : 0
+        case .hidden: 0
+        case .visible: 1
+        }
+    }
+}
+
 public struct ScrollView<Content: View>: View, PrimitiveView {
     let axes: LayoutAxis.Set
+    let indiciatorVisibility: ScrollIndicatorVisibility
     let content: Content
 
-    public init(_ axes: LayoutAxis.Set = [.vertical], @ViewBuilder content: () -> Content) {
+    public init(_ axes: LayoutAxis.Set = [.vertical], indiciatorVisibility: ScrollIndicatorVisibility = .automatic, @ViewBuilder content: () -> Content) {
         self.axes = axes
+        self.indiciatorVisibility = indiciatorVisibility
         self.content = content()
     }
 
@@ -11,10 +27,10 @@ public struct ScrollView<Content: View>: View, PrimitiveView {
         let node = ScrollViewNode(
             view: content,
             parent: parent,
-            axes: axes
+            axes: axes,
+            indicatorVisiblity: indiciatorVisibility
         )
 
-        // node.focusManager.defaultFocus()
         return node
     }
 
@@ -22,13 +38,16 @@ public struct ScrollView<Content: View>: View, PrimitiveView {
         guard let node = node as? ScrollViewNode else { fatalError() }
 
         node.axes = axes
+        node.indicatorVisiblity = indiciatorVisibility
         node.children[0].update(view: content.view)
+
         // TODO: Might need to do something to handle contentOffset changes.
     }
 }
 
 class ScrollViewNode: RootNode {
     var axes: LayoutAxis.Set
+    var indicatorVisiblity: ScrollIndicatorVisibility { didSet { if indicatorVisiblity != oldValue { invalidateLayout() } } }
     var contentOffset: Position = .init(column: 0, line: 0)
     var contentSize: Size = .zero
     var isFocused = false
@@ -61,8 +80,9 @@ class ScrollViewNode: RootNode {
         }
     }
 
-    init<T: View>(view: T, parent: Node?, axes: LayoutAxis.Set) {
+    init<T: View>(view: T, parent: Node?, axes: LayoutAxis.Set, indicatorVisiblity: ScrollIndicatorVisibility) {
         self.axes = axes
+        self.indicatorVisiblity = indicatorVisiblity
         super.init(view: view, parent: parent)
     }
 
@@ -85,7 +105,7 @@ class ScrollViewNode: RootNode {
     }
 
     override func layout(rect: Rect) -> Rect {
-        let contentSize = layoutVisitor.layout(
+        contentSize = layoutVisitor.layout(
             rect: .init(
                 position: .zero,
                 size: super.size(
@@ -97,39 +117,44 @@ class ScrollViewNode: RootNode {
             )
         ).size
 
-        frame = .init(
-            position: rect.position,
-            size: .init(
-                width: min(rect.size.width, contentSize.width),
-                height: min(rect.size.height, contentSize.height)
-            )
+        let indicatorSize = Size(
+            width:  axes.contains(.horizontal) ? indicatorVisiblity.size(if: contentSize.width  > rect.size.width)  : 0,
+            height: axes.contains(.vertical)   ? indicatorVisiblity.size(if: contentSize.height > rect.size.height) : 0
         )
 
-//        // TODO: Verify This
-//        if rect.size.height + contentOffset.line > contentSize.height {
-//            contentOffset.line = contentSize.height - rect.size.height
-//        }
-//
-//        if rect.size.width + contentOffset.column > contentSize.width {
-//            contentOffset.column = contentSize.width - rect.size.width
-//        }
+        contentSize = contentSize + indicatorSize
+
+        frame = .init(
+            position: rect.position,
+            size:  (contentSize + indicatorSize).constraining(to: rect.size)
+        )
+
+        // Reset the contentOffset if we would have been scrolled past the end given the current layout.
+        if axes.contains(.vertical) && rect.size.height + contentOffset.line > contentSize.height {
+            contentOffset.line = max(contentSize.height - rect.size.height, 0)
+        }
+
+        if axes.contains(.horizontal) && rect.size.width + contentOffset.column > contentSize.width {
+            contentOffset.column = max(contentSize.width - rect.size.width, 0)
+        }
 
         return frame
     }
 
     override func size(proposedSize: Size) -> Size {
-        contentSize = super.size(
+        let contentSize = super.size(
             proposedSize:  .init(
                 width: axes.contains(.horizontal) ? .infinity : proposedSize.width,
                 height: axes.contains(.vertical) ? .infinity : proposedSize.height
             )
         )
 
-        // TODO: Handle Scrollbars.
-        return .init(
-            width: min(contentSize.width, proposedSize.width),
-            height: min(contentSize.height, proposedSize.height)
+        let indicatorSize: Size = .init(
+            width:  axes.contains(.horizontal) ? indicatorVisiblity.size(if: contentSize.width  > proposedSize.width)  : 0,
+            height: axes.contains(.vertical)   ? indicatorVisiblity.size(if: contentSize.height > proposedSize.height) : 0
         )
+
+        return (contentSize + indicatorSize).constraining(to: proposedSize).expanding(to: indicatorSize)
     }
 
     var hasFocusableElements: Bool {
@@ -138,36 +163,87 @@ class ScrollViewNode: RootNode {
 
     override func focus<T>(visitor: inout T) where T : Visitor.Focus {
         visitor.visit(focus: focusableElement)
-//        if hasFocusableElements {
-//            for visit in focusVisitor.visited {
-//                visitor.visit(
-//                    focus: .init(node: visit.node) {
-//                        visit.isFocusable()
-//                    } handle: { [weak self] key in
-//                        self?.handle(key: key) == true || visit.handle(key)
-//                    } resignFirstResponder: {
-//                        visit.resignFirstResponder()
-//                    } becomeFirstResponder: { [weak self] in
-//                        self?.scroll(to: visit.node)
-//                        visit.becomeFirstResponder()
-//                    }
-//                )
-//            }
-//        } else {
-//            // If the scoll view has no focusable elements, it is focusable by itself.
-//            visitor.visit(focus: focusableElement)
-//        }
+    }
+
+    func horizontalScrollBar() -> Rect? {
+        guard axes.contains(.horizontal) else { return nil }
+
+        let size = indicatorVisiblity.size(if: contentSize.width  > global.size.width)
+        guard size > 0 else { return nil }
+
+        let frame = global.size.width.intValue
+        let width = contentSize.width.intValue
+        let offset = contentOffset.column.intValue
+        let length = ((global.size.width) * (global.size.width)) / contentSize.width
+
+        let startPosition = Extended(
+            Int(
+                (Double(frame) * (Double(offset) / Double(width)))
+            )
+        )
+
+        return .init(
+            column: global.minColumn + startPosition,
+            line: global.maxLine,
+            width: length,
+            height: size
+        )
+    }
+
+    func verticalScrollBar() -> Rect? {
+        guard axes.contains(.vertical) else { return nil }
+
+        let size = indicatorVisiblity.size(if: contentSize.width  > global.size.width)
+        guard size > 0 else { return nil }
+
+        let frame = global.size.height.intValue
+        let height = contentSize.height.intValue
+        let offset = contentOffset.line.intValue
+        let length = ((global.size.height) * (global.size.height)) / contentSize.height
+
+        let startPosition = Extended(
+            Int(
+                (Double(frame) * (Double(offset) / Double(height)))
+            )
+        )
+
+
+        return .init(
+            column: global.maxColumn,
+            line: global.minLine + startPosition,
+            width: size,
+            height: length
+        )
     }
 
     override func draw(rect: Rect, into window: inout Window<Cell?>) {
         let global = global
         guard let rect = global.intersection(rect) else { return }
 
+        let indicatorSize: Size = .init(
+            width:  axes.contains(.horizontal) ? indicatorVisiblity.size(if: contentSize.width  > global.size.width)  : 0,
+            height: axes.contains(.vertical)   ? indicatorVisiblity.size(if: contentSize.height > global.size.height) : 0
+        )
+
         window.with(offset: -contentOffset + global.position) { window in
             children[0].draw(rect: rect + contentOffset - global.position, into: &window)
         }
 
-        // TODO: Scrollbar
+        if let scrollBar = horizontalScrollBar() {
+            for i in global.bottom where rect.contains(i) && global.bottomRight != i {
+                window[i] = .init(char: scrollBar.contains(i) ? "█" : "░")
+            }
+
+            window[global.bottomRight] = .init(char: "░")
+        }
+
+        if let scrollBar = verticalScrollBar() {
+            for i in global.right where rect.contains(i) && global.bottomRight != i {
+                window[i] = .init(char: scrollBar.contains(i) ? "█" : "░")
+            }
+
+            window[global.bottomRight] = .init(char: "░")
+        }
     }
 
     override var description: String {
@@ -259,7 +335,7 @@ extension ScrollViewNode: Focusable {
             guard axes.contains(.horizontal), contentSize.width > frame.size.width else { return false }
             guard contentOffset.column + frame.size.width < contentSize.width else { return false }
 
-            contentSize.width += 1
+            contentOffset.column += 1
 
         case .init("p", modifiers: .ctrl):
             guard axes.contains(.vertical), contentSize.height > frame.size.height else { return false }

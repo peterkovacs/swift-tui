@@ -7,7 +7,7 @@ struct ContentView: View {
     @State var text4: String = ""
     @State var text5: String = ""
     var body: some View {
-        ScrollView {
+        ScrollView([.horizontal, .vertical]) {
             Text("""
             Lorem ipsum odor amet, consectetuer adipiscing elit. Ipsum himenaeos a aenean id metus. Lacus donec mauris posuere vestibulum leo. Risus convallis ornare bibendum arcu fames penatibus rutrum diam. Mi vehicula est lacus facilisis mi porta? Velit elementum feugiat placerat quisque justo ante ullamcorper porttitor arcu. Montes porttitor habitasse habitasse in augue euismod. Maecenas ultrices amet neque natoque, in aliquet integer.
 
@@ -19,13 +19,14 @@ struct ContentView: View {
 
             Himenaeos magna egestas; fringilla fringilla nec sollicitudin augue maecenas? Vestibulum imperdiet blandit rhoncus nibh eu maximus quis rutrum litora? Maecenas ligula nisl aliquet lorem cursus scelerisque eu non lobortis. Lobortis sagittis vivamus facilisi porta velit elementum vehicula vulputate. Accumsan augue hac scelerisque auctor taciti inceptos augue malesuada parturient. Scelerisque sem nisl massa laoreet; odio potenti quis orci venenatis. Quisque enim finibus ligula maecenas vestibulum class quam consequat. Maecenas mauris aenean in fringilla per.
             """)
+            .frame(width: 100)
             TextField("Text 1", text: $text1) { _ in }.frame(width: 20).border()
             TextField("Text 2", text: $text2) { _ in }.frame(width: 20).border()
             TextField("Text 3", text: $text3) { _ in }.frame(width: 20).border()
             TextField("Text 4", text: $text4) { _ in }.frame(width: 20).border()
             TextField("Text 5", text: $text5) { _ in }.frame(width: 20).border()
         }
-        .frame(width: 50, height: 40)
+        .frame(width: 50, height: 20)
         .border()
     }
 }

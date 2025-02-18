@@ -277,7 +277,7 @@ extension TextFieldNode: Focusable {
             return true
 
         case Key("a", modifiers: .ctrl):
-            if cursorPosition != text.endIndex {
+            if cursorPosition != text.startIndex {
                 cursorPosition = text.startIndex
                 invalidate()
             }

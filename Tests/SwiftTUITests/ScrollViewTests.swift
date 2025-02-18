@@ -1,4 +1,5 @@
 import InlineSnapshotTesting
+import Observation
 import SnapshotTesting
 @testable import SwiftTUI
 import Testing
@@ -235,5 +236,74 @@ import Testing
 
         application.process(keys: "Hello World")
         assertSnapshot(of: application.renderer, as: .rendered)
+    }
+
+    @Observable
+    class Model {
+        var count: Int = 30
+    }
+
+    @Test func contentsExpandsWithPositiveContentOffset() async throws {
+        struct MyView: View {
+            @State var model: Model
+
+            var body: some View {
+                ScrollView {
+                    ForEach(0..<model.count, id: \.self) { index in
+                        Text("\(index)")
+                    }
+                }
+                .frame(height: 20)
+            }
+        }
+
+        let model = Model()
+        let (application, _) = try drawView(MyView(model: model))
+
+        application.process(key: .init(.pageDown))
+        #expect((application.node.children[0].children[0].children[0] as? ScrollViewNode)?.contentOffset == .init(column: 0, line: 10))
+
+        model.count += 30
+        application.update()
+
+        #expect((application.node.children[0].children[0].children[0] as? ScrollViewNode)?.contentOffset == .init(column: 0, line: 10))
+
+        assertSnapshot(
+            of: application.renderer,
+            as: .rendered 
+        )
+    }
+
+    @Test func contextContractsWithPositiveContentOffset() async throws {
+        struct MyView: View {
+            @State var model: Model
+
+            var body: some View {
+                ScrollView {
+                    ForEach(0..<model.count, id: \.self) { index in
+                        Text("\(index)")
+                    }
+                }
+                .frame(width: 10, height: 20)
+            }
+        }
+
+        let model = Model()
+        model.count = 60
+        let (application, _) = try drawView(MyView(model: model))
+
+        application.process(key: .init(.pageDown))
+        #expect((application.node.children[0].children[0].children[0] as? ScrollViewNode)?.contentOffset == .init(column: 0, line: 20))
+
+        model.count -= 30
+        application.update()
+
+        #expect((application.node.children[0].children[0].children[0] as? ScrollViewNode)?.contentOffset == .init(column: 0, line: 10))
+
+        assertSnapshot(
+            of: application.renderer,
+            as: .rendered
+        )
+
     }
 }

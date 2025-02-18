@@ -38,4 +38,15 @@ extension Size {
         copy.expand(to: rhs)
         return copy
     }
+
+    public mutating func constrain(to rhs: Size) {
+        width = min(width, rhs.width)
+        height = min(height, rhs.height)
+    }
+
+    public func constraining(to rhs: Size) -> Size {
+        var copy = self
+        copy.constrain(to: rhs)
+        return copy
+    }
 }
