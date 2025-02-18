@@ -14,6 +14,7 @@ import Testing
 
             var body: some View {
                 TextField(text: $string) { _ in }
+                Button("Label") { }
             }
         }
 
@@ -22,18 +23,14 @@ import Testing
 
         assertInlineSnapshot(of: application, as: .frameDescription) {
             """
-            → VStack<MyView> (0, 0) 100x1
+            → VStack<MyView> (0, 0) 100x2
               → ComposedView<MyView>
-                → TextField:"" (0) FOCUSED (0, 0) 100x1
+                → TupleView<Pack{TextField, Button<Text>}>
+                  → TextField:"" (0) FOCUSED (0, 0) 100x1
+                  → Button (47, 1) 5x1
+                    → Text:string("Label") (47, 1) 5x1
 
             """
-        }
-
-        let clock = TestClock()
-        let handle = withDependencies {
-            $0.continuousClock = clock
-        } operation: {
-            Task { try await application.start() }
         }
 
         application.process(keys: "Hello World")
@@ -43,14 +40,15 @@ import Testing
 
         assertInlineSnapshot(of: application, as: .frameDescription) {
             """
-            → VStack<MyView> (0, 0) 100x1
+            → VStack<MyView> (0, 0) 100x2
               → ComposedView<MyView>
-                → TextField:"Goodbye World" (8) FOCUSED (0, 0) 100x1
+                → TupleView<Pack{TextField, Button<Text>}>
+                  → TextField:"Goodbye World" (8) FOCUSED (0, 0) 100x1
+                  → Button (47, 1) 5x1
+                    → Text:string("Label") (47, 1) 5x1
 
             """
         }
-
-        _ = handle
     }
 
     @Observable
@@ -344,17 +342,20 @@ import Testing
             var body: some View {
                 TextField(text: $text1) { _ in }
                 TextField(text: $text2) { _ in }
+                Button("Label") { }
             }
         }
 
         let (application, _) = try drawView(MyView())
         assertInlineSnapshot(of: application, as: .frameDescription) {
             """
-            → VStack<MyView> (0, 0) 100x2
+            → VStack<MyView> (0, 0) 100x3
               → ComposedView<MyView>
-                → TupleView<Pack{TextField, TextField}>
+                → TupleView<Pack{TextField, TextField, Button<Text>}>
                   → TextField:"" (0) FOCUSED (0, 0) 100x1
                   → TextField:"" (0) (0, 1) 100x1
+                  → Button (47, 2) 5x1
+                    → Text:string("Label") (47, 2) 5x1
 
             """
         }
@@ -363,11 +364,13 @@ import Testing
 
         assertInlineSnapshot(of: application, as: .frameDescription) {
             """
-            → VStack<MyView> (0, 0) 100x2
+            → VStack<MyView> (0, 0) 100x3
               → ComposedView<MyView>
-                → TupleView<Pack{TextField, TextField}>
+                → TupleView<Pack{TextField, TextField, Button<Text>}>
                   → TextField:"" (0) (0, 0) 100x1
                   → TextField:"" (0) FOCUSED (0, 1) 100x1
+                  → Button (47, 2) 5x1
+                    → Text:string("Label") (47, 2) 5x1
 
             """
         }
@@ -376,11 +379,43 @@ import Testing
 
         assertInlineSnapshot(of: application, as: .frameDescription) {
             """
-            → VStack<MyView> (0, 0) 100x2
+            → VStack<MyView> (0, 0) 100x3
               → ComposedView<MyView>
-                → TupleView<Pack{TextField, TextField}>
+                → TupleView<Pack{TextField, TextField, Button<Text>}>
+                  → TextField:"" (0) (0, 0) 100x1
+                  → TextField:"" (0) (0, 1) 100x1
+                  → Button FOCUSED (47, 2) 5x1
+                    → Text:string("Label") (47, 2) 5x1
+
+            """
+        }
+
+        application.process(key: .init(.tab))
+
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 100x3
+              → ComposedView<MyView>
+                → TupleView<Pack{TextField, TextField, Button<Text>}>
                   → TextField:"" (0) FOCUSED (0, 0) 100x1
                   → TextField:"" (0) (0, 1) 100x1
+                  → Button (47, 2) 5x1
+                    → Text:string("Label") (47, 2) 5x1
+
+            """
+        }
+
+
+        application.process(key: .init(.tab, modifiers: .shift))
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 100x3
+              → ComposedView<MyView>
+                → TupleView<Pack{TextField, TextField, Button<Text>}>
+                  → TextField:"" (0) (0, 0) 100x1
+                  → TextField:"" (0) (0, 1) 100x1
+                  → Button FOCUSED (47, 2) 5x1
+                    → Text:string("Label") (47, 2) 5x1
 
             """
         }
@@ -388,23 +423,13 @@ import Testing
         application.process(key: .init(.tab, modifiers: .shift))
         assertInlineSnapshot(of: application, as: .frameDescription) {
             """
-            → VStack<MyView> (0, 0) 100x2
+            → VStack<MyView> (0, 0) 100x3
               → ComposedView<MyView>
-                → TupleView<Pack{TextField, TextField}>
+                → TupleView<Pack{TextField, TextField, Button<Text>}>
                   → TextField:"" (0) (0, 0) 100x1
                   → TextField:"" (0) FOCUSED (0, 1) 100x1
-
-            """
-        }
-
-        application.process(key: .init(.tab, modifiers: .shift))
-        assertInlineSnapshot(of: application, as: .frameDescription) {
-            """
-            → VStack<MyView> (0, 0) 100x2
-              → ComposedView<MyView>
-                → TupleView<Pack{TextField, TextField}>
-                  → TextField:"" (0) FOCUSED (0, 0) 100x1
-                  → TextField:"" (0) (0, 1) 100x1
+                  → Button (47, 2) 5x1
+                    → Text:string("Label") (47, 2) 5x1
 
             """
         }

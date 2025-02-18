@@ -5,7 +5,7 @@ import SnapshotTesting
 import Testing
 
 @MainActor
-@Suite("ScrollView Tests", .snapshots(record: .failed)) struct ScrollViewTests {
+@Suite("ScrollView Tests", .snapshots(record: .missing)) struct ScrollViewTests {
     @Test func testRendersContent() async throws {
         struct MyView: View {
             var body: some View {

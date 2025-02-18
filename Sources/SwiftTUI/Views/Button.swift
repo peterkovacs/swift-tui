@@ -40,7 +40,7 @@ public struct Button<Label: View>: View, PrimitiveView {
 
 final class ButtonNode: HStackNode {
     var action: @MainActor () -> Void
-    var isFocused: Bool
+    var isFocused: Bool { didSet { if isFocused != oldValue { invalidate() } } }
 
     init(view: any GenericView, parent: Node?, action: @escaping @MainActor () -> Void) {
         self.action = action
@@ -52,10 +52,19 @@ final class ButtonNode: HStackNode {
         super.draw(rect: rect, into: &window)
         
         if isFocused {
-            for i in rect.indices {
+            guard let frame = global.intersection(rect) else { return }
+            for i in frame.indices {
                 window[i]?.attributes.inverted = true
             }
         }
+    }
+
+    override func focus<T>(visitor: inout T) where T : Visitor.Focus {
+        visitor.visit(focus: focusableElement)
+    }
+
+    override var description: String {
+        "Button\(isFocused ? " FOCUSED" : "")"
     }
 }
 
