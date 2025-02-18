@@ -4,7 +4,7 @@ public struct Button<Label: View>: View, PrimitiveView {
     let action: @MainActor () -> Void
     let label: Label
 
-    public init(action: @escaping @MainActor () -> Void, label: () -> Label) {
+    public init(action: @escaping @MainActor () -> Void, @ViewBuilder label: () -> Label) {
         self.action = action
         self.label = label()
     }
