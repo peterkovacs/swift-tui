@@ -429,4 +429,68 @@ import Testing
         }
     }
 
+    @Test func buildTuple24() async throws {
+        struct MyView: View {
+            var body: some View {
+                Text("Hello World")
+                Text("Hello World")
+                Text("Hello World")
+                Text("Hello World")
+                Text("Hello World")
+                Text("Hello World")
+                Text("Hello World")
+                Text("Hello World")
+                Text("Hello World")
+                Text("Hello World")
+                Text("Hello World")
+                Text("Hello World")
+                Text("Hello World")
+                Text("Hello World")
+                Text("Hello World")
+                Text("Hello World")
+                Text("Hello World")
+                Text("Hello World")
+                Text("Hello World")
+                Text("Hello World")
+                Text("Hello World")
+                Text("Hello World")
+                Text("Hello World")
+                Text("Hello World")
+            }
+        }
+
+        do {
+            let (application, _) = try drawView(MyView())
+            #expect(application.node.treeDescription == """
+                → VStack<MyView>
+                  → ComposedView<MyView>
+                    → TupleView<Pack{Text, Text, Text, Text, Text, Text, Text, Text, Text, Text, Text, Text, Text, Text, Text, Text, Text, Text, Text, Text, Text, Text, Text, Text}>
+                      → Text:string("Hello World") (0, 0) 11x1
+                      → Text:string("Hello World") (0, 1) 11x1
+                      → Text:string("Hello World") (0, 2) 11x1
+                      → Text:string("Hello World") (0, 3) 11x1
+                      → Text:string("Hello World") (0, 4) 11x1
+                      → Text:string("Hello World") (0, 5) 11x1
+                      → Text:string("Hello World") (0, 6) 11x1
+                      → Text:string("Hello World") (0, 7) 11x1
+                      → Text:string("Hello World") (0, 8) 11x1
+                      → Text:string("Hello World") (0, 9) 11x1
+                      → Text:string("Hello World") (0, 10) 11x1
+                      → Text:string("Hello World") (0, 11) 11x1
+                      → Text:string("Hello World") (0, 12) 11x1
+                      → Text:string("Hello World") (0, 13) 11x1
+                      → Text:string("Hello World") (0, 14) 11x1
+                      → Text:string("Hello World") (0, 15) 11x1
+                      → Text:string("Hello World") (0, 16) 11x1
+                      → Text:string("Hello World") (0, 17) 11x1
+                      → Text:string("Hello World") (0, 18) 11x1
+                      → Text:string("Hello World") (0, 19) 11x1
+                      → Text:string("Hello World") (0, 20) 11x1
+                      → Text:string("Hello World") (0, 21) 11x1
+                      → Text:string("Hello World") (0, 22) 11x1
+                      → Text:string("Hello World") (0, 23) 11x1
+                """)
+        }
+    }
+
 }
