@@ -1,4 +1,3 @@
-
 struct ArrayView<Content: View & Sendable>: View, PrimitiveView {
     let content: [Content]
 
