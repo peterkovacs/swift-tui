@@ -22,7 +22,7 @@
 
         let child = view.view.build(parent: self)
         add(at: 0, node: child)
-        self.focusManager = .init(root: child)
+        self.focusManager = .init(secondary: child)
     }
 
     func invalidate(node: Node) {

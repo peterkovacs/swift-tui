@@ -307,7 +307,7 @@ extension ScrollViewNode: Focusable {
 
     func handle(key: Key) -> Bool {
 
-        if let focusedElement = focusManager.focusedElement, focusManager.handle(key: key) {
+        if focusManager.handle(key: key), let focusedElement = focusManager.focusedElement {
             scroll(to: focusedElement.node)
             return true
         }

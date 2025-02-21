@@ -1,5 +1,6 @@
 @MainActor
 class FocusManager {
+    private var isRoot: Bool
     private var evaluatingFocus: Bool = false
     private var focusVisitor: FocusVisitor
     private var focusedElementIndex: Array<Visitor.FocusableElement>.Index? {
@@ -17,7 +18,14 @@ class FocusManager {
 
     init(root: Node) {
         // TODO: Deal with prefersDefaultFocus
+        self.isRoot = true
+        self.focusVisitor = .init(visiting: root)
+        self.focusedElementIndex = nil
+    }
 
+    init(secondary root: Node) {
+        // TODO: Deal with prefersDefaultFocus
+        self.isRoot = false
         self.focusVisitor = .init(visiting: root)
         self.focusedElementIndex = nil
     }
@@ -27,6 +35,10 @@ class FocusManager {
     }
 
     func handle(key: Key) -> Bool {
+        guard focusedElement?.handle(key) != true else {
+            return true
+        }
+
         switch key {
         case .init(.tab, modifiers: []):
             guard let focusedElementIndex else {
@@ -39,7 +51,12 @@ class FocusManager {
             repeat {
                 nextIndex = focusVisitor.visited.index(after: nextIndex)
                 if nextIndex == focusVisitor.visited.endIndex {
-                    nextIndex = focusVisitor.visited.startIndex
+                    if isRoot {
+                        nextIndex = focusVisitor.visited.startIndex
+                    } else {
+                        self.focusedElementIndex = nil
+                        return false
+                    }
                 }
             } while nextIndex != focusedElementIndex && focusVisitor.visited[nextIndex].isFocusable() == false
 
@@ -58,7 +75,12 @@ class FocusManager {
 
             repeat {
                 if nextIndex == focusVisitor.visited.startIndex {
-                    nextIndex = focusVisitor.visited.endIndex
+                    if isRoot {
+                        nextIndex = focusVisitor.visited.endIndex
+                    } else {
+                        self.focusedElementIndex = nil
+                        return false
+                    }
                 }
                 nextIndex = focusVisitor.visited.index(before: nextIndex)
             } while nextIndex != focusedElementIndex && focusVisitor.visited[nextIndex].isFocusable() == false
@@ -72,7 +94,7 @@ class FocusManager {
 
         }
 
-        return focusedElement?.handle(key) ?? false
+        return false
     }
 
     func remove(focus: Visitor.FocusableElement?) {
