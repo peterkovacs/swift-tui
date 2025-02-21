@@ -9,6 +9,11 @@ public struct ViewBuilder {
 
     public static func buildIf<V: View>(_ content: V)  -> V  { content }
 
+    public static func buildArray(_ components: [some View]) -> some View {
+        // TODO: Create an ArrayView
+        ArrayView(content: components)
+    }
+
     public static func buildOptional<V: View>(_ content: V?) -> OptionalView<V> {
         OptionalView(content: content)
     }
@@ -21,7 +26,7 @@ public struct ViewBuilder {
         ConditionalView(content: .b(second))
     }
 
-    static func buildBlock<each Content: View>(_ content: repeat each Content) -> some View {
+    public static func buildBlock<each Content: View>(_ content: repeat each Content) -> some View {
         TupleView(content: (repeat each content))
     }
 }

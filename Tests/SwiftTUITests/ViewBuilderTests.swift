@@ -493,4 +493,67 @@ import Testing
         }
     }
 
+    @Test func testExpression() async throws {
+        struct MyView: View {
+            var body: some View {
+                let s = "Hello" + " " + "World"
+                Text(s)
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+
+        #expect(application.node.treeDescription == """
+        → VStack<MyView>
+          → ComposedView<MyView>
+            → Text:string("Hello World") (0, 0) 11x1
+        """)
+    }
+
+    @Test func testLimitedAvailability() async throws {
+        struct MyView: View {
+            var body: some View {
+                if #available(macOS 10.15, *) {
+                    Text("Mac OS 10.15")
+                }
+
+                if #unavailable(macOS 10.15) {
+                    Text("Unavailable")
+                }
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+
+        #expect(application.node.treeDescription == """
+        → VStack<MyView>
+          → ComposedView<MyView>
+            → TupleView<Pack{OptionalView<Text>, OptionalView<Text>}>
+              → OptionalView<Text>
+                → Text:string("Mac OS 10.15") (0, 0) 12x1
+              → OptionalView<Text>
+        """)
+    }
+
+    @Test func testForInLoop() async throws {
+        struct MyView: View {
+            var body: some View {
+                for i in 0..<3 {
+                    Text("\(i)")
+                }
+            }
+        }
+        
+        let (application, _) = try drawView(MyView())
+
+        #expect(application.node.treeDescription == """
+        → VStack<MyView>
+          → ComposedView<MyView>
+            → ArrayView<Text>
+              → Text:string("0") (0, 0) 1x1
+              → Text:string("1") (0, 1) 1x1
+              → Text:string("2") (0, 2) 1x1
+        """)
+
+    }
 }

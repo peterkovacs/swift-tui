@@ -1,6 +1,6 @@
 
-public struct TupleView<each C: View & Sendable>: View, PrimitiveView {
-    public let content: (repeat (each C))
+struct TupleView<each C: View & Sendable>: View, PrimitiveView {
+    let content: (repeat (each C))
 
     func build(parent: Node?) -> Node {
         let node = Node(view: self, parent: parent)
@@ -24,4 +24,3 @@ public struct TupleView<each C: View & Sendable>: View, PrimitiveView {
         }
     }
 }
-
