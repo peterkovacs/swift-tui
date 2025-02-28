@@ -106,7 +106,7 @@ class HStackNode: Node, Control {
             }
 
             let children = visited
-                .map { (size: $0.size, flexibility: $0.node.horizontalFlexibility(height: proposedSize.height)) }
+                .map { (size: $0.size, flexibility: $0.horizontalFlexibility(proposedSize.height)) }
                 .sorted { $0.flexibility < $1.flexibility }
 
             var resultSize: Size = .init(
@@ -164,7 +164,7 @@ class HStackNode: Node, Control {
             let childrenOrder = visited
                 .indices
                 .sorted {
-                    visited[$0].element.node.horizontalFlexibility(height: rect.size.height) < visited[$1].element.node.horizontalFlexibility(height: rect.size.height)
+                    visited[$0].element.horizontalFlexibility(rect.size.height) < visited[$1].element.horizontalFlexibility(rect.size.height)
                 }
 
             var remaining = childrenOrder.count
@@ -242,7 +242,7 @@ class HStackNode: Node, Control {
     }
 
     func size(proposedSize: Size) -> Size {
-        self.sizeVisitor.size(proposedSize: proposedSize)
+        sizeVisitor.size(proposedSize: proposedSize)
     }
 
     override func invalidateLayout() {

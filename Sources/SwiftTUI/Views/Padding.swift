@@ -69,6 +69,10 @@ class PaddingNode: ModifierNode {
                     element.adjust(position)
                 } global: { [paddingPosition, paddingSize] in
                     element.global() - paddingPosition + paddingSize
+                } horizontalFlexibility: { [paddingSize] height in
+                    element.horizontalFlexibility(height - paddingSize.height)
+                } verticalFlexibility: { [paddingSize] width in
+                    element.verticalFlexibility(width - paddingSize.width)
                 }
             )
         }
@@ -79,6 +83,10 @@ class PaddingNode: ModifierNode {
             visitor.visit(
                 size: .init(node: element.node) { [paddingSize] (size: Size) in
                     element.size(size - paddingSize) + paddingSize
+                } horizontalFlexibility: { [paddingSize] height in
+                    element.horizontalFlexibility(height - paddingSize.height)
+                } verticalFlexibility: { [paddingSize] width in
+                    element.verticalFlexibility(width - paddingSize.width)
                 }
             )
         }

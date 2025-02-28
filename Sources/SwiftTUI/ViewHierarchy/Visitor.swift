@@ -13,6 +13,12 @@ enum Visitor {
 
         /// A method that will return the global coordinates of the control.
         let global: () -> Rect
+
+        /// A method that calculates the horizontal Flexibility of the given Control.
+        let horizontalFlexibility: (_ height: Extended) -> Extended
+
+        /// A method that calculates
+        let verticalFlexibility: (_ width: Extended) -> Extended
     }
 
     /// A Visitor.Layout recursively visits each `Control` in a `Node` hierarchy and is called with the `layout` method of the control.
@@ -26,6 +32,12 @@ enum Visitor {
 
         /// A method that will return the actual Size of a control given a proposedSize.
         let size: (_ proposedSize: SwiftTUI.Size) -> SwiftTUI.Size
+
+        /// A method that calculates the horizontal Flexibility of the given Control.
+        let horizontalFlexibility: (_ height: Extended) -> Extended
+
+        /// A method that calculates
+        let verticalFlexibility: (_ width: Extended) -> Extended
     }
 
     @MainActor protocol Size {

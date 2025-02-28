@@ -16,8 +16,6 @@
     /// - Parameter rect: The rect that this node must layout in.
     /// - Returns: The bounds of the node.
     func layout(rect: Rect) -> Rect
-    func verticalFlexibility(width: Extended) -> Extended
-    func horizontalFlexibility(height: Extended) -> Extended
 
     var sizeElement: Visitor.SizeElement { get }
     var layoutElement: Visitor.LayoutElement { get }
@@ -26,19 +24,7 @@
 }
 
 extension Control {
-    func verticalFlexibility(width: Extended) -> Extended {
-        let minSize = size(
-            proposedSize: Size(width: width, height: 0)
-        )
-
-        let maxSize = size(
-            proposedSize: Size(width: width, height: .infinity)
-        )
-
-        return maxSize.height - minSize.height
-    }
-
-    func horizontalFlexibility(height: Extended) -> Extended {
+    fileprivate func horizontalFlexibility(height: Extended) -> Extended {
         let minSize = size(
             proposedSize: Size(width: 0, height: height)
         )
@@ -50,10 +36,26 @@ extension Control {
         return maxSize.width - minSize.width
     }
 
+    fileprivate func verticalFlexibility(width: Extended) -> Extended {
+        let minSize = size(
+            proposedSize: Size(width: width, height: 0)
+        )
+
+        let maxSize = size(
+            proposedSize: Size(width: width, height: .infinity)
+        )
+
+        return maxSize.height - minSize.height
+    }
+
     @inline(__always)
     var sizeElement: Visitor.SizeElement {
         .init(node: self) { [weak self] proposedSize in
             self?.size(proposedSize: proposedSize) ?? .zero
+        } horizontalFlexibility: { [weak self] height in
+            self?.horizontalFlexibility(height: height) ?? .zero
+        } verticalFlexibility: { [weak self] width in
+            self?.verticalFlexibility(width: width) ?? .zero
         }
     }
 
@@ -67,6 +69,10 @@ extension Control {
             self?.frame.position += position
         } global: { [weak self] in
             self?.global ?? .zero
+        } horizontalFlexibility: { [weak self] height in
+            self?.horizontalFlexibility(height: height) ?? .zero
+        } verticalFlexibility: { [weak self] width in
+            self?.verticalFlexibility(width: width) ?? .zero
         }
     }
 }

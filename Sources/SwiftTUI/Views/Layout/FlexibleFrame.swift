@@ -238,9 +238,40 @@ final class FlexibleFrameNode: Node {
                 } global: { [weak self] in
                     guard let self else { return .zero }
                     return global(element.global(), bounds: layoutVisitor.visited[i].size)
+                } horizontalFlexibility: { [weak self] height in
+                    self?.horizontalFlexibility(height: height, childSize: \.self) ?? .zero
+                } verticalFlexibility: { [weak self] width in
+                    self?.verticalFlexibility(width: width, childSize: \.self) ?? .zero
                 }
             )
         }
+    }
+
+    func horizontalFlexibility(height: Extended, childSize: (Size) -> Size) -> Extended {
+        let minSize = size(
+            child: childSize(.init(width: 1, height: height)),
+            bounds: .init(width: 1, height: height)
+        )
+        let maxSize = size(
+            child: childSize(.init(width: .infinity, height: height)),
+            bounds: .init(width: .infinity, height: height)
+        )
+
+        return maxSize.width - minSize.width
+    }
+
+    func verticalFlexibility(width: Extended, childSize: (Size) -> Size) -> Extended {
+        let minSize = size(
+            child: childSize(.init(width: width, height: 1)),
+            bounds: .init(width: width, height: 1)
+        )
+        let maxSize = size(
+            child: childSize(.init(width: width, height: .infinity)),
+            bounds: .init(width: width, height: .infinity)
+        )
+
+        return maxSize.height - minSize.height
+
     }
 
     override func size<T>(visitor: inout T) where T : Visitor.Size {
@@ -253,6 +284,10 @@ final class FlexibleFrameNode: Node {
                 visitor.visit(
                     size: .init(node: element.node) {  proposedSize in
                         return element.size(proposedSize)
+                    } horizontalFlexibility: {
+                        element.horizontalFlexibility($0)
+                    } verticalFlexibility: {
+                        element.verticalFlexibility($0)
                     }
                 )
             }
@@ -261,6 +296,10 @@ final class FlexibleFrameNode: Node {
                 size: .init(node: element.node) { [weak self] proposedSize in
                     guard let self else { return .zero }
                     return size(child: element.size(proposedSize), bounds: proposedSize)
+                } horizontalFlexibility: { [weak self] height in
+                    self?.horizontalFlexibility(height: height, childSize: element.size) ?? .zero
+                } verticalFlexibility: { [weak self] width in
+                    self?.verticalFlexibility(width: width, childSize: element.size) ?? .zero
                 }
             )
         }

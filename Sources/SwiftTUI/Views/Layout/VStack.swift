@@ -116,7 +116,7 @@ class VStackNode: Node, Control {
             }
 
             let children = visited
-                .map { (size: $0.size, flexibility: $0.node.verticalFlexibility(width: proposedSize.width)) }
+                .map { (size: $0.size, flexibility: $0.verticalFlexibility(proposedSize.width)) }
                 .sorted { $0.flexibility < $1.flexibility }
 
             // Anything that is infinitely flexible does not get spacing before it
@@ -175,7 +175,7 @@ class VStackNode: Node, Control {
             let childrenOrder = visited
                 .indices
                 .sorted {
-                    visited[$0].element.node.verticalFlexibility(width: rect.size.width) < visited[$1].element.node.verticalFlexibility(width: rect.size.width)
+                    visited[$0].element.verticalFlexibility(rect.size.width) < visited[$1].element.verticalFlexibility(rect.size.width)
                 }
 
             var remaining = childrenOrder.count

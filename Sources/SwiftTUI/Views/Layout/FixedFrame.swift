@@ -198,6 +198,12 @@ final class FixedFrameNode: Node {
                 } global: { [weak self] in
                     guard let self else { return .zero }
                     return global(element.global(), bounds: layoutVisitor.visited[i].size)
+                } horizontalFlexibility: { [weak self] height in
+                    guard let self, self.width == nil else { return .zero }
+                    return element.horizontalFlexibility(height)
+                } verticalFlexibility: { [weak self] width in
+                    guard let self, self.height == nil else { return .zero }
+                    return element.verticalFlexibility(width)
                 }
             )
         }
@@ -209,6 +215,12 @@ final class FixedFrameNode: Node {
                 size: .init(node: element.node) { [weak self] proposedSize in
                     guard let self else { return .zero }
                     return size(child: element.size(size(child: proposedSize)))
+                } horizontalFlexibility: { [weak self] height in
+                    guard let self, self.width == nil else { return .zero }
+                    return element.horizontalFlexibility(height)
+                } verticalFlexibility: { [weak self] width in
+                    guard let self, self.height == nil else { return .zero }
+                    return element.verticalFlexibility(width)
                 }
             )
         }
