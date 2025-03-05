@@ -306,4 +306,141 @@ import Testing
         )
 
     }
+
+    @Test func testHorizontalScrollViewContainsMaxWidthInfinity() async throws {
+        struct MyView: View {
+            @State var data: [Int] = []
+            var body: some View {
+                ScrollView([.horizontal]) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("Hello World")
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .frame(maxWidth: .infinity)
+                .border()
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+
+        // TODO: THere's still a (slight) issue here in that the ScrollView itself should expand to fill the containing frame. I don't know if this is something that needs to be special cased or not though.
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 100x3
+              → ComposedView<MyView>
+                → Border:[(0, 0) 100x3]
+                  → FlexibleFrame:(nil)x(nil)/∞x(nil) [98x1]
+                    → ScrollView [offset:(0, 0) size:11x1] (44, 1) 11x1
+                      → FlexibleFrame:(nil)x(nil)/∞x(nil) [11x1]
+                        → VStack<Text> (0, 0) 11x1
+                          → Text:string("Hello World") (0, 0) 11x1
+
+            """
+        }
+        assertSnapshot(of: application.renderer, as: .rendered)
+    }
+
+    @Test func testHorizontalScrollViewContainsWidthInfinity() async throws {
+        struct MyView: View {
+            @State var data: [Int] = []
+            var body: some View {
+                ScrollView([.horizontal]) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("Hello World")
+                    }
+                    .frame(width: .infinity)
+                }
+                .frame(maxWidth: .infinity)
+                .border()
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+
+        // TODO: THere's still a (slight) issue here in that the ScrollView itself should expand to fill the containing frame. I don't know if this is something that needs to be special cased or not though.
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 100x3
+              → ComposedView<MyView>
+                → Border:[(0, 0) 100x3]
+                  → FlexibleFrame:(nil)x(nil)/∞x(nil) [98x1]
+                    → ScrollView [offset:(0, 0) size:11x1] (44, 1) 11x1
+                      → FixedFrame:∞x(nil) [11x1]
+                        → VStack<Text> (0, 0) 11x1
+                          → Text:string("Hello World") (0, 0) 11x1
+
+            """
+        }
+        assertSnapshot(of: application.renderer, as: .rendered)
+    }
+
+
+    @Test func testVerticalScrollViewContainsMaxHeightInfinity() async throws {
+        struct MyView: View {
+            @State var data: [Int] = []
+            var body: some View {
+                ScrollView([.vertical]) {
+                    HStack(alignment: .center, spacing: 0) {
+                        Text("Hello World")
+                    }
+                    .frame(maxHeight: .infinity)
+                }
+                .frame(maxHeight: .infinity)
+                .border()
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+        // TODO: THere's still a (slight) issue here in that the ScrollView itself should expand to fill the containing frame. I don't know if this is something that needs to be special cased or not though.
+
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 13x100
+              → ComposedView<MyView>
+                → Border:[(0, 0) 13x100]
+                  → FlexibleFrame:(nil)x(nil)/(nil)x∞ [11x98]
+                    → ScrollView [offset:(0, 0) size:11x1] (1, 49) 11x1
+                      → FlexibleFrame:(nil)x(nil)/(nil)x∞ [11x1]
+                        → HStack<Text> (0, 0) 11x1
+                          → Text:string("Hello World") (0, 0) 11x1
+
+            """
+        }
+        assertSnapshot(of: application.renderer, as: .rendered)
+    }
+
+    @Test func testVerticalScrollViewContainsHeightInfinity() async throws {
+        struct MyView: View {
+            @State var data: [Int] = []
+            var body: some View {
+                ScrollView([.vertical]) {
+                    HStack(alignment: .center, spacing: 0) {
+                        Text("Hello World")
+                    }
+                    .frame(height: .infinity)
+                }
+                .frame(maxHeight: .infinity)
+                .border()
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+        // TODO: THere's still a (slight) issue here in that the ScrollView itself should expand to fill the containing frame. I don't know if this is something that needs to be special cased or not though.
+
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 13x100
+              → ComposedView<MyView>
+                → Border:[(0, 0) 13x100]
+                  → FlexibleFrame:(nil)x(nil)/(nil)x∞ [11x98]
+                    → ScrollView [offset:(0, 0) size:11x1] (1, 49) 11x1
+                      → FixedFrame:(nil)x∞ [11x1]
+                        → HStack<Text> (0, 0) 11x1
+                          → Text:string("Hello World") (0, 0) 11x1
+
+            """
+        }
+        assertSnapshot(of: application.renderer, as: .rendered)
+    }
 }

@@ -148,14 +148,24 @@ final class FlexibleFrameNode: Node {
         let minWidth =
             minWidth != nil ? max(minWidth ?? childSize.width, childSize.width) : childSize.width
 
-        let maxWidth = maxWidth == .infinity ? max( childSize.width, bounds.width ) :
-            maxWidth != nil ? min(maxWidth ?? childSize.width, childSize.width) : childSize.width
+        let maxWidth = maxWidth == .infinity
+        ? ( bounds.width == .infinity
+            ? childSize.width
+            : max( childSize.width, bounds.width ) )
+        : ( maxWidth != nil
+            ? min(maxWidth ?? childSize.width, childSize.width)
+            : childSize.width )
 
         let minHeight =
             minHeight != nil ? max(minHeight ?? childSize.height, childSize.height) : childSize.height
 
-        let maxHeight = maxHeight == .infinity ? max( childSize.height, bounds.height ) :
-            maxHeight != nil ? min(maxHeight ?? childSize.height, childSize.height) : childSize.height
+        let maxHeight = maxHeight == .infinity
+        ? ( bounds.height == .infinity
+            ? childSize.height
+            : max( childSize.height, bounds.height ) )
+        : ( maxHeight != nil
+            ? min(maxHeight ?? childSize.height, childSize.height)
+            : childSize.height )
 
         precondition(minWidth > 0 && maxWidth > 0 && minHeight > 0 && maxHeight > 0)
 
