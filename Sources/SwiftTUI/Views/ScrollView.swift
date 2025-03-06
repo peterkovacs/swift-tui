@@ -154,7 +154,12 @@ class ScrollViewNode: RootNode {
             height: axes.contains(.vertical)   ? indicatorVisiblity.size(if: contentSize.height > proposedSize.height) : 0
         )
 
-        return (contentSize + indicatorSize).constraining(to: proposedSize).expanding(to: indicatorSize)
+        let combinedSize = (contentSize + indicatorSize).constraining(to: proposedSize).expanding(to: indicatorSize)
+
+        return .init(
+            width: axes.contains(.horizontal) ? proposedSize.width : combinedSize.width,
+            height: axes.contains(.vertical) ? proposedSize.height : combinedSize.height
+        )
     }
 
     var hasFocusableElements: Bool {

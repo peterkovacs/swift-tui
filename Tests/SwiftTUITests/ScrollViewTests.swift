@@ -113,10 +113,10 @@ import Testing
 
         assertInlineSnapshot(of: application, as: .frameDescription) {
             """
-            → VStack<MyView> (0, 0) 15x4
+            → VStack<MyView> (0, 0) 15x100
               → ComposedView<MyView>
-                → Border:[(0, 0) 15x4]
-                  → ScrollView [offset:(0, 0) size:13x2] (1, 1) 13x2
+                → Border:[(0, 0) 15x100]
+                  → ScrollView [offset:(0, 0) size:13x2] (1, 1) 13x98
                     → TupleView<Pack{Text, Spacer, Text}>
                       → Text:string("Hello World") (1, 0) 11x1
                       → Spacer (6, 1) 1x0
@@ -327,11 +327,11 @@ import Testing
         // TODO: THere's still a (slight) issue here in that the ScrollView itself should expand to fill the containing frame. I don't know if this is something that needs to be special cased or not though.
         assertInlineSnapshot(of: application, as: .frameDescription) {
             """
-            → VStack<MyView> (0, 0) 100x3
+            → VStack<MyView> (0, 0) 100x6
               → ComposedView<MyView>
-                → Border:[(0, 0) 100x3]
-                  → FlexibleFrame:(nil)x(nil)/∞x(nil) [98x1]
-                    → ScrollView [offset:(0, 0) size:11x1] (44, 1) 11x1
+                → Border:[(0, 0) 100x6]
+                  → FlexibleFrame:(nil)x(nil)/∞x(nil) [98x4]
+                    → ScrollView [offset:(0, 0) size:11x1] (1, 1) 98x4
                       → FlexibleFrame:(nil)x(nil)/∞x(nil) [11x1]
                         → VStack<Text> (0, 0) 11x1
                           → Text:string("Hello World") (0, 0) 11x1
@@ -361,11 +361,11 @@ import Testing
         // TODO: THere's still a (slight) issue here in that the ScrollView itself should expand to fill the containing frame. I don't know if this is something that needs to be special cased or not though.
         assertInlineSnapshot(of: application, as: .frameDescription) {
             """
-            → VStack<MyView> (0, 0) 100x3
+            → VStack<MyView> (0, 0) 100x6
               → ComposedView<MyView>
-                → Border:[(0, 0) 100x3]
-                  → FlexibleFrame:(nil)x(nil)/∞x(nil) [98x1]
-                    → ScrollView [offset:(0, 0) size:11x1] (44, 1) 11x1
+                → Border:[(0, 0) 100x6]
+                  → FlexibleFrame:(nil)x(nil)/∞x(nil) [98x4]
+                    → ScrollView [offset:(0, 0) size:11x1] (1, 1) 98x4
                       → FixedFrame:∞x(nil) [11x1]
                         → VStack<Text> (0, 0) 11x1
                           → Text:string("Hello World") (0, 0) 11x1
@@ -400,7 +400,7 @@ import Testing
               → ComposedView<MyView>
                 → Border:[(0, 0) 13x100]
                   → FlexibleFrame:(nil)x(nil)/(nil)x∞ [11x98]
-                    → ScrollView [offset:(0, 0) size:11x1] (1, 49) 11x1
+                    → ScrollView [offset:(0, 0) size:11x1] (1, 1) 11x98
                       → FlexibleFrame:(nil)x(nil)/(nil)x∞ [11x1]
                         → HStack<Text> (0, 0) 11x1
                           → Text:string("Hello World") (0, 0) 11x1
@@ -427,14 +427,14 @@ import Testing
 
         let (application, _) = try drawView(MyView())
         // TODO: THere's still a (slight) issue here in that the ScrollView itself should expand to fill the containing frame. I don't know if this is something that needs to be special cased or not though.
-
+ 
         assertInlineSnapshot(of: application, as: .frameDescription) {
             """
             → VStack<MyView> (0, 0) 13x100
               → ComposedView<MyView>
                 → Border:[(0, 0) 13x100]
                   → FlexibleFrame:(nil)x(nil)/(nil)x∞ [11x98]
-                    → ScrollView [offset:(0, 0) size:11x1] (1, 49) 11x1
+                    → ScrollView [offset:(0, 0) size:11x1] (1, 1) 11x98
                       → FixedFrame:(nil)x∞ [11x1]
                         → HStack<Text> (0, 0) 11x1
                           → Text:string("Hello World") (0, 0) 11x1

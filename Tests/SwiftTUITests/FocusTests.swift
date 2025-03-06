@@ -837,16 +837,16 @@ import Testing
 
         assertInlineSnapshot(of: application, as: .frameDescription) {
             """
-            → VStack<MyView> (0, 0) 100x3
+            → VStack<MyView> (0, 0) 100x100
               → ComposedView<MyView>
-                → HStack<TupleView<Pack{ScrollView<TupleView<Pack{Text, TextField, Text}>>, ScrollView<TupleView<Pack{Text, TextField, Text}>>}>> (0, 0) 100x3
+                → HStack<TupleView<Pack{ScrollView<TupleView<Pack{Text, TextField, Text}>>, ScrollView<TupleView<Pack{Text, TextField, Text}>>}>> (0, 0) 100x100
                   → TupleView<Pack{ScrollView<TupleView<Pack{Text, TextField, Text}>>, ScrollView<TupleView<Pack{Text, TextField, Text}>>}>
-                    → ScrollView [offset:(0, 0) size:50x3] (0, 0) 50x3
+                    → ScrollView [offset:(0, 0) size:50x3] (0, 0) 50x100
                       → TupleView<Pack{Text, TextField, Text}>
                         → Text:string("Hello") (22, 0) 5x1
                         → TextField:"" (0) FOCUSED (0, 1) 50x1
                         → Text:string("World") (22, 2) 5x1
-                    → ScrollView [offset:(0, 0) size:49x3] (51, 0) 49x3
+                    → ScrollView [offset:(0, 0) size:49x3] (51, 0) 49x100
                       → TupleView<Pack{Text, TextField, Text}>
                         → Text:string("Goodbye") (21, 0) 7x1
                         → TextField:"" (0) (0, 1) 49x1
@@ -858,16 +858,16 @@ import Testing
 
         assertInlineSnapshot(of: application, as: .frameDescription) {
             """
-            → VStack<MyView> (0, 0) 100x3
+            → VStack<MyView> (0, 0) 100x100
               → ComposedView<MyView>
-                → HStack<TupleView<Pack{ScrollView<TupleView<Pack{Text, TextField, Text}>>, ScrollView<TupleView<Pack{Text, TextField, Text}>>}>> (0, 0) 100x3
+                → HStack<TupleView<Pack{ScrollView<TupleView<Pack{Text, TextField, Text}>>, ScrollView<TupleView<Pack{Text, TextField, Text}>>}>> (0, 0) 100x100
                   → TupleView<Pack{ScrollView<TupleView<Pack{Text, TextField, Text}>>, ScrollView<TupleView<Pack{Text, TextField, Text}>>}>
-                    → ScrollView [offset:(0, 0) size:50x3] (0, 0) 50x3
+                    → ScrollView [offset:(0, 0) size:50x3] (0, 0) 50x100
                       → TupleView<Pack{Text, TextField, Text}>
                         → Text:string("Hello") (22, 0) 5x1
                         → TextField:"" (0) (0, 1) 50x1
                         → Text:string("World") (22, 2) 5x1
-                    → ScrollView [offset:(0, 0) size:49x3] (51, 0) 49x3
+                    → ScrollView [offset:(0, 0) size:49x3] (51, 0) 49x100
                       → TupleView<Pack{Text, TextField, Text}>
                         → Text:string("Goodbye") (21, 0) 7x1
                         → TextField:"" (0) FOCUSED (0, 1) 49x1
@@ -879,16 +879,16 @@ import Testing
 
         assertInlineSnapshot(of: application, as: .frameDescription) {
             """
-            → VStack<MyView> (0, 0) 100x3
+            → VStack<MyView> (0, 0) 100x100
               → ComposedView<MyView>
-                → HStack<TupleView<Pack{ScrollView<TupleView<Pack{Text, TextField, Text}>>, ScrollView<TupleView<Pack{Text, TextField, Text}>>}>> (0, 0) 100x3
+                → HStack<TupleView<Pack{ScrollView<TupleView<Pack{Text, TextField, Text}>>, ScrollView<TupleView<Pack{Text, TextField, Text}>>}>> (0, 0) 100x100
                   → TupleView<Pack{ScrollView<TupleView<Pack{Text, TextField, Text}>>, ScrollView<TupleView<Pack{Text, TextField, Text}>>}>
-                    → ScrollView [offset:(0, 0) size:50x3] (0, 0) 50x3
+                    → ScrollView [offset:(0, 0) size:50x3] (0, 0) 50x100
                       → TupleView<Pack{Text, TextField, Text}>
                         → Text:string("Hello") (22, 0) 5x1
                         → TextField:"" (0) FOCUSED (0, 1) 50x1
                         → Text:string("World") (22, 2) 5x1
-                    → ScrollView [offset:(0, 0) size:49x3] (51, 0) 49x3
+                    → ScrollView [offset:(0, 0) size:49x3] (51, 0) 49x100
                       → TupleView<Pack{Text, TextField, Text}>
                         → Text:string("Goodbye") (21, 0) 7x1
                         → TextField:"" (0) (0, 1) 49x1
@@ -900,16 +900,16 @@ import Testing
 
         assertInlineSnapshot(of: application, as: .frameDescription) {
             """
-            → VStack<MyView> (0, 0) 100x3
+            → VStack<MyView> (0, 0) 100x100
               → ComposedView<MyView>
-                → HStack<TupleView<Pack{ScrollView<TupleView<Pack{Text, TextField, Text}>>, ScrollView<TupleView<Pack{Text, TextField, Text}>>}>> (0, 0) 100x3
+                → HStack<TupleView<Pack{ScrollView<TupleView<Pack{Text, TextField, Text}>>, ScrollView<TupleView<Pack{Text, TextField, Text}>>}>> (0, 0) 100x100
                   → TupleView<Pack{ScrollView<TupleView<Pack{Text, TextField, Text}>>, ScrollView<TupleView<Pack{Text, TextField, Text}>>}>
-                    → ScrollView [offset:(0, 0) size:50x3] (0, 0) 50x3
+                    → ScrollView [offset:(0, 0) size:50x3] (0, 0) 50x100
                       → TupleView<Pack{Text, TextField, Text}>
                         → Text:string("Hello") (22, 0) 5x1
                         → TextField:"" (0) (0, 1) 50x1
                         → Text:string("World") (22, 2) 5x1
-                    → ScrollView [offset:(0, 0) size:49x3] (51, 0) 49x3
+                    → ScrollView [offset:(0, 0) size:49x3] (51, 0) 49x100
                       → TupleView<Pack{Text, TextField, Text}>
                         → Text:string("Goodbye") (21, 0) 7x1
                         → TextField:"" (0) FOCUSED (0, 1) 49x1
