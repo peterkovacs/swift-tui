@@ -43,17 +43,29 @@ public struct ForEach<Data, ID, Content>: View, PrimitiveView where Data : Rando
             by: { $0[keyPath: id] == $1[keyPath: id] }
         )
 
-        if diffs.isEmpty { return }
+        if diffs.isEmpty {
+            for (child, element) in zip(node.children, data) {
+                child.update(view: content(element).view)
+            }
+
+            return
+        }
 
         node.invalidateLayout()
+        var indices = Set<Int>()
 
         for diff in diffs {
             switch diff {
             case .insert(offset: let i, element: let element, _):
+                indices.insert(i)
                 node.add(at: i, node: content(element).view.build(parent: node))
             case .remove(offset: let i, element: _, _):
                 node.remove(at: i)
             }
+        }
+
+        for index in node.children.indices where !indices.contains(index) {
+            node.children[index].update(view: content(data[data.index(data.startIndex, offsetBy: index)]).view)
         }
     }
 }

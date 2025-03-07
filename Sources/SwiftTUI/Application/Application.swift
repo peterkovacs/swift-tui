@@ -181,7 +181,7 @@ extension Application {
     /// Top-level View of the Application
     @ViewBuilder var body: Body { get }
 
-    init()
+    init() throws
 }
 
 extension App {

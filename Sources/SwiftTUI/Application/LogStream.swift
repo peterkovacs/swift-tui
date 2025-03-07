@@ -1,8 +1,15 @@
 #if canImport(OSLog)
 import OSLog
+import os.signpost
 
-let logger = Logger(
-    subsystem: Bundle.main.bundleIdentifier ?? "swift-tui",
-    category: String(describing: #file)
+let osLog = OSLog(
+    subsystem: "com.kovapps.swift-tui",
+    category: .dynamicTracing
 )
+let logger = Logger()
+
+let signpostID = OSSignpostID(
+    log: osLog
+)
+
 #endif

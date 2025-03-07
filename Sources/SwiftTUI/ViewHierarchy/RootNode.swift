@@ -25,8 +25,8 @@
         self.focusManager = .init(secondary: child)
     }
 
-    func invalidate(node: Node) {
-        application?.invalidate(node: node, frame: \.global)
+    func invalidate(node: Node, frame: @escaping (Node) -> Rect = \.global) {
+        application?.invalidate(node: node, frame: frame)
     }
 
     override func update(view: any GenericView) {

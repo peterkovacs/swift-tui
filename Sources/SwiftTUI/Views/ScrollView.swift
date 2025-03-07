@@ -91,15 +91,15 @@ class ScrollViewNode: RootNode {
         application?.invalidate(node: self, frame: \.global)
     }
 
-    override func invalidate(node: Node) {
+    override func invalidate(node: Node, frame: @escaping (Node) -> Rect) {
         // A node within the ScrollView has been invalidated.
         // Check to see if it is visible, and if so can invalidate with the application.
         assert(node !== self)
 
-        if isVisible(node.relative(to: self)) {
+        if isVisible(frame(node)) {
             application?.invalidate(node: node) { node in
-                // must recalculate the frame inside here because the frame may have changed after layout.
-                self.global.intersection(node.relative(to: self) - self.contentOffset + self.global.position) ?? .zero
+                // must recalculate the frame(node) inside here because the frame may have changed after layout.
+                self.global.intersection(frame(node) - self.contentOffset + self.global.position) ?? .zero
             }
         }
     }
@@ -124,10 +124,7 @@ class ScrollViewNode: RootNode {
 
         contentSize = contentSize + indicatorSize
 
-        frame = .init(
-            position: rect.position,
-            size:  (contentSize + indicatorSize).constraining(to: rect.size)
-        )
+        frame = rect
 
         // Reset the contentOffset if we would have been scrolled past the end given the current layout.
         if axes.contains(.vertical) && rect.size.height + contentOffset.line > contentSize.height {
@@ -225,10 +222,6 @@ class ScrollViewNode: RootNode {
         let global = global
         guard let rect = global.intersection(rect) else { return }
 
-        let indicatorSize: Size = .init(
-            width:  axes.contains(.horizontal) ? indicatorVisiblity.size(if: contentSize.width  > global.size.width)  : 0,
-            height: axes.contains(.vertical)   ? indicatorVisiblity.size(if: contentSize.height > global.size.height) : 0
-        )
 
         window.with(offset: -contentOffset + global.position) { window in
             children[0].draw(rect: rect + contentOffset - global.position, into: &window)

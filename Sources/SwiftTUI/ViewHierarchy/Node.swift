@@ -40,8 +40,25 @@ internal class Node {
 
         return _global
     }
+
+    struct InvalidationVisitor: Visitor.Layout {
+        var frame: Rect
+
+        mutating func visit(layout element: Visitor.LayoutElement) {
+            frame = frame.union(element.global())
+        }
+
+        init(children: [Node]) {
+            frame = .zero
+
+            for child in children {
+                child.layout(visitor: &self)
+            }
+        }
+    }
+
     func invalidate() {
-        root?.invalidate(node: self)
+        root?.invalidate(node: self, frame: { InvalidationVisitor(children: $0.children).frame })
     }
 
     func invalidateLayout() {
