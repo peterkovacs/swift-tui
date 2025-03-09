@@ -23,16 +23,17 @@ struct TaskView<ID: Equatable, Content: View>: View, PrimitiveView {
     let priority: TaskPriority
     let action: @Sendable () async -> Void
 
-    func build(parent: Node?) -> Node {
+    func build(parent: Node?, root: RootNode?) -> Node {
         let node = TaskNode(
             view: self.view,
             parent: parent,
+            root: root,
             action: action,
             priority: priority,
             id: id
         )
 
-        node.add(at: 0, node: content.view.build(parent: node))
+        node.add(at: 0, node: content.view.build(parent: node, root: root))
         return node
     }
 
@@ -75,6 +76,7 @@ final class TaskNode<ID: Equatable>: Node, Taskable {
     init(
         view: any GenericView,
         parent: Node?,
+        root: RootNode?,
         action: @escaping @Sendable () async -> Void,
         priority: TaskPriority,
         id: ID?
@@ -83,7 +85,7 @@ final class TaskNode<ID: Equatable>: Node, Taskable {
         self.priority = priority
         self.id = id
 
-        super.init(view: view, parent: parent)
+        super.init(view: view, parent: parent, root: root)
     }
 
     deinit {

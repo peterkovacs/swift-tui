@@ -25,10 +25,11 @@ struct FlexibleFrame<Content: View>: View, PrimitiveView {
     var alignment: Alignment
     let content: Content
 
-    func build(parent: Node?) -> Node {
+    func build(parent: Node?, root: RootNode?) -> Node {
         let node = FlexibleFrameNode(
             view: self,
             parent: parent,
+            root: root,
             minWidth: minWidth,
             maxWidth: maxWidth,
             minHeight: minHeight,
@@ -36,7 +37,7 @@ struct FlexibleFrame<Content: View>: View, PrimitiveView {
             alignment: alignment
         )
 
-        node.add(at: 0, node: content.view.build(parent: node))
+        node.add(at: 0, node: content.view.build(parent: node, root: root))
 
         return node
     }
@@ -130,6 +131,7 @@ final class FlexibleFrameNode: Node {
     init(
         view: any GenericView,
         parent: Node?,
+        root: RootNode?,
         minWidth: Extended?,
         maxWidth: Extended?,
         minHeight: Extended?,
@@ -141,7 +143,7 @@ final class FlexibleFrameNode: Node {
         self.minHeight = minHeight
         self.maxHeight = maxHeight
         self.alignment = alignment
-        super.init(view: view, parent: parent)
+        super.init(view: view, parent: parent, root: root)
     }
 
     private func size(child childSize: Size, bounds: Size) -> Size {

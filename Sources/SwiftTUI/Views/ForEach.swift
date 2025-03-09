@@ -16,10 +16,11 @@ public struct ForEach<Data, ID, Content>: View, PrimitiveView where Data : Rando
 
     }
 
-    func build(parent: Node?) -> Node {
+    func build(parent: Node?, root: RootNode?) -> Node {
         let node = Node(
             view: self,
-            parent: parent
+            parent: parent,
+            root: root
         )
 
         for i in data {
@@ -27,7 +28,7 @@ public struct ForEach<Data, ID, Content>: View, PrimitiveView where Data : Rando
 
             node.add(
                 at: node.children.endIndex,
-                node: view.view.build(parent: node)
+                node: view.view.build(parent: node, root: root)
             )
         }
 
@@ -58,7 +59,7 @@ public struct ForEach<Data, ID, Content>: View, PrimitiveView where Data : Rando
             switch diff {
             case .insert(offset: let i, element: let element, _):
                 indices.insert(i)
-                node.add(at: i, node: content(element).view.build(parent: node))
+                node.add(at: i, node: content(element).view.build(parent: node, root: node.root))
             case .remove(offset: let i, element: _, _):
                 node.remove(at: i)
             }

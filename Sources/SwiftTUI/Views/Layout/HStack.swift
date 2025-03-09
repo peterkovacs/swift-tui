@@ -14,15 +14,16 @@ public struct HStack<Content: View>: View, PrimitiveView {
         self.content = content()
     }
 
-    func build(parent: Node?) -> Node {
+    func build(parent: Node?, root: RootNode?) -> Node {
         let node = HStackNode(
             view: self.view,
             parent: parent,
+            root: root,
             alignment: alignment,
             spacing: spacing
         )
 
-        node.add(at: 0, node: content.view.build(parent: node))
+        node.add(at: 0, node: content.view.build(parent: node, root: root))
         return node
     }
 
@@ -71,12 +72,13 @@ class HStackNode: Node, Control {
     init(
         view: any GenericView,
         parent: Node?,
+        root: RootNode?,
         alignment: VerticalAlignment,
         spacing: Extended
     ) {
         self.alignment = alignment
         self.spacing = spacing
-        super.init(view: view, parent: parent)
+        super.init(view: view, parent: parent, root: root)
         self.environment = {
             $0.layoutAxis = .horizontal
         }

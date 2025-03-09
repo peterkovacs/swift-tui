@@ -8,14 +8,15 @@ struct FocusableView<Content: View>: View, PrimitiveView {
     let isFocusable: Bool
     let content: Content
 
-    func build(parent: Node?) -> Node {
+    func build(parent: Node?, root: RootNode?) -> Node {
         let node = FocusableNode(
             view: self,
             parent: parent,
+            root: root,
             isFocusable: isFocusable
         )
 
-        node.add(at: 0, node: content.view.build(parent: node))
+        node.add(at: 0, node: content.view.build(parent: node, root: root))
 
         return node
     }
@@ -33,9 +34,9 @@ struct FocusableView<Content: View>: View, PrimitiveView {
 final class FocusableNode: Node {
     var isFocusable: Bool { didSet { if oldValue != isFocusable { evaluate() } } }
 
-    init(view: any GenericView, parent: Node?, isFocusable: Bool) {
+    init(view: any GenericView, parent: Node?, root: RootNode?, isFocusable: Bool) {
         self.isFocusable = isFocusable
-        super.init(view: view, parent: parent)
+        super.init(view: view, parent: parent, root: root)
     }
 
     var _focusVisitor: FocusVisitor? = nil

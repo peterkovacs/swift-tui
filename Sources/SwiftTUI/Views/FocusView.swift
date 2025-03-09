@@ -39,16 +39,17 @@ struct FocusView<Content: View, Value: Hashable>: View, PrimitiveView {
         self.unset = nil
     }
 
-    func build(parent: Node?) -> Node {
+    func build(parent: Node?, root: RootNode?) -> Node {
         let node = FocusNode(
             view: self,
             parent: parent,
+            root: root,
             binding: binding,
             value: value,
             unset: unset
         )
 
-        node.add(at: 0, node: content.view.build(parent: node))
+        node.add(at: 0, node: content.view.build(parent: node, root: root))
         return node
     }
 
@@ -83,6 +84,7 @@ final class FocusNode<Value: Hashable>: Node {
     init(
         view: any GenericView,
         parent: Node?,
+        root: RootNode?,
         binding: FocusState<Value>.Binding,
         value: Value,
         unset: Value
@@ -91,7 +93,7 @@ final class FocusNode<Value: Hashable>: Node {
         self.previousValue = binding.wrappedValue
         self.value = value
         self.unset = unset
-        super.init(view: view, parent: parent)
+        super.init(view: view, parent: parent, root: root)
     }
 
     func evaluate(value: Value, binding: FocusState<Value>.Binding) {

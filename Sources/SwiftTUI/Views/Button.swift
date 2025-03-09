@@ -19,14 +19,15 @@ public struct Button<Label: View>: View, PrimitiveView {
         self.label = Text(label)
     }
 
-    func build(parent: Node?) -> Node {
+    func build(parent: Node?, root: RootNode?) -> Node {
         let node = ButtonNode(
             view: self,
             parent: parent,
+            root: root,
             action: action
         )
 
-        node.add(at: 0, node: label.view.build(parent: node))
+        node.add(at: 0, node: label.view.build(parent: node, root: root))
         return node
     }
 
@@ -42,10 +43,10 @@ final class ButtonNode: HStackNode {
     var action: @MainActor () -> Void
     var isFocused: Bool { didSet { if isFocused != oldValue { invalidate() } } }
 
-    init(view: any GenericView, parent: Node?, action: @escaping @MainActor () -> Void) {
+    init(view: any GenericView, parent: Node?, root: RootNode?, action: @escaping @MainActor () -> Void) {
         self.action = action
         self.isFocused = false
-        super.init(view: view, parent: parent, alignment: .center, spacing: 1)
+        super.init(view: view, parent: parent, root: root, alignment: .center, spacing: 1)
     }
 
     override func draw(rect: Rect, into window: inout Window<Cell?>) {

@@ -5,22 +5,21 @@
 @MainActor class RootNode: VStackNode {
     private(set) var application: Application?
     private(set) var focusManager: FocusManager!
-
-    override var root: RootNode? { self }
-
+    
     init<T: View>(root view: T, application: Application?) {
         self.application = application
         super.init(root: VStack { view })
 
-        add(at: 0, node: view.view.build(parent: self))
+        add(at: 0, node: view.view.build(parent: self, root: self))
         self.focusManager = .init(root: self)
     }
 
-    init<T: View>(view: T, parent: Node?) {
-        self.application = parent?.root?.application
-        super.init(view: VStack { view }, parent: parent, alignment: .center, spacing: 0)
+    init<T: View>(view: T, parent: Node?, root: RootNode?) {
+        self.application = root?.application
+        super.init(view: VStack { view }, parent: parent, root: root, alignment: .center, spacing: 0)
 
-        let child = view.view.build(parent: self)
+        // children of a ScrollView are rooted in the scrollview itself, but the scrollview still has its own parent root.
+        let child = view.view.build(parent: self, root: self)
         add(at: 0, node: child)
         self.focusManager = .init(secondary: child)
     }

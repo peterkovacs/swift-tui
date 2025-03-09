@@ -6,13 +6,14 @@ public struct Group<Content: View>: View, PrimitiveView {
         self.content = content()
     }
 
-    func build(parent: Node?) -> Node {
+    func build(parent: Node?, root: RootNode?) -> Node {
         let node = Node(
             view: self,
-            parent: parent
+            parent: parent,
+            root: root
         )
 
-        node.add(at: 0, node: content.view.build(parent: node))
+        node.add(at: 0, node: content.view.build(parent: node, root: root))
         return node
     }
 

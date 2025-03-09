@@ -8,15 +8,16 @@ struct Background<Content: View>: View, PrimitiveView {
     let color: Color
     let content: Content
 
-    func build(parent: Node?) -> Node {
+    func build(parent: Node?, root: RootNode?) -> Node {
         let node = BackgroundNode(
             view: self,
             parent: parent,
+            root: root,
             content: self,
             color: color
         )
 
-        node.add(at: 0, node: content.view.build(parent: node))
+        node.add(at: 0, node: content.view.build(parent: node, root: root))
         return node
     }
 
@@ -34,11 +35,12 @@ final class BackgroundNode: ModifierNode {
     init<Content: View>(
         view: any GenericView,
         parent: Node?,
+        root: RootNode?,
         content: Content,
         color: Color
     ) {
         self.color = color
-        super.init(view: view, parent: parent, content: content)
+        super.init(view: view, parent: parent, root: root, content: content)
     }
 
     override func draw(rect: Rect, action: (Rect, any Control, Rect) -> Void) {

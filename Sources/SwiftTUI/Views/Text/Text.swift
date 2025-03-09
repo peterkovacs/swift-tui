@@ -24,10 +24,11 @@ public struct Text: View, PrimitiveView {
         self.text = .attributed(text)
     }
 
-    func build(parent: Node?) -> Node {
+    func build(parent: Node?, root: RootNode?) -> Node {
         let node = TextNode(
             view: self,
             parent: parent,
+            root: root,
             text: text,
             bold: _bold,
             italic: _italic,
@@ -67,6 +68,7 @@ final class TextNode: DynamicPropertyNode, Control {
     init(
         view: Text,
         parent: Node?,
+        root: RootNode?,
         text: Text.Value,
         bold: Environment<Bool>,
         italic: Environment<Bool>,
@@ -78,6 +80,7 @@ final class TextNode: DynamicPropertyNode, Control {
         super.init(
             view: view,
             parent: parent,
+            root: root,
             content: view
         )
         self.bold = bold.wrappedValue

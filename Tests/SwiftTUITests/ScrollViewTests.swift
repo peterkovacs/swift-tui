@@ -443,4 +443,40 @@ import Testing
         }
         assertSnapshot(of: application.renderer, as: .rendered)
     }
+
+    @Test(.snapshots(record: .failed)) func testScrollViewInsideLayout() async throws {
+        struct MyView: View {
+            @State var data: [Int] = []
+            var body: some View {
+                Text("Hello World")
+                    .frame(height: 3)
+                HStack(alignment: .top) {
+                    ScrollView([.vertical]) {
+                        for i in 1...1 {
+                            Text("Hello World \(i)")
+                        }
+                    }
+                    .border()
+                }
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 15x100
+              → ComposedView<MyView>
+                → TupleView<Pack{FixedFrame<Text>, HStack<Border<ScrollView<ArrayView<Text>>>>}>
+                  → FixedFrame:(nil)x3 [11x3]
+                    → Text:string("Hello World") (2, 1) 11x1
+                  → HStack<Border<ScrollView<ArrayView<Text>>>> (0, 3) 15x97
+                    → Border:[(0, 3) 15x97]
+                      → ScrollView [offset:(0, 0) size:13x1] (1, 4) 13x95
+                        → ArrayView<Text>
+                          → Text:string("Hello World 1") (0, 0) 13x1
+
+            """
+        }
+        assertSnapshot(of: application.renderer, as: .rendered)
+    }
 }

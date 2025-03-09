@@ -10,16 +10,17 @@ struct Command<Content: View>: View, PrimitiveView {
     let action: @MainActor () -> Void
     let isEnabled: Bool
 
-    func build(parent: Node?) -> Node {
+    func build(parent: Node?, root: RootNode?) -> Node {
         let node = CommandNode(
             view: view,
             parent: parent,
+            root: root,
             key: key,
             action: action,
             isEnabled: isEnabled
         )
 
-        node.add(at: 0, node: content.view.build(parent: node))
+        node.add(at: 0, node: content.view.build(parent: node, root: root))
         return node
     }
 
@@ -44,6 +45,7 @@ final class CommandNode: Node {
     init(
         view: any GenericView,
         parent: Node?,
+        root: RootNode?,
         key: Key,
         action: @escaping @MainActor () -> Void,
         isEnabled: Bool
@@ -51,7 +53,7 @@ final class CommandNode: Node {
         self.key = key
         self.action = action
         self.isEnabled = isEnabled
-        super.init(view: view, parent: parent)
+        super.init(view: view, parent: parent, root: root)
     }
 
     var _focusVisitor: FocusVisitor? = nil

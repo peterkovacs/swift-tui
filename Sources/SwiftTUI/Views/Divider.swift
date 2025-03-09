@@ -93,10 +93,11 @@ public struct Divider: View, PrimitiveView {
     public init() {
     }
 
-    func build(parent: Node?) -> Node {
+    func build(parent: Node?, root: RootNode?) -> Node {
         let node = DividerNode(
             view: self,
             parent: parent,
+            root: root,
             content: self,
             layoutAxis: _layoutAxis,
             foregroundColor: _foregroundColor,
@@ -129,6 +130,7 @@ final class DividerNode: DynamicPropertyNode, Control {
     init<Content: View>(
         view: any GenericView,
         parent: Node?,
+        root: RootNode?,
         content: Content,
         layoutAxis: Environment<LayoutAxis>,
         foregroundColor: Environment<Color>,
@@ -138,7 +140,7 @@ final class DividerNode: DynamicPropertyNode, Control {
         self.foregroundColor = .default
         self.dividerStyle = .default
 
-        super.init(view: view, parent: parent, content: content)
+        super.init(view: view, parent: parent, root: root, content: content)
 
         self.layoutAxis = layoutAxis.wrappedValue
         self.foregroundColor = foregroundColor.wrappedValue

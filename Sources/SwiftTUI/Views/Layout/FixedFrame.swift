@@ -14,16 +14,17 @@ struct FixedFrame<Content: View>: View, PrimitiveView {
     var alignment: Alignment
     let content: Content
 
-    func build(parent: Node?) -> Node {
+    func build(parent: Node?, root: RootNode?) -> Node {
         let node = FixedFrameNode(
             view: self,
             parent: parent,
+            root: root,
             width: width,
             height: height,
             alignment: alignment
         )
 
-        node.add(at: 0, node: content.view.build(parent: node))
+        node.add(at: 0, node: content.view.build(parent: node, root: root))
 
         return node
     }
@@ -109,11 +110,11 @@ final class FixedFrameNode: Node {
         }
     }
 
-    init(view: any GenericView, parent: Node?, width: Extended?, height: Extended?, alignment: Alignment) {
+    init(view: any GenericView, parent: Node?, root: RootNode?, width: Extended?, height: Extended?, alignment: Alignment) {
         self.width = width
         self.height = height
         self.alignment = alignment
-        super.init(view: view, parent: parent)
+        super.init(view: view, parent: parent, root: root)
     }
 
     private func size(child childSize: Size) -> Size {

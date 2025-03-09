@@ -3,13 +3,13 @@ import Observation
 struct ComposedView<Content: View>: GenericView {
     let view: Content
 
-    func build(parent: Node?) -> Node {
+    func build(parent: Node?, root: RootNode?) -> Node {
         // TODO: State & Environment Properties
 
-        let node = DynamicPropertyNode(view: self, parent: parent, content: view)
+        let node = DynamicPropertyNode(view: self, parent: parent, root: root, content: view)
 
         let child = withObservationTracking {
-            view.body.view.build(parent: node)
+            view.body.view.build(parent: node, root: root)
         } onChange: {
             MainActor.assumeIsolated { node.invalidate() }
         }

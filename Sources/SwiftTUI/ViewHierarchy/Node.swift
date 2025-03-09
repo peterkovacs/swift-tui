@@ -13,11 +13,10 @@ internal class Node {
         self.view = view.view
     }
 
-    /// Construct a Node for a given view.
-    init(view: any GenericView, parent: Node?) {
+    init(view: any GenericView, parent: Node?, root: RootNode?) {
         self.view = view
         self.parent = parent
-        self.root = parent?.root
+        self.root = root
     }
 
 
@@ -89,6 +88,7 @@ internal class Node {
         // TODO: Do we need to maintain the `index` invariant on children? If so, update here.
     }
 
+    /// Finds focusable elements within the hierarchy and calls the visitor.
     func focus<T: Visitor.Focus>(visitor: inout T) {
         for child in children {
             child.focus(visitor: &visitor)

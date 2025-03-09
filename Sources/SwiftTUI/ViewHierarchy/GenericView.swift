@@ -11,7 +11,7 @@ protocol GenericView: Sendable {
     ///
     /// - Parameters:
     ///   - node: node representing parent in hierarchy
-    @MainActor func build(parent: Node?) -> Node
+    @MainActor func build(parent: Node?, root: RootNode?) -> Node
 
     /// Update the Node hierarchy based on the current contents of the view.
     ///

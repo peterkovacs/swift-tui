@@ -9,16 +9,17 @@ struct Padding<Content: View>: View, PrimitiveView {
     var edges: Edges
     let content: Content
 
-    func build(parent: Node?) -> Node {
+    func build(parent: Node?, root: RootNode?) -> Node {
         let node = PaddingNode(
             view: self,
             parent: parent,
+            root: root,
             content: self,
             size: size,
             edges: edges
         )
 
-        node.add(at: 0, node: content.view.build(parent: node))
+        node.add(at: 0, node: content.view.build(parent: node, root: root))
         return node
     }
 
@@ -52,10 +53,10 @@ class PaddingNode: ModifierNode {
         )
     }
 
-    init<Content: View>(view: any GenericView, parent: Node?, content: Content, size: Extended, edges: Edges) {
+    init<Content: View>(view: any GenericView, parent: Node?, root: RootNode?, content: Content, size: Extended, edges: Edges) {
         self.size = size
         self.edges = edges
-        super.init(view: view, parent: parent, content: content)
+        super.init(view: view, parent: parent, root: root, content: content)
     }
 
     override func layout<T>(visitor: inout T) where T : Visitor.Layout {

@@ -10,14 +10,15 @@ public struct ZStack<Content: View>: View, PrimitiveView {
         self.alignment = alignment
     }
 
-    func build(parent: Node?) -> Node {
+    func build(parent: Node?, root: RootNode?) -> Node {
         let node = ZStackNode(
             view: view,
             parent: parent,
+            root: root,
             alignment: alignment
         )
 
-        node.add(at: 0, node: content.view.build(parent: node))
+        node.add(at: 0, node: content.view.build(parent: node, root: root))
         return node
     }
 
@@ -61,10 +62,11 @@ class ZStackNode: Node, Control {
     init(
         view: any GenericView,
         parent: Node?,
+        root: RootNode?,
         alignment: Alignment
     ) {
         self.alignment = alignment
-        super.init(view: view, parent: parent)
+        super.init(view: view, parent: parent, root: root)
         self.environment = { $0.layoutAxis = .none }
     }
 

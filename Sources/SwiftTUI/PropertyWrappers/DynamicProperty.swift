@@ -8,8 +8,8 @@
 class DynamicPropertyNode: Node {
     var state: [AnyHashable: Any] = [:]
 
-    init<Content: View>(view: any GenericView, parent: Node?, content: Content) {
-        super.init(view: view, parent: parent)
+    init<Content: View>(view: any GenericView, parent: Node?, root: RootNode?, content: Content) {
+        super.init(view: view, parent: parent, root: root)
         set(references: content)
     }
 

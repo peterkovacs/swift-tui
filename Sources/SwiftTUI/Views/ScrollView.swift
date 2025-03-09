@@ -23,13 +23,16 @@ public struct ScrollView<Content: View>: View, PrimitiveView {
         self.content = content()
     }
 
-    func build(parent: Node?) -> Node {
+    func build(parent: Node?, root: RootNode?) -> Node {
         let node = ScrollViewNode(
             view: content,
             parent: parent,
+            root: root,
             axes: axes,
             indicatorVisiblity: indiciatorVisibility
         )
+
+        // NOTE: children of a scrollview are added in ``RootNode.init(view:parent:root)``
 
         return node
     }
@@ -40,8 +43,6 @@ public struct ScrollView<Content: View>: View, PrimitiveView {
         node.axes = axes
         node.indicatorVisiblity = indiciatorVisibility
         node.children[0].update(view: content.view)
-
-        // TODO: Might need to do something to handle contentOffset changes.
     }
 }
 
@@ -80,10 +81,10 @@ class ScrollViewNode: RootNode {
         }
     }
 
-    init<T: View>(view: T, parent: Node?, axes: LayoutAxis.Set, indicatorVisiblity: ScrollIndicatorVisibility) {
+    init<T: View>(view: T, parent: Node?, root: RootNode?, axes: LayoutAxis.Set, indicatorVisiblity: ScrollIndicatorVisibility) {
         self.axes = axes
         self.indicatorVisiblity = indicatorVisiblity
-        super.init(view: view, parent: parent)
+        super.init(view: view, parent: parent, root: root)
     }
 
     override func invalidate() {

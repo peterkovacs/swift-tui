@@ -16,10 +16,11 @@ public struct TextField: View, PrimitiveView {
         self.onSubmit = onSubmit
     }
 
-    func build(parent: Node?) -> Node {
+    func build(parent: Node?, root: RootNode?) -> Node {
         let node = TextFieldNode(
             view: self,
             parent: parent,
+            root: root,
             text: text,
             placeholder: placeholder ?? "",
             placeholderColor: _placeholderColor,
@@ -71,6 +72,7 @@ final class TextFieldNode: DynamicPropertyNode, Control {
     init<T: View>(
         view: T,
         parent: Node?,
+        root: RootNode?,
         text: Binding<String>,
         placeholder: String,
         placeholderColor: Environment<Color>,
@@ -83,7 +85,7 @@ final class TextFieldNode: DynamicPropertyNode, Control {
         self.cursorPosition = text.wrappedValue.endIndex
         self.placeholderColor = .default
         self.foregroundColor = .default
-        super.init(view: view.view, parent: parent, content: view)
+        super.init(view: view.view, parent: parent, root: root, content: view)
         self.placeholderColor = placeholderColor.wrappedValue
         self.foregroundColor = foregroundColor.wrappedValue
     }

@@ -76,17 +76,18 @@ struct Border<Content: View>: View, PrimitiveView {
     var color: Color?
     let content: Content
 
-    func build(parent: Node?) -> Node {
+    func build(parent: Node?, root: RootNode?) -> Node {
         let node = BorderNode(
             view: self,
             parent: parent,
+            root: root,
             content: self,
             style: style,
             edges: edges
         )
 
         node.color = color ?? foregroundColor
-        node.add(at: 0, node: content.view.build(parent: node))
+        node.add(at: 0, node: content.view.build(parent: node, root: root))
 
         return node
     }
@@ -116,11 +117,11 @@ final class BorderNode: PaddingNode {
         paddingPosition
     }
 
-    init<Content: View>(view: any GenericView, parent: Node?, content: Content, style: BorderStyle, edges: Edges) {
+    init<Content: View>(view: any GenericView, parent: Node?, root: RootNode?, content: Content, style: BorderStyle, edges: Edges) {
         self.style = style
         self.color = .default
 
-        super.init(view: view, parent: parent, content: content, size: 1, edges: edges)
+        super.init(view: view, parent: parent, root: root, content: content, size: 1, edges: edges)
     }
 
     override func draw(rect: Rect, into window: inout Window<Cell?>) {

@@ -5,10 +5,11 @@ public struct Spacer: View, PrimitiveView {
         self.minLength = minLength ?? 0
     }
 
-    func build(parent: Node?) -> Node {
+    func build(parent: Node?, root: RootNode?) -> Node {
         let node = SpacerNode(
             view: self,
             parent: parent,
+            root: root,
             minLength: minLength,
             layoutAxis: _layoutAxis
         )
@@ -32,10 +33,10 @@ class SpacerNode: DynamicPropertyNode, Control {
     var minLength: Extended { didSet { if minLength != oldValue { invalidateLayout() } } }
     var layoutAxis: LayoutAxis
 
-    init(view: Spacer, parent: Node?, minLength: Extended, layoutAxis: Environment<LayoutAxis>) {
+    init(view: Spacer, parent: Node?, root: RootNode?, minLength: Extended, layoutAxis: Environment<LayoutAxis>) {
         self.minLength = minLength
         self.layoutAxis = .defaultValue
-        super.init(view: view, parent: parent, content: view)
+        super.init(view: view, parent: parent, root: root, content: view)
         self.layoutAxis = layoutAxis.wrappedValue
     }
 

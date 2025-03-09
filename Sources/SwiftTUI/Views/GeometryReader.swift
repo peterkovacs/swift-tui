@@ -7,17 +7,18 @@ struct GeometryReader<Content: View>: View, PrimitiveView {
         self.content = content
     }
 
-    func build(parent: Node?) -> Node {
+    func build(parent: Node?, root: RootNode?) -> Node {
         let node = GeometryReaderNode(
             view: view,
-            parent: parent
+            parent: parent,
+            root: root
         )
 
         let frame = node.frame.size.clamped(to: .zero)
 
         node.add(
             at: 0,
-            node: content(frame).view.build(parent: node)
+            node: content(frame).view.build(parent: node, root: root)
         )
 
         return node
@@ -35,8 +36,8 @@ struct GeometryReader<Content: View>: View, PrimitiveView {
 
 final class GeometryReaderNode: ZStackNode {
 
-    init(view: any GenericView, parent: Node?) {
-        super.init(view: view, parent: parent, alignment: .topLeading)
+    init(view: any GenericView, parent: Node?, root: RootNode?) {
+        super.init(view: view, parent: parent, root: root, alignment: .topLeading)
     }
 
     override var frame: Rect {
