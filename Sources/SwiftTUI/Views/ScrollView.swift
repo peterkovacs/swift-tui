@@ -49,8 +49,16 @@ public struct ScrollView<Content: View>: View, PrimitiveView {
 class ScrollViewNode: RootNode {
     var axes: LayoutAxis.Set
     var indicatorVisiblity: ScrollIndicatorVisibility { didSet { if indicatorVisiblity != oldValue { invalidateLayout() } } }
+    var indicatorSize: Size = .zero { didSet { if indicatorSize != oldValue { _buffer = nil } } }
+    var contentArea: Size { frame.size - .init(width: indicatorSize.height, height: indicatorSize.width) }
     var contentOffset: Position = .init(column: 0, line: 0)
-    var contentSize: Size = .zero
+    var contentSize: Size = .zero {
+        didSet {
+            if contentSize != oldValue {
+                _buffer = nil
+            }
+        }
+    }
     var isFocused = false
 
     var _focusVisitor: FocusVisitor? = nil
@@ -118,12 +126,10 @@ class ScrollViewNode: RootNode {
             )
         ).size
 
-        let indicatorSize = Size(
+        indicatorSize = Size(
             width:  axes.contains(.horizontal) ? indicatorVisiblity.size(if: contentSize.width  > rect.size.width)  : 0,
             height: axes.contains(.vertical)   ? indicatorVisiblity.size(if: contentSize.height > rect.size.height) : 0
         )
-
-        contentSize = contentSize + indicatorSize
 
         frame = rect
 
@@ -171,13 +177,13 @@ class ScrollViewNode: RootNode {
     func horizontalScrollBar() -> Rect? {
         guard axes.contains(.horizontal) else { return nil }
 
-        let size = indicatorVisiblity.size(if: contentSize.width  > global.size.width)
+        let size = indicatorSize.width
         guard size > 0 else { return nil }
 
-        let frame = global.size.width.intValue
+        let frame = frame.size.width.intValue
         let width = contentSize.width.intValue
         let offset = contentOffset.column.intValue
-        let length = ((global.size.width) * (global.size.width)) / contentSize.width
+        let length = ((contentArea.width) * (contentArea.width)) / contentSize.width
 
         let startPosition = Extended(
             Int(
@@ -196,13 +202,13 @@ class ScrollViewNode: RootNode {
     func verticalScrollBar() -> Rect? {
         guard axes.contains(.vertical) else { return nil }
 
-        let size = indicatorVisiblity.size(if: contentSize.width  > global.size.width)
+        let size = indicatorSize.height
         guard size > 0 else { return nil }
 
-        let frame = global.size.height.intValue
+        let frame = frame.size.height.intValue
         let height = contentSize.height.intValue
         let offset = contentOffset.line.intValue
-        let length = ((global.size.height) * (global.size.height)) / contentSize.height
+        let length = (contentArea.height * contentArea.height) / contentSize.height
 
         let startPosition = Extended(
             Int(
@@ -313,68 +319,68 @@ extension ScrollViewNode: Focusable {
 
         switch key {
         case .init(.up):
-            guard axes.contains(.vertical), contentSize.height > frame.size.height else { return false }
+            guard axes.contains(.vertical), contentSize.height > contentArea.height else { return false }
             guard contentOffset.line > 0  else { return false }
 
             contentOffset.line -= 1
 
         case .init(.down):
-            guard axes.contains(.vertical), contentSize.height > frame.size.height else { return false }
-            guard contentOffset.line + frame.size.height < contentSize.height else { return false }
+            guard axes.contains(.vertical), contentSize.height > contentArea.height else { return false }
+            guard contentOffset.line + contentArea.height < contentSize.height else { return false }
 
             contentOffset.line += 1
 
         case .init(.left):
-            guard axes.contains(.horizontal), contentSize.width > frame.size.width else { return false }
+            guard axes.contains(.horizontal), contentSize.width > contentArea.width else { return false }
             guard contentOffset.column > 0  else { return false }
 
             contentOffset.column -= 1
 
         case .init(.right):
-            guard axes.contains(.horizontal), contentSize.width > frame.size.width else { return false }
-            guard contentOffset.column + frame.size.width < contentSize.width else { return false }
+            guard axes.contains(.horizontal), contentSize.width > contentArea.width else { return false }
+            guard contentOffset.column + contentArea.width < contentSize.width else { return false }
 
             contentOffset.column += 1
 
         case .init("p", modifiers: .ctrl):
-            guard axes.contains(.vertical), contentSize.height > frame.size.height else { return false }
+            guard axes.contains(.vertical), contentSize.height > contentArea.height else { return false }
             guard contentOffset.line > 0  else { return false }
 
             // Move up half a page
-            contentOffset.line -= min(frame.size.height / 2, contentOffset.line)
+            contentOffset.line -= min(contentArea.height / 2, contentOffset.line)
 
         case .init("n", modifiers: .ctrl):
-            guard axes.contains(.vertical), contentSize.height > frame.size.height else { return false }
-            guard contentOffset.line + frame.size.height < contentSize.height else { return false }
+            guard axes.contains(.vertical), contentSize.height > contentArea.height else { return false }
+            guard contentOffset.line + contentArea.height < contentSize.height else { return false }
 
             // Move down half a page.
-            contentOffset.line += min(frame.size.height / 2, contentSize.height - frame.size.height - contentOffset.line)
+            contentOffset.line += min(contentArea.height / 2, contentSize.height - contentArea.height - contentOffset.line)
 
         case .init(.pageUp):
-            guard axes.contains(.vertical), contentSize.height > frame.size.height else { return false }
+            guard axes.contains(.vertical), contentSize.height > contentArea.height else { return false }
             guard contentOffset.line > 0 else { return false }
 
             // Move up a whole page
-            contentOffset.line -= min(frame.size.height, contentOffset.line)
+            contentOffset.line -= min(contentArea.height, contentOffset.line)
 
         case .init(.pageDown):
-            guard axes.contains(.vertical), contentSize.height > frame.size.height else { return false }
-            guard contentOffset.line + frame.size.height < contentSize.height else { return false }
+            guard axes.contains(.vertical), contentSize.height > contentArea.height else { return false }
+            guard contentOffset.line + contentArea.height < contentSize.height else { return false }
 
             // Move down half a page.
-            contentOffset.line += min(frame.size.height, contentSize.height - frame.size.height - contentOffset.line)
+            contentOffset.line += min(contentArea.height, contentSize.height - contentArea.height - contentOffset.line)
 
         case .init(.home):
-            guard axes.contains(.vertical), contentSize.height > frame.size.height else { return false }
+            guard axes.contains(.vertical), contentSize.height > contentArea.height else { return false }
             guard contentOffset.line > 0 else { return false }
 
             contentOffset.line = 0
 
         case .init(.end):
-            guard axes.contains(.vertical), contentSize.height > frame.size.height else { return false }
-            guard contentOffset.line + frame.size.height < contentSize.height else { return false }
+            guard axes.contains(.vertical), contentSize.height > contentArea.height else { return false }
+            guard contentOffset.line + contentArea.height < contentSize.height else { return false }
 
-            contentOffset.line = contentSize.height - frame.size.height
+            contentOffset.line = contentSize.height - contentArea.height
 
         default: return false
         }
