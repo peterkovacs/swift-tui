@@ -96,7 +96,7 @@ class ScrollViewNode: RootNode {
     }
 
     override func invalidate() {
-        // The ScrollView itself has been invalidated.
+        // The ScrollView itself has been invalidated -- this does not warrant the ScrollViews buffer being invalidated.
         application?.invalidate(node: self, frame: \.global)
     }
 
@@ -104,6 +104,9 @@ class ScrollViewNode: RootNode {
         // A node within the ScrollView has been invalidated.
         // Check to see if it is visible, and if so can invalidate with the application.
         assert(node !== self)
+
+        // Must re-render the buffer
+        _buffer = nil
 
         if isVisible(frame(node)) {
             application?.invalidate(node: node) { node in
@@ -225,10 +228,26 @@ class ScrollViewNode: RootNode {
         )
     }
 
+    var buffer: Window<Cell?> {
+        guard let buffer = _buffer else {
+            var buffer = Window<Cell?>(repeating: nil, size: contentSize)
+            children[0].draw(rect: .init(position: .zero, size: contentSize), into: &buffer)
+            _buffer = buffer
+            return buffer
+        }
+
+        return buffer
+    }
+
     override func draw(rect: Rect, into window: inout Window<Cell?>) {
         let global = global
         guard let rect = global.intersection(rect) else { return }
 
+//        if buffer == nil {
+//            var buffer = Window<Cell?>(repeating: nil, size: contentSize)
+//            children[0].draw(rect: rect, into: &buffer)
+//            self.buffer = buffer
+//        }
 
         window.with(offset: -contentOffset + global.position) { window in
             children[0].draw(rect: rect + contentOffset - global.position, into: &window)

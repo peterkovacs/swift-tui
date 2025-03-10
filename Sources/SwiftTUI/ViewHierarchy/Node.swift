@@ -5,6 +5,7 @@ internal class Node {
     private(set) var root: RootNode?
     private(set) weak var parent: Node? = nil
     private(set) var children: [Node] = []
+    var _buffer: Window<Cell?>? = nil
 
     /// Manipulation of this EnvironmentValues passing through this level.
     var environment: ((inout EnvironmentValues) -> Void)?
@@ -18,7 +19,6 @@ internal class Node {
         self.parent = parent
         self.root = root
     }
-
 
 
     /// Frame of this node, if it is a control, relative to its containing control frame.
@@ -57,6 +57,8 @@ internal class Node {
     }
 
     func invalidate() {
+        _buffer = nil
+
         root?.invalidate(node: self, frame: { InvalidationVisitor(children: $0.children).frame })
     }
 
