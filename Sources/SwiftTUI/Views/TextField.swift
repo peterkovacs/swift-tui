@@ -91,11 +91,33 @@ final class TextFieldNode: DynamicPropertyNode, Control {
     }
 
     override func size<T>(visitor: inout T) where T : Visitor.Size {
-        visitor.visit(size: sizeElement)
+        visitor.visit(
+            size: .init(node: self) { [weak self] proposedSize in
+                self?.size(proposedSize: proposedSize) ?? .zero
+            } horizontalFlexibility: { _ in
+                return .infinity
+            } verticalFlexibility: { _ in
+                return 0
+            }
+        )
     }
 
     override func layout<T>(visitor: inout T) where T : Visitor.Layout {
-        visitor.visit(layout: layoutElement)
+        visitor.visit(
+            layout: .init(
+                node: self
+            ) { [weak self] rect in
+                self?.layout(rect: rect) ?? .zero
+            } adjust: { [weak self] position in
+                self?.frame.position += position
+            } global: { [weak self] in
+                self?.global ?? .zero
+            } horizontalFlexibility: { _ in
+                return .infinity
+            } verticalFlexibility: { _ in
+                return 0
+            }
+        )
     }
 
     override func focus<T: Visitor.Focus>(visitor: inout T) {
@@ -105,7 +127,7 @@ final class TextFieldNode: DynamicPropertyNode, Control {
     func layout(rect: Rect) -> Rect {
         frame = .init(
             position: rect.position,
-            size: self.size(proposedSize: rect.size)
+            size: .init(width: rect.size.width, height: 1)
         )
 
         return frame
@@ -113,7 +135,7 @@ final class TextFieldNode: DynamicPropertyNode, Control {
 
     func size(proposedSize: Size) -> Size {
         return Size(
-            width: max(1, proposedSize.width),
+            width: max(1, proposedSize.width.clamped(to: 10)),
             height: 1
         )
     }

@@ -41,11 +41,34 @@ class SpacerNode: DynamicPropertyNode, Control {
     }
 
     override func size<T>(visitor: inout T) where T : Visitor.Size {
-        visitor.visit(size: sizeElement)
+        visitor.visit(
+            size: .init(node: self) { [weak self] proposedSize in
+                self?.size(proposedSize: proposedSize) ?? .zero
+            } horizontalFlexibility: { [weak self] height in
+                self?.layoutAxis == .horizontal ? .infinity : 0
+            } verticalFlexibility: { [weak self] width in
+                self?.layoutAxis == .vertical ? .infinity : 0
+            }
+
+        )
     }
 
     override func layout<T>(visitor: inout T) where T : Visitor.Layout {
-        visitor.visit(layout: layoutElement)
+        visitor.visit(
+            layout: .init(
+                node: self
+            ) { [weak self] rect in
+                self?.layout(rect: rect) ?? .zero
+            } adjust: { [weak self] position in
+                self?.frame.position += position
+            } global: { [weak self] in
+                self?.global ?? .zero
+            } horizontalFlexibility: { [weak self] height in
+                self?.layoutAxis == .horizontal ? .infinity : 0
+            } verticalFlexibility: { [weak self] width in
+                self?.layoutAxis == .vertical ? .infinity : 0
+            }
+        )
     }
 
     func layout(rect: Rect) -> Rect {
@@ -61,9 +84,23 @@ class SpacerNode: DynamicPropertyNode, Control {
         switch layoutAxis {
         case .none: return .zero
         case .horizontal:
-            return .init(width: proposedSize.width < minLength ? minLength : proposedSize.width, height: 1)
+            return .init(
+                width: proposedSize.width == .infinity
+                ? minLength
+                : ( proposedSize.width < minLength
+                    ? minLength
+                    : proposedSize.width ),
+                height: 1
+            )
         case .vertical:
-            return .init(width: 1, height: proposedSize.height < minLength ? minLength : proposedSize.height)
+            return .init(
+                width: 1,
+                height: proposedSize.height == .infinity
+                ? minLength
+                : ( proposedSize.height < minLength
+                    ? minLength
+                    : proposedSize.height )
+            )
         }
     }
 }

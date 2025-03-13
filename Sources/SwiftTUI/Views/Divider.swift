@@ -153,9 +153,9 @@ final class DividerNode: DynamicPropertyNode, Control {
         case .none:
             return .zero
         case .horizontal:
-            return .init(width: 1, height: proposedSize.height)
+            return .init(width: 1, height: 1)
         case .vertical:
-            return .init(width: proposedSize.width, height: 1)
+            return .init(width: 1, height: 1)
         }
     }
 
@@ -179,11 +179,33 @@ final class DividerNode: DynamicPropertyNode, Control {
     }
 
     override func size<T>(visitor: inout T) where T : Visitor.Size {
-        visitor.visit(size: sizeElement)
+        visitor.visit(
+            size: .init(node: self) { [weak self] proposedSize in
+                self?.size(proposedSize: proposedSize) ?? .zero
+            } horizontalFlexibility: { [weak self] height in
+                self?.layoutAxis == .vertical ? .infinity : 0
+            } verticalFlexibility: { [weak self] width in
+                self?.layoutAxis == .horizontal ? .infinity : 0
+            }
+        )
     }
 
     override func layout<T>(visitor: inout T) where T : Visitor.Layout {
-        visitor.visit(layout: layoutElement)
+        visitor.visit(
+            layout: .init(
+                node: self
+            ) { [weak self] rect in
+                self?.layout(rect: rect) ?? .zero
+            } adjust: { [weak self] position in
+                self?.frame.position += position
+            } global: { [weak self] in
+                self?.global ?? .zero
+            } horizontalFlexibility: { [weak self] height in
+                self?.layoutAxis == .vertical ? .infinity : 0
+            } verticalFlexibility: { [weak self] width in
+                self?.layoutAxis == .horizontal ? .infinity : 0
+            }
+        )
     }
 
     override func draw(rect: Rect, into window: inout Window<Cell?>) {

@@ -1,5 +1,5 @@
-1 Hello   
-2 World   
-3 Hello   
-4 World   
-5 Hello   
+0 Hello█  
+1 World█  
+2 Hello█  
+3 World░  
+4 Hello░  

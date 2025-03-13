@@ -876,14 +876,14 @@ import Testing
         let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
         assertInlineSnapshot(of: application, as: .frameDescription) {
             """
-            → VStack<MyView> (0, 0) 50x3
+            → VStack<MyView> (0, 0) 5x3
               → ComposedView<MyView>
-                → ZStack<TupleView<Pack{VStack<TupleView<Pack{Text, Divider, Text}>>, Text}>> (0, 0) 50x3
+                → ZStack<TupleView<Pack{VStack<TupleView<Pack{Text, Divider, Text}>>, Text}>> (0, 0) 5x3
                   → TupleView<Pack{VStack<TupleView<Pack{Text, Divider, Text}>>, Text}>
-                    → VStack<TupleView<Pack{Text, Divider, Text}>> (0, 0) 50x3
+                    → VStack<TupleView<Pack{Text, Divider, Text}>> (0, 0) 5x3
                       → TupleView<Pack{Text, Divider, Text}>
                         → Text:string("Hello") (0, 0) 5x1
-                        → Divider (0, 1) 50x1
+                        → Divider (0, 1) 5x1
                         → Text:string("World") (0, 2) 5x1
                     → Text:string("-->") (0, 1) 3x1
 
@@ -913,16 +913,16 @@ import Testing
         let (application, _) = try drawView(MyView(), size: .init(width: 50, height: 20))
         assertInlineSnapshot(of: application, as: .frameDescription) {
             """
-            → VStack<MyView> (0, 0) 50x3
+            → VStack<MyView> (0, 0) 5x3
               → ComposedView<MyView>
-                → ZStack<TupleView<Pack{VStack<TupleView<Pack{Text, Divider, Text}>>, Text}>> (0, 0) 50x3
+                → ZStack<TupleView<Pack{VStack<TupleView<Pack{Text, Divider, Text}>>, Text}>> (0, 0) 5x3
                   → TupleView<Pack{VStack<TupleView<Pack{Text, Divider, Text}>>, Text}>
-                    → VStack<TupleView<Pack{Text, Divider, Text}>> (0, 0) 50x3
+                    → VStack<TupleView<Pack{Text, Divider, Text}>> (0, 0) 5x3
                       → TupleView<Pack{Text, Divider, Text}>
-                        → Text:string("Hello") (45, 0) 5x1
-                        → Divider (0, 1) 50x1
-                        → Text:string("World") (45, 2) 5x1
-                    → Text:string("<--") (47, 1) 3x1
+                        → Text:string("Hello") (0, 0) 5x1
+                        → Divider (0, 1) 5x1
+                        → Text:string("World") (0, 2) 5x1
+                    → Text:string("<--") (2, 1) 3x1
 
             """
         }

@@ -50,7 +50,7 @@ class ScrollViewNode: RootNode {
     var axes: LayoutAxis.Set
     var indicatorVisiblity: ScrollIndicatorVisibility { didSet { if indicatorVisiblity != oldValue { invalidateLayout() } } }
     var indicatorSize: Size = .zero { didSet { if indicatorSize != oldValue { _buffer = nil } } }
-    var contentArea: Size { frame.size - .init(width: indicatorSize.height, height: indicatorSize.width) }
+    var contentArea: Size { frame.size - indicatorSize }
     var contentOffset: Position = .init(column: 0, line: 0)
     var contentSize: Size = .zero {
         didSet {
@@ -117,21 +117,24 @@ class ScrollViewNode: RootNode {
     }
 
     override func layout(rect: Rect) -> Rect {
+        let (_, indicatorSize, _) = sizeWithIndicators(proposedSize: rect.size)
+        let contentFrame = rect.size - indicatorSize
+
         contentSize = layoutVisitor.layout(
             rect: .init(
                 position: .zero,
                 size: super.size(
                     proposedSize:  .init(
-                        width: axes.contains(.horizontal) ? .infinity : rect.size.width,
-                        height: axes.contains(.vertical) ? .infinity : rect.size.height
+                        width: axes.contains(.horizontal) ? .infinity : contentFrame.width,
+                        height: axes.contains(.vertical) ? .infinity : contentFrame.height
                     )
                 )
             )
         ).size
 
-        indicatorSize = Size(
-            width:  axes.contains(.horizontal) ? indicatorVisiblity.size(if: contentSize.width  > rect.size.width)  : 0,
-            height: axes.contains(.vertical)   ? indicatorVisiblity.size(if: contentSize.height > rect.size.height) : 0
+        self.indicatorSize = Size(
+            width:  axes.contains(.vertical)   ? indicatorVisiblity.size(if: contentSize.height > rect.size.height) : 0,
+            height: axes.contains(.horizontal) ? indicatorVisiblity.size(if: contentSize.width  > rect.size.width)  : 0
         )
 
         frame = rect
@@ -148,7 +151,7 @@ class ScrollViewNode: RootNode {
         return frame
     }
 
-    override func size(proposedSize: Size) -> Size {
+    func sizeWithIndicators(proposedSize: Size) -> (contentSize: Size, indicatorSize: Size, frame: Size) {
         let contentSize = super.size(
             proposedSize:  .init(
                 width: axes.contains(.horizontal) ? .infinity : proposedSize.width,
@@ -156,17 +159,29 @@ class ScrollViewNode: RootNode {
             )
         )
 
+        // This means that there's an "infinitely resizable" control that needs to cope with infinity better.
+        assert(contentSize.height != .infinity && contentSize.width != .infinity)
+
         let indicatorSize: Size = .init(
-            width:  axes.contains(.horizontal) ? indicatorVisiblity.size(if: contentSize.width  > proposedSize.width)  : 0,
-            height: axes.contains(.vertical)   ? indicatorVisiblity.size(if: contentSize.height > proposedSize.height) : 0
+            width:  axes.contains(.vertical)   ? indicatorVisiblity.size(if: contentSize.height > proposedSize.height) : 0,
+            height: axes.contains(.horizontal) ? indicatorVisiblity.size(if: contentSize.width  > proposedSize.width)  : 0
         )
 
         let combinedSize = (contentSize + indicatorSize).constraining(to: proposedSize).expanding(to: indicatorSize)
 
-        return .init(
-            width: axes.contains(.horizontal) ? proposedSize.width : combinedSize.width,
-            height: axes.contains(.vertical) ? proposedSize.height : combinedSize.height
+        return (
+            contentSize: contentSize,
+            indicatorSize: indicatorSize,
+            frame: .init(
+                width: axes.contains(.horizontal) ? max(proposedSize.width, indicatorSize.width) : combinedSize.width,
+                height: axes.contains(.vertical) ? max(proposedSize.height, indicatorSize.height) : combinedSize.height
+            )
         )
+
+    }
+
+    override func size(proposedSize: Size) -> Size {
+        return sizeWithIndicators(proposedSize: proposedSize).frame
     }
 
     var hasFocusableElements: Bool {
@@ -180,7 +195,7 @@ class ScrollViewNode: RootNode {
     func horizontalScrollBar() -> Rect? {
         guard axes.contains(.horizontal) else { return nil }
 
-        let size = indicatorSize.width
+        let size = indicatorSize.height
         guard size > 0 else { return nil }
 
         let frame = frame.size.width.intValue
@@ -205,7 +220,7 @@ class ScrollViewNode: RootNode {
     func verticalScrollBar() -> Rect? {
         guard axes.contains(.vertical) else { return nil }
 
-        let size = indicatorSize.height
+        let size = indicatorSize.width
         guard size > 0 else { return nil }
 
         let frame = frame.size.height.intValue
