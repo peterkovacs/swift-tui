@@ -11,10 +11,69 @@ public struct Key: Sendable, Equatable {
         self.normalize()
     }
 
+    static func fromMouseEvent(
+        mouse: Int,
+        position: Position,
+        suffix: Unicode.Scalar
+    ) -> Key? {
+        if suffix == "M" {
+            if mouse & 32 == 32 {
+                switch mouse & 0x3 {
+                case 0, 1, 2:
+                    return Key(
+                        .mouseDrag(button: mouse & 0x3, at: position),
+                        modifiers: .init(sgr: mouse)
+                    )
+                default:
+                    return Key(
+                        .mouseMove(position),
+                        modifiers: .init(sgr: mouse)
+                    )
+                }
+            }
+
+            if mouse & 64 == 64 {
+                switch mouse & 0x1 {
+                case 1:
+                    return Key(
+                        .mouseScrollUp(position),
+                        modifiers: .init(sgr: mouse)
+                    )
+                default:
+                    return Key(
+                        .mouseScrollDown(position),
+                        modifiers: .init(sgr: mouse)
+                    )
+                }
+            }
+
+            switch mouse & 3 {
+            case 0, 1, 2:
+                return Key(
+                    .mouseDown(button: mouse & 0x3, at: position),
+                    modifiers: .init(sgr: mouse)
+                )
+            default: return nil
+            }
+        } else if suffix == "m" {
+            switch mouse & 3 {
+            case 0, 1, 2:
+                return Key(
+                    .mouseUp(button: mouse & 0x3, at: position),
+                    modifiers: .init(sgr: mouse)
+                )
+            default: return nil
+            }
+        }
+
+        return nil
+    }
+
     public enum Value: Sendable, Hashable, ExpressibleByUnicodeScalarLiteral {
         public init(unicodeScalarLiteral value: UnicodeScalar) {
             self = .char(value)
         }
+
 
         public typealias ExtendedGraphemeClusterLiteralType = Character
 
@@ -26,6 +85,13 @@ public struct Key: Sendable, Equatable {
         case insert, backspace
         case f1,  f2,  f3,  f4,  f5,  f6,  f7,  f8,  f9,  f10,
              f11, f12, f13, f14, f15, f16, f17, f18, f19, f20
+
+        case mouseMove(Position)
+        case mouseDown(button: Int, at: Position)
+        case mouseUp(button: Int, at: Position)
+        case mouseDrag(button: Int, at: Position)
+        case mouseScrollUp(Position)
+        case mouseScrollDown(Position)
 
 
         // MARK: Key Aliases
@@ -74,6 +140,26 @@ public struct Key: Sendable, Equatable {
 
         public init(rawValue: Int) {
             self.rawValue = rawValue
+        }
+
+        public init(sgr: Int) {
+            var value = 0
+
+            // 4, 8, or 16 are added to any event that has
+            // shift, alt (meta), or control
+            if sgr & 4 != 0 {
+                value = 1 << 0
+            }
+
+            if sgr & 8 != 0 {
+                value = 1 << 2 | value
+            }
+
+            if sgr & 16 != 0 {
+                value = 1 << 1 | value
+            }
+
+            self.rawValue = value
         }
     }
 
@@ -142,16 +228,29 @@ public struct Key: Sendable, Equatable {
 
 /// Parse bytes from the fileHandle into `Key`s.
 actor KeyParser: AsyncSequence {
-    enum State {
+    typealias Timeout = Task<Void, Never>
+
+    enum State: Equatable {
         case initial
-        case escapeSequence(String, Task<Void, Error>)
+        case escape
+        case escapeO
+        case escapeSquareBracket
+        case escapeSquareBracketLessThan
+        case escapeSquareBracketLessThanDigit(Int)
+        case escapeSquareBracketLessThanDigitSemicolon(Int)
+        case escapeSquareBracketLessThanDigitDigit(Int, Int)
+        case escapeSquareBracketLessThanDigitDigitSemicolon(Int, Int)
+        case escapeSquareBracketLessThanDigitDigitDigit(Int, Int, Int)
+        case escapeSquareBracketDigit(Int)
+        case escapeSquareBracketDigitSemicolon(Int)
+        case escapeSquareBracketDigitDigit(Int, Int)
     }
 
-    var state: State = .initial
+    var state: (state: State, timeout: Timeout?) = (.initial, nil)
     var fileHandle: FileHandle
 
     public init(fileHandle: consuming FileHandle = .standardInput) {
-        self.state = .initial
+        self.state = (.initial, nil)
         self.fileHandle = fileHandle
     }
 
@@ -368,12 +467,12 @@ actor KeyParser: AsyncSequence {
 
         "\u{1b}[4~":   Key(.end),
         "\u{1b}[F":    Key(.end),                     // xterm, lxterm
-        "\u{1b}[1;3F": Key(.end, modifiers: .alt),          // xterm, lxterm
-        "\u{1b}[1;5F": Key(.end, modifiers: .ctrl),                 // xterm, lxterm
-        "\u{1b}[1;7F": Key(.end, modifiers: [.ctrl, .alt]),      // xterm, lxterm
         "\u{1b}[1;2F": Key(.end, modifiers: .shift),                // xterm, lxterm
+        "\u{1b}[1;3F": Key(.end, modifiers: .alt),          // xterm, lxterm
         "\u{1b}[1;4F": Key(.end, modifiers: [.shift, .alt]),     // xterm, lxterm
+        "\u{1b}[1;5F": Key(.end, modifiers: .ctrl),                 // xterm, lxterm
         "\u{1b}[1;6F": Key(.end, modifiers: [.ctrl, .shift]),            // xterm, lxterm
+        "\u{1b}[1;7F": Key(.end, modifiers: [.ctrl, .alt]),      // xterm, lxterm
         "\u{1b}[1;8F": Key(.end, modifiers: [.ctrl, .shift, .alt]), // xterm, lxterm
 
         "\u{1b}[7~": Key(.home),          // urxvt
@@ -477,54 +576,312 @@ actor KeyParser: AsyncSequence {
 
     private func parse(continuation: AsyncThrowingStream<Key, Error>.Continuation) async throws {
 
-        func timeout(yielding: String) -> Task<Void, Error> {
-            return Task {
-                try await Task.sleep(for: .milliseconds(30))
+        func timeout(_ state: State, yielding: String) -> (State, Timeout) {
+            return (
+                state,
+                Task {
+                    do {
+                        try await Task.sleep(for: .milliseconds(30))
 
-                if !Task.isCancelled, case .escapeSequence = state {
-                    state = .initial
-                    yield(string: yielding)
+                        if !Task.isCancelled, self.state.state == state {
+                            yield(string: yielding)
+                        }
+                    } catch is CancellationError {
+                        // no timeout necessary.
+                    } catch {
+                        // Are there other possible errors here?
+                    }
                 }
-            }
+            )
         }
 
         func yield(character: Unicode.Scalar) {
-            // log("yield: \(Key(.char(character)))")
+            state = (.initial, nil)
             continuation.yield(Key(.char(character)))
         }
 
+        func yield(key: Key.Value, modifiers: Key.Modifiers = []) {
+            state = (.initial, nil)
+            continuation.yield(Key(key, modifiers: modifiers))
+        }
+
+        func yield(key: Key) {
+            state = (.initial, nil)
+            continuation.yield(key)
+        }
+
         func yield(string: String) {
+            state = (.initial, nil)
             for char in string.unicodeScalars { yield(character: char) }
         }
 
         for try await character in unicodeScalars {
-            switch (state, character) {
+            if let timeout = state.timeout {
+                timeout.cancel()
+            }
+
+            switch (state.state, character) {
             case (.initial, "\u{1b}"):
                 // We received an escape (^[) character, we need to wait a small amount of time for the next character to come in
                 // before we emit an escape key that was received.
-                state = .escapeSequence(
-                    String(character),
-                    timeout(yielding: String(character))
-                )
+                state = timeout(.escape, yielding: "\u{1b}")
 
-            case (.initial, _):
+            case (.initial, let character):
                 yield(character: character)
 
-            case (.escapeSequence(var prefix, let task), let chr):
-                task.cancel()
-                prefix.append(String(chr))
+            case (.escape, "["): // ^[[
+                state = timeout(.escapeSquareBracket, yielding: "\u{1b}[")
+            case (.escape, "O"): // ^[O
+                state = timeout(.escapeO, yielding: "\u{1b}O")
+            case let (.escape, char):
+                yield(string: "\u{1b}\(char)")
 
-                if Self.prefixes.contains(prefix) {
-                    state = .escapeSequence(prefix, timeout(yielding: prefix))
-                } else if let key = Self.mapping[prefix] {
-                    state = .initial
-                    continuation.yield(key)
+            case (.escapeO, "P"): yield(key: .f1)
+            case (.escapeO, "Q"): yield(key: .f2)
+            case (.escapeO, "R"): yield(key: .f3)
+            case (.escapeO, "S"): yield(key: .f4)
+            case (.escapeO, "A"): yield(key: .up)
+            case (.escapeO, "B"): yield(key: .down)
+            case (.escapeO, "C"): yield(key: .right)
+            case (.escapeO, "D"): yield(key: .left)
+            case let (.escapeO, char): yield(string: "\u{1b}O\(char)")
+
+            case (.escapeSquareBracket, "A"): yield(key: .up)
+            case (.escapeSquareBracket, "B"): yield(key: .down)
+            case (.escapeSquareBracket, "C"): yield(key: .right)
+            case (.escapeSquareBracket, "D"): yield(key: .left)
+            case (.escapeSquareBracket, "Z"): yield(key: .tab, modifiers: .shift)
+            case (.escapeSquareBracket, "H"): yield(key: .home)
+            case (.escapeSquareBracket, "F"): yield(key: .end)
+
+            case let (.escapeSquareBracket, value) where Digit ~= value:
+                state = timeout(
+                    .escapeSquareBracketDigit(Int(value.value - 0x30)),
+                    yielding: "\u{1b}[\(value)"
+                )
+            case (.escapeSquareBracket, "<"):
+                state = timeout(
+                    .escapeSquareBracketLessThan,
+                    yielding: "\u{1b}[<"
+                )
+            case let (.escapeSquareBracket, value):
+                yield(string: "\u{1b}[\(value)")
+
+            case (.escapeSquareBracketDigit(1), "~"):  yield(key: .home)
+            case (.escapeSquareBracketDigit(2), "~"):  yield(key: .insert)
+            case (.escapeSquareBracketDigit(3), "~"):  yield(key: .delete)
+            case (.escapeSquareBracketDigit(4), "~"):  yield(key: .end)
+            case (.escapeSquareBracketDigit(5), "~"):  yield(key: .pageUp)
+            case (.escapeSquareBracketDigit(5), "^"):  yield(key: .pageUp, modifiers: .ctrl)
+            case (.escapeSquareBracketDigit(6), "~"):  yield(key: .pageDown)
+            case (.escapeSquareBracketDigit(6), "^"):  yield(key: .pageDown, modifiers: .ctrl)
+            case (.escapeSquareBracketDigit(7), "~"):  yield(key: .home)
+            case (.escapeSquareBracketDigit(7), "^"):  yield(key: .home, modifiers: .ctrl)
+            case (.escapeSquareBracketDigit(7), "$"):  yield(key: .home, modifiers: .shift)
+            case (.escapeSquareBracketDigit(7), "@"):  yield(key: .home, modifiers: [.ctrl, .shift])
+            case (.escapeSquareBracketDigit(8), "~"):  yield(key: .end)
+            case (.escapeSquareBracketDigit(8), "^"):  yield(key: .end, modifiers: .ctrl)
+            case (.escapeSquareBracketDigit(8), "$"):  yield(key: .end, modifiers: .shift)
+            case (.escapeSquareBracketDigit(8), "@"):  yield(key: .end, modifiers: [.ctrl, .shift])
+            case (.escapeSquareBracketDigit(11), "~"): yield(key: .f1)
+            case (.escapeSquareBracketDigit(12), "~"): yield(key: .f2)
+            case (.escapeSquareBracketDigit(13), "~"): yield(key: .f3)
+            case (.escapeSquareBracketDigit(14), "~"): yield(key: .f4)
+            case (.escapeSquareBracketDigit(15), "~"): yield(key: .f5)
+            case (.escapeSquareBracketDigit(17), "~"): yield(key: .f6)
+            case (.escapeSquareBracketDigit(18), "~"): yield(key: .f7)
+            case (.escapeSquareBracketDigit(19), "~"): yield(key: .f8)
+            case (.escapeSquareBracketDigit(20), "~"): yield(key: .f9)
+            case (.escapeSquareBracketDigit(21), "~"): yield(key: .f10)
+            case (.escapeSquareBracketDigit(23), "~"): yield(key: .f11)
+            case (.escapeSquareBracketDigit(24), "~"): yield(key: .f12)
+            case (.escapeSquareBracketDigit(25), "~"): yield(key: .f13)
+            case (.escapeSquareBracketDigit(26), "~"): yield(key: .f14)
+            case (.escapeSquareBracketDigit(28), "~"): yield(key: .f15)
+            case (.escapeSquareBracketDigit(29), "~"): yield(key: .f16)
+            case (.escapeSquareBracketDigit(31), "~"): yield(key: .f17)
+            case (.escapeSquareBracketDigit(32), "~"): yield(key: .f18)
+            case (.escapeSquareBracketDigit(33), "~"): yield(key: .f19)
+            case (.escapeSquareBracketDigit(34), "~"): yield(key: .f20)
+
+            case let (.escapeSquareBracketDigit(digit), ";"):
+                state = timeout(
+                    .escapeSquareBracketDigitSemicolon(digit),
+                    yielding: "\u{1b}[\(digit);"
+                )
+            case let (.escapeSquareBracketDigit(digit), char) where Digit ~= char:
+                state = timeout(
+                    .escapeSquareBracketDigit(digit * 10 + Int(char.value - 0x30)),
+                    yielding: "\u{1b}[\(digit)\(char)"
+                )
+            case let (.escapeSquareBracketDigit(digit), char):
+                yield(string: "\u{1b}[\(digit)\(char)")
+
+            case let (.escapeSquareBracketDigitSemicolon(digit), char) where Digit ~= char:
+                state = timeout(
+                    .escapeSquareBracketDigitDigit(digit, Int(char.value - 0x30)),
+                    yielding: "\u{1b}[\(digit);\(char)"
+                )
+            case let (.escapeSquareBracketDigitSemicolon(digit), char):
+                yield(string: "\u{1b}[\(digit);\(char)")
+
+            case (.escapeSquareBracketDigitDigit(1, 2), "A"): yield(key: .up, modifiers: .shift)
+            case (.escapeSquareBracketDigitDigit(1, 2), "B"): yield(key: .down, modifiers: .shift)
+            case (.escapeSquareBracketDigitDigit(1, 2), "C"): yield(key: .right, modifiers: .shift)
+            case (.escapeSquareBracketDigitDigit(1, 2), "D"): yield(key: .left, modifiers: .shift)
+
+            case (.escapeSquareBracketDigitDigit(1, 3), "A"): yield(key: .up, modifiers: .alt)
+            case (.escapeSquareBracketDigitDigit(1, 3), "B"): yield(key: .down, modifiers: .alt)
+            case (.escapeSquareBracketDigitDigit(1, 3), "C"): yield(key: .right, modifiers: .alt)
+            case (.escapeSquareBracketDigitDigit(1, 3), "D"): yield(key: .left, modifiers: .alt)
+
+            case (.escapeSquareBracketDigitDigit(1, 4), "A"): yield(key: .up, modifiers: [.shift, .alt])
+            case (.escapeSquareBracketDigitDigit(1, 4), "B"): yield(key: .down, modifiers: [.shift, .alt])
+            case (.escapeSquareBracketDigitDigit(1, 4), "C"): yield(key: .right, modifiers: [.shift, .alt])
+            case (.escapeSquareBracketDigitDigit(1, 4), "D"): yield(key: .left, modifiers: [.shift, .alt])
+
+            case (.escapeSquareBracketDigitDigit(1, 5), "A"): yield(key: .up, modifiers: .ctrl)
+            case (.escapeSquareBracketDigitDigit(1, 5), "B"): yield(key: .down, modifiers: .ctrl)
+            case (.escapeSquareBracketDigitDigit(1, 5), "C"): yield(key: .right, modifiers: .ctrl)
+            case (.escapeSquareBracketDigitDigit(1, 5), "D"): yield(key: .left, modifiers: .ctrl)
+
+            case (.escapeSquareBracketDigitDigit(1, 6), "A"): yield(key: .up, modifiers: [.ctrl, .shift])
+            case (.escapeSquareBracketDigitDigit(1, 6), "B"): yield(key: .down, modifiers: [.ctrl, .shift])
+            case (.escapeSquareBracketDigitDigit(1, 6), "C"): yield(key: .right, modifiers: [.ctrl, .shift])
+            case (.escapeSquareBracketDigitDigit(1, 6), "D"): yield(key: .left, modifiers: [.ctrl, .shift])
+
+            case (.escapeSquareBracketDigitDigit(1, 7), "A"): yield(key: .up, modifiers: [.ctrl, .alt])
+            case (.escapeSquareBracketDigitDigit(1, 7), "B"): yield(key: .down, modifiers: [.ctrl, .alt])
+            case (.escapeSquareBracketDigitDigit(1, 7), "C"): yield(key: .right, modifiers: [.ctrl, .alt])
+            case (.escapeSquareBracketDigitDigit(1, 7), "D"): yield(key: .left, modifiers: [.ctrl, .alt])
+
+            case (.escapeSquareBracketDigitDigit(1, 8), "A"): yield(key: .up, modifiers: [.ctrl, .alt, .shift])
+            case (.escapeSquareBracketDigitDigit(1, 8), "B"): yield(key: .down, modifiers: [.ctrl, .alt, .shift])
+            case (.escapeSquareBracketDigitDigit(1, 8), "C"): yield(key: .right, modifiers: [.ctrl, .alt, .shift])
+            case (.escapeSquareBracketDigitDigit(1, 8), "D"): yield(key: .left, modifiers: [.ctrl, .alt, .shift])
+
+            case (.escapeSquareBracketDigitDigit(3, 2), "~"): yield(key: .insert)
+            case (.escapeSquareBracketDigitDigit(3, 3), "~"): yield(key: .delete)
+            case (.escapeSquareBracketDigitDigit(3, 5), "~"): yield(key: .delete, modifiers: .ctrl)
+            case (.escapeSquareBracketDigitDigit(5, 3), "~"): yield(key: .pageUp, modifiers: .alt)
+            case (.escapeSquareBracketDigitDigit(5, 5), "~"): yield(key: .pageUp, modifiers: .ctrl)
+            case (.escapeSquareBracketDigitDigit(5, 7), "~"): yield(key: .pageUp, modifiers: [.ctrl, .alt])
+            case (.escapeSquareBracketDigitDigit(1, 2), "H"): yield(key: .home, modifiers: .shift)
+            case (.escapeSquareBracketDigitDigit(1, 3), "H"): yield(key: .home, modifiers: .alt)
+            case (.escapeSquareBracketDigitDigit(1, 4), "H"): yield(key: .home, modifiers: [.alt, .shift])
+            case (.escapeSquareBracketDigitDigit(1, 5), "H"): yield(key: .home, modifiers: .ctrl)
+            case (.escapeSquareBracketDigitDigit(1, 6), "H"): yield(key: .home, modifiers: [.ctrl, .shift])
+            case (.escapeSquareBracketDigitDigit(1, 7), "H"): yield(key: .home, modifiers: [.ctrl, .alt])
+            case (.escapeSquareBracketDigitDigit(1, 8), "H"): yield(key: .home, modifiers: [.ctrl, .alt, .shift])
+            case (.escapeSquareBracketDigitDigit(1, 2), "F"): yield(key: .end, modifiers: .shift)
+            case (.escapeSquareBracketDigitDigit(1, 3), "F"): yield(key: .end, modifiers: .alt)
+            case (.escapeSquareBracketDigitDigit(1, 4), "F"): yield(key: .end, modifiers: [.alt, .shift])
+            case (.escapeSquareBracketDigitDigit(1, 5), "F"): yield(key: .end, modifiers: .ctrl)
+            case (.escapeSquareBracketDigitDigit(1, 6), "F"): yield(key: .end, modifiers: [.ctrl, .shift])
+            case (.escapeSquareBracketDigitDigit(1, 7), "F"): yield(key: .end, modifiers: [.ctrl, .alt])
+            case (.escapeSquareBracketDigitDigit(1, 8), "F"): yield(key: .end, modifiers: [.ctrl, .alt, .shift])
+
+            case (.escapeSquareBracketDigitDigit(1, 3), "P"): yield(key: .f1, modifiers: .alt)
+            case (.escapeSquareBracketDigitDigit(1, 3), "Q"): yield(key: .f2, modifiers: .alt)
+            case (.escapeSquareBracketDigitDigit(1, 3), "R"): yield(key: .f3, modifiers: .alt)
+            case (.escapeSquareBracketDigitDigit(1, 3), "S"): yield(key: .f4, modifiers: .alt)
+
+            case (.escapeSquareBracketDigitDigit(1, 2), "P"): yield(key: .f13)
+            case (.escapeSquareBracketDigitDigit(1, 2), "Q"): yield(key: .f14)
+            case (.escapeSquareBracketDigitDigit(1, 2), "R"): yield(key: .f15)
+            case (.escapeSquareBracketDigitDigit(1, 2), "S"): yield(key: .f16)
+
+            case (.escapeSquareBracketDigitDigit(15, 2), "~"): yield(key: .f17)
+            case (.escapeSquareBracketDigitDigit(16, 2), "~"): yield(key: .f18)
+            case (.escapeSquareBracketDigitDigit(17, 2), "~"): yield(key: .f19)
+            case (.escapeSquareBracketDigitDigit(18, 2), "~"): yield(key: .f20)
+
+            case (.escapeSquareBracketDigitDigit(15, 3), "~"): yield(key: .f5, modifiers: .alt)
+            case (.escapeSquareBracketDigitDigit(17, 3), "~"): yield(key: .f6, modifiers: .alt)
+            case (.escapeSquareBracketDigitDigit(18, 3), "~"): yield(key: .f7, modifiers: .alt)
+            case (.escapeSquareBracketDigitDigit(19, 3), "~"): yield(key: .f8, modifiers: .alt)
+            case (.escapeSquareBracketDigitDigit(20, 3), "~"): yield(key: .f9, modifiers: .alt)
+            case (.escapeSquareBracketDigitDigit(21, 3), "~"): yield(key: .f10, modifiers: .alt)
+            case (.escapeSquareBracketDigitDigit(23, 3), "~"): yield(key: .f11, modifiers: .alt)
+            case (.escapeSquareBracketDigitDigit(24, 3), "~"): yield(key: .f12, modifiers: .alt)
+            case (.escapeSquareBracketDigitDigit(25, 3), "~"): yield(key: .f13, modifiers: .alt)
+            case (.escapeSquareBracketDigitDigit(26, 3), "~"): yield(key: .f14, modifiers: .alt)
+            case (.escapeSquareBracketDigitDigit(28, 3), "~"): yield(key: .f15, modifiers: .alt)
+            case (.escapeSquareBracketDigitDigit(29, 3), "~"): yield(key: .f16, modifiers: .alt)
+            case let (.escapeSquareBracketDigitDigit(digit1, digit2), char):
+                yield(string: "\u{1b}[\(digit1);\(digit2)\(char)")
+
+            case let (.escapeSquareBracketLessThan, char) where Digit ~= char:
+                state = timeout(
+                    .escapeSquareBracketLessThanDigit(Int(char.value - 0x30)),
+                    yielding: "\u{1b}[<\(char)"
+                )
+            case let (.escapeSquareBracketLessThan, char): yield(string: "\u{1b}[<\(char)")
+
+            case let (.escapeSquareBracketLessThanDigit(digit), char) where Digit ~= char:
+                state = timeout(
+                    .escapeSquareBracketLessThanDigit(digit * 10 + Int(char.value - 0x30)),
+                    yielding: "\u{1b}[<\(digit)\(char)"
+                )
+            case let (.escapeSquareBracketLessThanDigit(digit), ";"):
+                state = timeout(
+                    .escapeSquareBracketLessThanDigitSemicolon(digit),
+                    yielding: "\u{1b}[<\(digit);"
+                )
+            case let (.escapeSquareBracketLessThanDigit(digit), char):
+                yield(string: "\u{1b}[<\(digit)\(char)")
+
+            case let (.escapeSquareBracketLessThanDigitSemicolon(digit), char) where Digit ~= char:
+                state = timeout(
+                    .escapeSquareBracketLessThanDigitDigit(digit, Int(char.value - 0x30)),
+                    yielding: "\u{1b}[<\(digit);\(char)"
+                )
+            case let (.escapeSquareBracketLessThanDigitSemicolon(digit), char):
+                yield(string: "\u{1b}[<\(digit);\(char)")
+
+            case let (.escapeSquareBracketLessThanDigitDigit(digit1, digit2), char) where Digit ~= char:
+                state = timeout(
+                    .escapeSquareBracketLessThanDigitDigit(digit1, digit2 * 10 + Int(char.value - 0x30)),
+                    yielding: "\u{1b}[<\(digit1);\(digit2)\(char)"
+                )
+            case let (.escapeSquareBracketLessThanDigitDigit(digit1, digit2), ";"):
+                state = timeout(
+                    .escapeSquareBracketLessThanDigitDigitSemicolon(digit1, digit2),
+                    yielding: "\u{1b}[<\(digit1);\(digit2);"
+                )
+            case let (.escapeSquareBracketLessThanDigitDigit(digit1, digit2), char):
+                yield(string: "\u{1b}[<\(digit1);\(digit2)\(char)")
+
+            case let (.escapeSquareBracketLessThanDigitDigitSemicolon(digit1, digit2), char) where Digit ~= char:
+                state = timeout(
+                    .escapeSquareBracketLessThanDigitDigitDigit(digit1, digit2, Int(char.value - 0x30)),
+                    yielding: "\u{1b}[<\(digit1);\(char)"
+                )
+            case let (.escapeSquareBracketLessThanDigitDigitSemicolon(digit1, digit2), char):
+                yield(string: "\u{1b}[<\(digit1);\(digit2)\(char)")
+
+            case let (.escapeSquareBracketLessThanDigitDigitDigit(digit1, digit2, digit3), char) where Digit ~= char:
+                state = timeout(
+                    .escapeSquareBracketLessThanDigitDigitDigit(digit1, digit2, digit3 * 10 + Int(char.value - 0x30)),
+                    yielding: "\u{1b}[<\(digit1);\(digit2);\(digit3)\(char)"
+                )
+            case let (.escapeSquareBracketLessThanDigitDigitDigit(digit1, digit2, digit3), char):
+                if let key = Key.fromMouseEvent(
+                    mouse: digit1,
+                    position: .init(
+                        column: Extended(digit2),
+                        line: Extended(digit3)
+                    ),
+                    suffix: char
+                ) {
+                    yield(key: key)
                 } else {
-                    state = .initial
-                    yield(string: prefix)
+                    yield(string: "\u{1b}[\(digit1);\(digit2);\(digit3)\(char)")
                 }
             }
         }
 
     }
 }
+
+private let Digit = Unicode.Scalar(0x30)...Unicode.Scalar(0x39)

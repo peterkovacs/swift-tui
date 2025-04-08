@@ -51,4 +51,16 @@ public enum EscapeSequence {
 
     public static let enableInverted = "\u{1b}[7m".utf8
     public static let disableInverted = "\u{1b}[27m".utf8
+
+    public static let clearFormatting = "\u{1b}[0m".utf8
+
+    public static let enableCellMotionTracking = "\u{1b}[?1003h".utf8
+    public static let disableCellMotionTracking = "\u{1b}[?1003l".utf8
+
+    public static let enableExtendedMouseMode = "\u{1b}[?1015h".utf8
+    public static let disableExtendedMouseMode = "\u{1b}[?1015l".utf8
+
+    public static let enableSendEventsMode = "\u{1b}[?1006h".utf8
+    public static let disableSendEventsmode = "\u{1b}[?1006l".utf8
+
 }

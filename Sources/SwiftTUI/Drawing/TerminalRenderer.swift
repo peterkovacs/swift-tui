@@ -114,15 +114,22 @@ class TerminalRenderer: Renderer {
     }
 
     private func setup() {
+        setInputMode()
         write(EscapeSequence.enableAlternateBuffer)
+        write(EscapeSequence.clearFormatting)
         write(EscapeSequence.clearScreen)
         write(EscapeSequence.moveTo(currentPosition))
+        write(EscapeSequence.enableCellMotionTracking)
+        write(EscapeSequence.enableExtendedMouseMode)
+        write(EscapeSequence.enableSendEventsMode)
         write(EscapeSequence.hideCursor)
 
-        setInputMode()
     }
 
     func stop() {
+        write(EscapeSequence.disableCellMotionTracking)
+        write(EscapeSequence.disableExtendedMouseMode)
+        write(EscapeSequence.disableSendEventsmode)
         write(EscapeSequence.disableAlternateBuffer)
         write(EscapeSequence.showCursor)
 

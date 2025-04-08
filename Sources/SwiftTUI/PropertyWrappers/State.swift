@@ -29,8 +29,7 @@ public struct State<Wrapped>: DynamicProperty {
     }
 
     func setup(node: DynamicPropertyNode, label: String) {
-        reference.node = node
-        reference.label = label
+        reference.initialize(node: node, label: label, value: initialValue)
     }
 }
 
@@ -66,5 +65,12 @@ class DynamicPropertyReference<Wrapped> {
             guard let node, let label else { fatalError("Accessed State prior to initialization") }
             node.set(state: Key(label: label), value: newValue)
         }
+    }
+
+    func initialize(node: DynamicPropertyNode, label: String, value: Wrapped) {
+        self.node = node
+        self.label = label
+        let key = Key(label: label)
+        node.state[key] = node.state[key] ?? value
     }
 }

@@ -7,47 +7,43 @@ import Foundation
 struct KeyParserTests {
     @Test(
         arguments: [
-            ("\u{1b}OA", Key(.up)),
-            ("\u{1b}OB", Key(.down)),
-            ("\u{1b}OC", Key(.right)),
-            ("\u{1b}OD", Key(.left)),
+            ("[1;2A", Key(.up, modifiers: .shift)),
+            ("[1;2B", Key(.down, modifiers: .shift)),
+            ("[1;2C", Key(.right, modifiers: .shift)),
+            ("[1;2D", Key(.left, modifiers: .shift)),
 
-            ("\u{1b}[1;2A", Key(.up, modifiers: .shift)),
-            ("\u{1b}[1;2B", Key(.down, modifiers: .shift)),
-            ("\u{1b}[1;2C", Key(.right, modifiers: .shift)),
-            ("\u{1b}[1;2D", Key(.left, modifiers: .shift)),
+            ("[1;5A", Key(.up, modifiers: .ctrl)),
+            ("[1;5B", Key(.down, modifiers: .ctrl)),
+            ("[1;5C", Key(.right, modifiers: .ctrl)),
+            ("[1;5D", Key(.left, modifiers: .ctrl)),
 
-            ("\u{1b}[1;5A", Key(.up, modifiers: .ctrl)),
-            ("\u{1b}[1;5B", Key(.down, modifiers: .ctrl)),
-            ("\u{1b}[1;5C", Key(.right, modifiers: .ctrl)),
-            ("\u{1b}[1;5D", Key(.left, modifiers: .ctrl)),
+            ("[11~", Key(.f1)),
+            ("[12~", Key(.f2)),
+            ("[13~", Key(.f3)),
+            ("[14~", Key(.f4)),
+            ("[15~", Key(.f5)),
+            ("[17~", Key(.f6)),
+            ("[18~", Key(.f7)),
+            ("[19~", Key(.f8)),
+            ("[20~", Key(.f9)),
+            ("[21~", Key(.f10)),
+            ("[23~", Key(.f11)),
+            ("[24~", Key(.f12)),
+            ("[25~", Key(.f13)),
+            ("[26~", Key(.f14)),
+            ("[28~", Key(.f15)),
+            ("[29~", Key(.f16)),
+            ("[31~", Key(.f17)),
+            ("[32~", Key(.f18)),
+            ("[33~", Key(.f19)),
+            ("[34~", Key(.f20)),
 
-            ("\u{1b}OP", Key(.f1)),
-            ("\u{1b}OQ", Key(.f2)),
-            ("\u{1b}OR", Key(.f3)),
-            ("\u{1b}OS", Key(.f4)),
+            ("[1~", Key(.home)),
+            ("[4~", Key(.end)),
+            ("[5~", Key(.pageUp)),
+            ("[6~", Key(.pageDown)),
 
-            ("\u{1b}[15~", Key(.f5)),
-            ("\u{1b}[17~", Key(.f6)),
-            ("\u{1b}[18~", Key(.f7)),
-            ("\u{1b}[19~", Key(.f8)),
-            ("\u{1b}[20~", Key(.f9)),
-            ("\u{1b}[21~", Key(.f10)),
-            ("\u{1b}[23~", Key(.f11)),
-            ("\u{1b}[24~", Key(.f12)),
-            ("\u{1b}[25~", Key(.f13)),
-            ("\u{1b}[26~", Key(.f14)),
-            ("\u{1b}[28~", Key(.f15)),
-            ("\u{1b}[29~", Key(.f16)),
-            ("\u{1b}[31~", Key(.f17)),
-            ("\u{1b}[32~", Key(.f18)),
-            ("\u{1b}[33~", Key(.f19)),
-            ("\u{1b}[34~", Key(.f20)),
-
-            ("\u{1b}[1~", Key(.home)),
-            ("\u{1b}[4~", Key(.end)),
-            ("\u{1b}[5~", Key(.pageUp)),
-            ("\u{1b}[6~", Key(.pageDown)),
+            ("[<0;100;29M", Key(.mouseDown(button: 0, at: .init(column: 100, line: 29)))),
         ]
     )
     func parsesEscapeSequences(input: String, expectation: Key) async throws {
@@ -56,12 +52,41 @@ struct KeyParserTests {
 
         Task {
             try fileHandle.write(
-                contentsOf: input.data(using: .utf8)!
+                contentsOf: "\u{1b}\(input)".data(using: .utf8)!
             )
         }
 
         let key = try await iterator.next()
         #expect(key == expectation)
+    }
+
+    @Test func parsesMouseDown() async throws {
+        let (parser, fileHandle) = KeyParser.pipe()
+        var iterator = parser.makeAsyncIterator()
+
+        Task {
+            try fileHandle.write(
+                contentsOf: "\u{1b}[<0;100;29M".data(using: .utf8)!
+            )
+        }
+
+        let key = try await iterator.next()
+        #expect(key == Key(.mouseDown(button: 0, at: .init(column: 100, line: 29))))
+
+    }
+
+    @Test func parsesF5() async throws {
+        let (parser, fileHandle) = KeyParser.pipe()
+        var iterator = parser.makeAsyncIterator()
+        
+        Task {
+            try fileHandle.write(
+                contentsOf: "\u{1b}[15~".data(using: .utf8)!
+            )
+        }
+
+        let key = try await iterator.next()
+        #expect(key == Key(.f5))
     }
 
     @Test func parsesEscape() async throws {
