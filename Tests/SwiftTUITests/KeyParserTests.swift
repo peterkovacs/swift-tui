@@ -43,7 +43,16 @@ struct KeyParserTests {
             ("[5~", Key(.pageUp)),
             ("[6~", Key(.pageDown)),
 
+            ("[<65;82;16M", Key(.mouseScrollDown(Position(column: 82, line: 16)))),
+            ("[<64;82;16M", Key(.mouseScrollUp(.init(column: 82, line: 16)))),
+            ("[<35;81;16M", Key(.mouseMove(.init(column: 81, line:16)))),
+            ("[<0;80;17M", Key(.mouseDown(button: 0, at: .init(column: 80, line: 17)))),
+            ("[<0;80;17m", Key(.mouseUp(button: 0, at: .init(column: 80, line: 17)))),
+            ("[<2;80;17M", Key(.mouseDown(button: 2, at: .init(column: 80, line: 17)))),
+            ("[<2;80;17m", Key(.mouseUp(button: 2, at: .init(column: 80, line: 17)))),
+
             ("[<0;100;29M", Key(.mouseDown(button: 0, at: .init(column: 100, line: 29)))),
+            ("[<30;80;17M", Key(.mouseDown(button: 2, at: .init(column: 80, line: 17)), modifiers: [.shift, .alt, .ctrl])),
         ]
     )
     func parsesEscapeSequences(input: String, expectation: Key) async throws {

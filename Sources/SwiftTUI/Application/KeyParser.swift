@@ -34,7 +34,7 @@ public struct Key: Sendable, Equatable {
 
             if mouse & 64 == 64 {
                 switch mouse & 0x1 {
-                case 1:
+                case 0:
                     return Key(
                         .mouseScrollUp(position),
                         modifiers: .init(sgr: mouse)

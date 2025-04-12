@@ -2,7 +2,37 @@
 import Foundation
 import CUnicode
 
-let parser = KeyParser()
+let input = FileHandle.standardInput
+let pipe = Pipe()
+let parser = KeyParser.init(fileHandle: pipe.fileHandleForReading)
+
+input.readabilityHandler = { handle in
+    let data = handle.availableData
+
+    if data.count == 0 {
+        return
+    }
+
+    var output = data
+
+    // Print out the individual bytes, omitting \u{1b} if its the first byte.
+    // If data contains any ASCII characters, print those as a string.
+    if data[0] == 0x1b {
+        output = output.dropFirst()
+    }
+
+    let printableCharacters = output.map {
+        if $0 >= 0x20 && $0 <= 0x7e {
+            return String(format: "%c", $0)
+        } else {
+            return String(format: "\\u{%02x}", $0)       
+        }
+    }.joined()
+    print("\"\(printableCharacters)\": ")
+
+    pipe.fileHandleForWriting.write(data)
+
+}
 
 func write(_ str: String.UTF8View) {
     let written = str.withContiguousStorageIfAvailable { ptr in
