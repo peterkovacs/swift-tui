@@ -351,66 +351,66 @@ extension ScrollViewNode: Focusable {
             return true
         }
 
-        switch key {
-        case .init(.up):
+        switch (key.key, key.modifiers) {
+        case (.up, []), (.mouseScrollUp, _):
             guard axes.contains(.vertical), contentSize.height > contentArea.height else { return false }
             guard contentOffset.line > 0  else { return false }
 
             contentOffset.line -= 1
 
-        case .init(.down):
+        case (.down, []), (.mouseScrollDown, _):
             guard axes.contains(.vertical), contentSize.height > contentArea.height else { return false }
             guard contentOffset.line + contentArea.height < contentSize.height else { return false }
 
             contentOffset.line += 1
 
-        case .init(.left):
+        case (.left, []):
             guard axes.contains(.horizontal), contentSize.width > contentArea.width else { return false }
             guard contentOffset.column > 0  else { return false }
 
             contentOffset.column -= 1
 
-        case .init(.right):
+        case (.right, []):
             guard axes.contains(.horizontal), contentSize.width > contentArea.width else { return false }
             guard contentOffset.column + contentArea.width < contentSize.width else { return false }
 
             contentOffset.column += 1
 
-        case .init("p", modifiers: .ctrl):
+        case ("p", .ctrl):
             guard axes.contains(.vertical), contentSize.height > contentArea.height else { return false }
             guard contentOffset.line > 0  else { return false }
 
             // Move up half a page
             contentOffset.line -= min(contentArea.height / 2, contentOffset.line)
 
-        case .init("n", modifiers: .ctrl):
+        case ("n", .ctrl):
             guard axes.contains(.vertical), contentSize.height > contentArea.height else { return false }
             guard contentOffset.line + contentArea.height < contentSize.height else { return false }
 
             // Move down half a page.
             contentOffset.line += min(contentArea.height / 2, contentSize.height - contentArea.height - contentOffset.line)
 
-        case .init(.pageUp):
+        case (.pageUp, []):
             guard axes.contains(.vertical), contentSize.height > contentArea.height else { return false }
             guard contentOffset.line > 0 else { return false }
 
             // Move up a whole page
             contentOffset.line -= min(contentArea.height, contentOffset.line)
 
-        case .init(.pageDown):
+        case (.pageDown, []):
             guard axes.contains(.vertical), contentSize.height > contentArea.height else { return false }
             guard contentOffset.line + contentArea.height < contentSize.height else { return false }
 
             // Move down half a page.
             contentOffset.line += min(contentArea.height, contentSize.height - contentArea.height - contentOffset.line)
 
-        case .init(.home):
+        case (.home, []):
             guard axes.contains(.vertical), contentSize.height > contentArea.height else { return false }
             guard contentOffset.line > 0 else { return false }
 
             contentOffset.line = 0
 
-        case .init(.end):
+        case (.end, []):
             guard axes.contains(.vertical), contentSize.height > contentArea.height else { return false }
             guard contentOffset.line + contentArea.height < contentSize.height else { return false }
 
