@@ -1,5 +1,28 @@
 extension View {
-    func focus(_ binding: FocusState<Bool>.Binding) -> some View {
+
+    /// Sets focus to this view when the bound `FocusState<Bool>` becomes `true`, and clears it when set to `false`.
+    ///
+    /// Use this overload when you model focus as a simple on/off state.
+    /// - Parameter binding: A binding to a `FocusState<Bool>` that controls whether this view is focused.
+    /// - Returns: A view that participates in focus management, becoming first responder when `binding.wrappedValue` is `true`.
+    ///
+    /// Behavior:
+    /// - When `binding` becomes `true`, this view requests focus.
+    /// - When the view loses focus (e.g., user tabs away), `binding` is set to `false`.
+    /// - When `binding` is set to `false`, the view relinquishes focus if it has it.
+    ///
+    /// Example:
+    /// ```swift
+    /// @FocusState private var isFocused: Bool
+    ///
+    /// TextField("Name", text: $name)
+    ///     .focus($isFocused) // Focus toggles based on `isFocused`
+    /// ```
+    ///
+    /// Notes:
+    /// - If no focusable descendants exist, the binding will be set back to `false`.
+    /// - Focus changes are coordinated by the environment’s `FocusManager`.
+    public func focus(_ binding: FocusState<Bool>.Binding) -> some View {
         FocusView<Self, Bool>(
             binding: binding,
             value: true,
@@ -7,7 +30,36 @@ extension View {
         )
     }
 
-    func focus<Value: Hashable>(
+    /// Associates this view’s focus with a specific value of an optional `FocusState`,
+    /// setting focus when the bound value equals `equals`, and clearing it when it differs (including `nil`).
+    ///
+    /// Use this overload when you model focus across multiple views using a single optional enum or identifier.
+    /// - Parameters:
+    ///   - binding: A binding to a `FocusState<Value?>` that tracks which view (if any) is focused.
+    ///   - equals: The value that represents focus for this view.
+    /// - Returns: A view that participates in focus management, becoming first responder when `binding.wrappedValue == equals`.
+    ///
+    /// Behavior:
+    /// - When `binding` is set to `equals`, this view requests focus.
+    /// - When the view becomes focused, `binding` is set to `equals`.
+    /// - When the view loses focus, `binding` is set to `nil` (or any non-equal value).
+    ///
+    /// Example:
+    /// ```swift
+    /// enum Field: Hashable { case username, password }
+    /// @FocusState private var focusedField: Field?
+    ///
+    /// TextField("Username", text: $username)
+    ///     .focus($focusedField, equals: .username)
+    ///
+    /// SecureField("Password", text: $password)
+    ///     .focus($focusedField, equals: .password)
+    /// ```
+    ///
+    /// Notes:
+    /// - If no focusable descendants exist, the binding will be set to `nil`.
+    /// - This enables mutually exclusive focus between multiple views bound to the same `FocusState`.
+    public func focus<Value: Hashable>(
         _ binding: FocusState<Value?>.Binding,
         equals: Value
     ) -> some View {
@@ -104,6 +156,7 @@ final class FocusNode<Value: Hashable>: Node {
             if !isFocused, let focus = focusable.first {
                 root?.focusManager?.change(focus: focus)
             } else {
+                // There's nothing to focus within this hierarchy, write the `unset` value back to the binding.
                 binding.wrappedValue = unset
             }
         } else if isFocused, unset == binding.wrappedValue {
@@ -114,6 +167,7 @@ final class FocusNode<Value: Hashable>: Node {
 
     override func focus<T>(visitor: inout T) where T : Visitor.Focus {
         for visited in focusVisitor.visited {
+            
             visitor.visit(
                 focus: .init(node: visited.node) {
                     visited.isFocusable()

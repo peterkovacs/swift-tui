@@ -486,7 +486,14 @@ import Testing
     }
 
     @Test func setsFocusAccordingToFocusState() async throws {
+        let (stream, continuation) = AsyncStream.makeStream(of: MyView.Focus.self)
+        let (stream2, continuation2) = AsyncStream.makeStream(of: Void.self)
+        var iterator = stream2.makeAsyncIterator()
+
         struct MyView: View {
+            let stream: AsyncStream<Focus>
+            let response: AsyncStream<Void>.Continuation
+
             enum Focus: Hashable {
                 case text1, text2
             }
@@ -502,13 +509,16 @@ import Testing
                 TextField(text: $text2) { _ in }
                     .focus($focus, equals: .text2)
                     .task { @MainActor in
-                        focus = .text2
+                        for await val in stream {
+                            self.focus = val
+                            response.yield()
+                        }
                     }
 
             }
         }
 
-        let (application, _) = try drawView(MyView())
+        let (application, _) = try drawView(MyView(stream: stream, response: continuation2))
 
         assertInlineSnapshot(of: application, as: .frameDescription) {
             """
@@ -524,7 +534,9 @@ import Testing
             """
         }
 
-        await application.waitForTasksToComplete()
+        continuation.yield(.text2)
+        await iterator.next()
+        application.update()
 
         assertInlineSnapshot(of: application, as: .frameDescription) {
             """
@@ -539,6 +551,27 @@ import Testing
 
             """
         }
+
+        continuation.yield(.text1)
+        await iterator.next()
+        application.update()
+
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 100x2
+              → ComposedView<MyView>
+                → TupleView<Pack{FocusView<TextField, Optional<Focus>>, TaskView<Int, FocusView<TextField, Optional<Focus>>>}>
+                  → FocusView<TextField, Optional<Focus>>: text1 == text1
+                    → TextField:"" (0) FOCUSED (0, 0) 100x1
+                  → TaskView<Int, FocusView<TextField, Optional<Focus>>>
+                    → FocusView<TextField, Optional<Focus>>: text2 != text1
+                      → TextField:"" (0) (0, 1) 100x1
+
+            """
+        }
+
+        continuation.finish()
+        await application.waitForTasksToComplete()
     }
 
     @Test func losesFocusWhenFocusStateSetToNil() async throws {
