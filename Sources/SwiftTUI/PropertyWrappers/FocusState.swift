@@ -1,27 +1,24 @@
 @MainActor
 @propertyWrapper
 public struct FocusState<Value: Hashable>: DynamicProperty {
-    public let initialValue: Value
     private let reference: DynamicPropertyReference<Value>
 
     public init() where Value == Bool {
-        self.initialValue = false
-        self.reference = .init()
+        self.reference = .init(initialValue: false)
     }
 
     public init<T>(wrappedValue initialValue: T?) where Value == T?, T: Hashable {
-        self.initialValue = initialValue
-        self.reference = .init()
+        self.reference = .init(initialValue: initialValue)
     }
 
     public var wrappedValue: Value {
-        get { reference.wrappedValue ?? initialValue }
+        get { reference.wrappedValue }
         nonmutating set { reference.wrappedValue = newValue }
     }
 
     public var projectedValue: Binding {
         .init {
-            reference.wrappedValue ?? initialValue
+            wrappedValue
         } set: { newValue in
             if reference.wrappedValue != newValue {
                 reference.wrappedValue = newValue
@@ -30,8 +27,7 @@ public struct FocusState<Value: Hashable>: DynamicProperty {
     }
 
     func setup(node: DynamicPropertyNode, label: String) {
-        reference.node = node
-        reference.label = label
+        reference.initialize(node: node, label: label)
     }
 
     @MainActor
