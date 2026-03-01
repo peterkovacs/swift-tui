@@ -330,4 +330,14 @@ final class FlexibleFrameNode: Node {
         _layoutVisitor = nil
         super.invalidateLayout()
     }
+
+    override func hitTest(at position: Position, key: Key) -> (any Control)? {
+        for child in children {
+            if let control = child.hitTest(at: position, key: key) {
+                return control
+            }
+        }
+
+        return nil
+    }
 }

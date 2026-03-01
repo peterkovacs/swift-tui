@@ -67,6 +67,11 @@ final class ButtonNode: HStackNode {
     override var description: String {
         "Button\(isFocused ? " FOCUSED" : "")"
     }
+
+    override func hitTest(at position: Position, key: Key) -> (any Control)? {
+        guard global.contains(position) else { return nil }
+        return self
+    }
 }
 
 extension ButtonNode: Focusable {
@@ -81,8 +86,8 @@ extension ButtonNode: Focusable {
     var isFocusable: Bool { true }
 
     func handle(key: Key) -> Bool {
-        switch key {
-        case .init(.space), .init(.enter):
+        switch key.key {
+        case .space, .enter, .mouseUp(button: 0, at: _):
             action()
             return true
         default: return false

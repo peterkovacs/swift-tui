@@ -178,4 +178,19 @@ class ZStackNode: Node, Control {
         _layoutVisitor = nil
         super.invalidateLayout()
     }
+
+    override func hitTest(at position: Position, key: Key) -> (any Control)? {
+        guard global.contains(position) else {
+            return nil
+        }
+
+        // Children are drawn in order, so the last child is on top
+        for child in layoutVisitor.visited.reversed() {
+            if let control = child.node.hitTest(at: position, key: key) {
+                return control
+            }
+        }
+
+        return self
+    }
 }

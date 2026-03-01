@@ -37,4 +37,38 @@ import Testing
         application.process(key: .init(.enter))
         #expect(actionCalled.value)
     }
+
+    @Test func testHitTest() async throws {
+        struct MyView: View {
+            var body: some View {
+                Button {
+
+                } label: {
+                    Text("Hello World")
+                        .frame(width: 30)
+                }
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 30x1
+              → ComposedView<MyView>
+                → Button FOCUSED (0, 0) 30x1
+                  → FixedFrame:30x(nil) [30x1]
+                    → Text:string("Hello World") (9, 0) 11x1
+
+            """
+        }
+        assertInlineSnapshot(of: application.node.hitTest(at: .init(column: 0, line: 0), key: .init(.mouseUp(button: 0, at: .zero))), as: .frameDescription) {
+            """
+            → Button FOCUSED (0, 0) 30x1
+              → FixedFrame:30x(nil) [30x1]
+                → Text:string("Hello World") (9, 0) 11x1
+
+            """
+        }
+    }
 }

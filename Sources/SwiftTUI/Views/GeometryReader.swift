@@ -71,4 +71,14 @@ final class GeometryReaderNode: ZStackNode {
 
         return frame
     }
+
+    override func hitTest(at position: Position, key: Key) -> (any Control)? {
+        guard global.contains(position) else {
+            return nil
+        }
+
+        let control = super.hitTest(at: position, key: key)
+        if control === self { return nil }
+        return control
+    }
 }

@@ -197,6 +197,16 @@ final class TextFieldNode: DynamicPropertyNode, Control {
     override var description: String {
         "TextField:\"\(String(describing: text))\" (\(cursorPosition.utf16Offset(in: text)))\(isFocused ? " FOCUSED" : "")"
     }
+
+    override func hitTest(at position: Position, key: Key) -> (any Control)? {
+        guard global.contains(position) else { return nil }
+
+        if case .mouseUp = key.key, !isFocused {
+            root?.focusManager?.change(focus: focusableElement)
+        }
+
+        return self
+    }
 }
 
 extension TextFieldNode: Focusable {
@@ -217,6 +227,7 @@ extension TextFieldNode: Focusable {
 
         switch(key) {
         case Key(.tab), Key(.tab, modifiers: .shift):
+            // Let focus manager handle this, we will be invalidated 
             return false
 
         case Key(.enter):

@@ -252,4 +252,18 @@ class HStackNode: Node, Control {
         _layoutVisitor = nil
         super.invalidateLayout()
     }
+
+    override func hitTest(at position: Position, key: Key) -> (any Control)? {
+        guard global.contains(position) else {
+            return nil
+        }
+
+        for child in layoutVisitor.visited {
+            if let control = child.element.node.hitTest(at: position, key: key) {
+                return control
+            }
+        }
+
+        return self
+    }
 }

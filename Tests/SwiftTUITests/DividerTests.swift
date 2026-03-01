@@ -268,7 +268,28 @@ import Testing
             of: application.renderer,
             as: .rendered
         )
+    }
 
+    @Test func testHitTest() async throws {
+        struct MyView: View {
+            var body: some View {
+                Text("Hello")
+                Divider()
+                Text("World")
+            }
+        }
+        
+        let (application, _) = try drawView(MyView())
+        assertInlineSnapshot(of: application.node.hitTest(at: .init(column: 0, line: 1), key: Key(.mouseUp(button: 0, at: .init(column: 0, line: 1)))), as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 5x3
+              → ComposedView<MyView>
+                → TupleView<Pack{Text, Divider, Text}>
+                  → Text:string("Hello") (0, 0) 5x1
+                  → Divider (0, 1) 5x1
+                  → Text:string("World") (0, 2) 5x1
 
+            """
+        }
     }
 }

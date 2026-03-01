@@ -1,4 +1,42 @@
 
+/// A node in the view hierarchy responsible for managing view state, layout, drawing, and event propagation.
+///
+/// Node is the fundamental building block of the framework’s retained rendering tree. Each instance wraps a
+/// view-conforming type (via `GenericView`) and maintains parent/child relationships to form a hierarchy that:
+/// - Computes intrinsic and container-driven sizes
+/// - Performs layout in local and global coordinate spaces
+/// - Draws into a backing buffer/window
+/// - Propagates focus and input events (keyboard) upwards (bubble) or downwards (hit-testing)
+/// - Tracks and invalidates regions for efficient incremental redraw
+///
+/// Threading:
+/// - Constrained to the main actor. All mutations and reads are expected on the main thread.
+///
+/// Key responsibilities:
+/// - View lifecycle: `update(view:)` to reconcile view changes without rebuilding the entire subtree.
+/// - Hierarchy management: `add(at:node:)` and `remove(at:)` to modify the tree while preserving invariants.
+/// - Layout & drawing: `size(visitor:)`, `layout(visitor:)`, and `draw` methods to perform measurement, placement, and rendering.
+/// - Invalidation: `invalidate()` and `invalidateLayout()` to schedule region-based redraws and layout recomputation.
+/// - Coordinate systems: `frame` (local to parent), `global` (cached global frame), and `relative(to:)`.
+/// - Input handling: `bubble(key:)` to propagate key events to focusable ancestors and `hitTest(at:key:)` to discover controls.
+///
+/// Extensions:
+/// - Debug utilities: `treeDescription` and `frameDescription` provide textual dumps of the hierarchy and frames.
+///
+/// Performance considerations:
+/// - Global frame caching: `global` is memoized and invalidated when `frame` changes.
+/// - Region invalidation: `InvalidationVisitor` unions child global frames to minimize redraw areas.
+/// - Buffered drawing: `_buffer` caches a window of cells; reset on invalidation.
+///
+/// Environment:
+/// - `environment` is an optional mutator for `EnvironmentValues` applied at this node boundary, allowing scoped
+///   environment propagation through the subtree.
+///
+/// Usage notes:
+/// - Subclasses representing concrete controls typically override `size`, `layout`, `draw`, and event handling to
+///   implement custom behavior while relying on Node’s traversal mechanisms.
+/// - Always call `invalidate()` after changes that affect rendering, and `invalidateLayout()` after changes that
+///   affect measurement or placement.
 @MainActor
 internal class Node {
     var view: any GenericView
@@ -59,11 +97,45 @@ internal class Node {
     func invalidate() {
         _buffer = nil
 
-        root?.invalidate(node: self, frame: { InvalidationVisitor(children: $0.children).frame })
+        if children.isEmpty {
+            root?.invalidate(node: self)
+        } else {
+            root?.invalidate(node: self, frame: { InvalidationVisitor(children: $0.children).frame })
+        }
     }
 
     func invalidateLayout() {
         parent?.invalidateLayout()
+    }
+
+    func bubble(key: Key) -> Bool {
+        if let self = self as? Focusable {
+            return self.handle(key: key)
+        } else if let parent = parent {
+            return parent.bubble(key: key)
+        } else {
+            return false
+        }
+    }
+
+    /// Performs a depth-first search to find the deepest control capable of handling a given key at the provided position.
+    /// - Parameters:
+    ///   - position: The point in global coordinates to test against controls’ frames.
+    ///   - key: The input key being dispatched (used to filter controls that can handle this input).
+    /// - Returns: The first (deepest) `Control` found that can handle the key at the position, or `nil` if none is found.
+    /// - Discussion:
+    ///   - Traverses children front-to-back order as stored in `children`.
+    ///   - Intended to be overridden by control nodes that manage hit areas differing from their frame or that apply
+    ///     custom hit-testing logic.
+    ///   - Complements `bubble(key:)`, which routes events up the tree once a target control is determined.
+    func hitTest(at position: Position, key: Key) -> (any Control)? {
+        for child in children {
+            if let control = child.hitTest(at: position, key: key) {
+                return control
+            }
+        }
+
+        return nil
     }
 
     /// Update this node with a given view.

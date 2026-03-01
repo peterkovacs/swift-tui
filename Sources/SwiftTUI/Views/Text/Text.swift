@@ -207,6 +207,11 @@ final class TextNode: DynamicPropertyNode, Control {
     override var description: String {
         "Text:\(text)"
     }
+
+    override func hitTest(at position: Position, key: Key) -> (any Control)? {
+        guard global.contains(position) else { return nil }
+        return self
+    }
 }
 
 extension AttributedString {

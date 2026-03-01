@@ -58,6 +58,11 @@ extension SimplySnapshotting where Value == Application, Format == String {
     @MainActor static let frameDescription = SimplySnapshotting.lines.pullback(\Application.node.frameDescription)
 }
 
+extension SimplySnapshotting where Value == Control?, Format == String {
+    @MainActor static let frameDescription = SimplySnapshotting.lines.pullback { (control: (any Control)?) -> String in control?.frameDescription ?? "(nil)" }
+}
+
+
 extension Snapshotting where Value == Renderer?, Format == String {
     @MainActor static let rendered = Snapshotting(
         pathExtension: "txt",

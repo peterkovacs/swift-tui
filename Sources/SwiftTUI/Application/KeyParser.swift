@@ -869,8 +869,8 @@ actor KeyParser: AsyncSequence {
                 if let key = Key.fromMouseEvent(
                     mouse: digit1,
                     position: .init(
-                        column: Extended(digit2),
-                        line: Extended(digit3)
+                        column: Extended(digit2 - 1),
+                        line: Extended(digit3 - 1)
                     ),
                     suffix: char
                 ) {

@@ -103,4 +103,8 @@ class SpacerNode: DynamicPropertyNode, Control {
             )
         }
     }
+
+    override func hitTest(at position: Position, key: Key) -> (any Control)? {
+        return nil
+    }
 }

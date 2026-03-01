@@ -1,3 +1,23 @@
+/// Manages keyboard and pointer focus within a subtree of the node hierarchy.
+///
+/// `FocusManager` maintains the ordered list of focusable elements discovered by
+/// traversing a given `Node` subtree and tracks which element is currently focused.
+/// It coordinates first-responder changes by calling `becomeFirstResponder()` and
+/// `resignFirstResponder()` on focusable elements as focus moves.
+///
+/// Key responsibilities:
+/// - Establishes a default focus using the first focusable element when requested.
+/// - Handles focus traversal for Tab and Shift-Tab, with optional wrap-around when
+///   managing the root focus scope.
+/// - Forwards input to the currently focused element and consumes events that it
+///   handles.
+/// - Re-evaluates focus when the view/node tree changes, preserving focus when
+///   possible (accounting for inserts, moves, and removals), or selecting a new
+///   default when the focused element disappears.
+///
+/// Concurrency:
+/// - Marked `@MainActor` because it coordinates UI state and interacts with nodes
+///   that are expected to be used on the main thread.
 @MainActor
 class FocusManager {
     private var isRoot: Bool
@@ -183,3 +203,4 @@ class FocusManager {
         }
     }
 }
+

@@ -288,6 +288,41 @@ class ScrollViewNode: RootNode {
     override var description: String {
         "ScrollView [offset:\(contentOffset) size:\(contentSize)]"
     }
+
+    override func hitTest(at position: Position, key: Key) -> (any Control)? {
+        guard global.contains(position) else { return nil }
+
+        var key = key
+        let position = position - global.position + contentOffset
+
+        switch key.key {
+        case .mouseMove:
+            key = Key(.mouseMove(position), modifiers: key.modifiers)
+        case .mouseScrollUp:
+            key = Key(.mouseScrollUp(position), modifiers: key.modifiers)
+        case .mouseScrollDown:
+            key = Key(.mouseScrollDown(position), modifiers: key.modifiers)
+        case .mouseUp(button: let button, at: let p):
+            key = Key(.mouseUp(button: button, at: position), modifiers: key.modifiers)
+        case .mouseDown(button: let button, at: let p):
+            key = Key(.mouseDown(button: button, at: position), modifiers: key.modifiers)
+        case .mouseDrag(button: let button, at: let p):
+            key = Key(.mouseDrag(button: button, at: position), modifiers: key.modifiers)
+        default: break
+        }
+
+        for child in layoutVisitor.visited {
+            if let control = child.element.node.hitTest(at: position, key: key) {
+                return control
+            }
+        }
+
+        if global.contains(position) {
+            return self
+        }
+
+        return nil
+    }
 }
 
 extension ScrollViewNode: Focusable {

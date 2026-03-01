@@ -364,4 +364,45 @@ import Testing
             as: .rendered
         )
     }
+
+    @Test func testHitTest() async throws {
+        struct MyView: View {
+            var body: some View {
+                Text("Hello World")
+                    .frame(maxWidth: 50, maxHeight: 30, alignment: .center)
+                    .border()
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 13x3
+              → ComposedView<MyView>
+                → Border:[(0, 0) 13x3]
+                  → FlexibleFrame:(nil)x(nil)/50x30 [11x1]
+                    → Text:string("Hello World") (1, 1) 11x1
+
+            """
+        }
+
+        assertInlineSnapshot(of: application.node.hitTest(at: .init(column: 5, line: 0), key: .init(.mouseUp(button: 0, at: .init(column: 5, line: 0)))), as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 13x3
+              → ComposedView<MyView>
+                → Border:[(0, 0) 13x3]
+                  → FlexibleFrame:(nil)x(nil)/50x30 [11x1]
+                    → Text:string("Hello World") (1, 1) 11x1
+
+            """
+        }
+
+        assertInlineSnapshot(of: application.node.hitTest(at: .init(column: 5, line: 1), key: .init(.mouseUp(button: 0, at: .init(column: 5, line: 0)))), as: .frameDescription) {
+            """
+            → Text:string("Hello World") (1, 1) 11x1
+
+            """
+        }
+    }
 }

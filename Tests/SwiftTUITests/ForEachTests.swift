@@ -286,4 +286,37 @@ import Testing
         )
 
     }
+
+    @Test func testHitTest() async throws {
+        struct MyView: View {
+            @State var model: Model<Int>
+            var body: some View {
+                ForEach(model.data, id: \.self) { item in
+                    Text("\(item)")
+                }
+            }
+        }
+
+        let model = Model<Int>(data: [1, 2, 3])
+        let (application, _) = try drawView(MyView(model: model))
+
+        assertInlineSnapshot(of: application.node.hitTest(at: .init(column: 0, line: 0), key: .init(.mouseUp(button: 0, at: .zero))), as: .frameDescription) {
+            """
+            → Text:string("1") (0, 0) 1x1
+
+            """
+        }
+        assertInlineSnapshot(of: application.node.hitTest(at: .init(column: 0, line: 1), key: .init(.mouseUp(button: 0, at: .init(column: 0, line: 1)))), as: .frameDescription) {
+            """
+            → Text:string("2") (0, 1) 1x1
+
+            """
+        }
+        assertInlineSnapshot(of: application.node.hitTest(at: .init(column: 0, line: 2), key: .init(.mouseUp(button: 0, at: .init(column: 0, line: 2)))), as: .frameDescription) {
+            """
+            → Text:string("3") (0, 2) 1x1
+
+            """
+        }
+    }
 }

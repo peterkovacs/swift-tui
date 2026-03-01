@@ -53,8 +53,10 @@ enum Visitor {
         /// A method that handles a Key event.
         let handle: (_ key: Key) -> Bool
 
-        /// A method that resigns the firstResponder 
+        /// The visited control is preparing to no longer be the first responder -- i.e. the control that receives keyboard events.
         let resignFirstResponder: () -> Void
+
+        /// The visited control becomes the control that receives keyboard events.
         let becomeFirstResponder: () -> Void
     }
 

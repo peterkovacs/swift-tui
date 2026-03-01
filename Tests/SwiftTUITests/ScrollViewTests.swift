@@ -5,7 +5,7 @@ import SnapshotTesting
 import Testing
 
 @MainActor
-@Suite("ScrollView Tests", .snapshots(record: .failed)) struct ScrollViewTests {
+@Suite("ScrollView Tests", .snapshots(record: .missing)) struct ScrollViewTests {
     @Test func testRendersContent() async throws {
         struct MyView: View {
             var body: some View {
@@ -531,7 +531,64 @@ import Testing
             """
         }
         assertSnapshot(of: application.renderer, as: .rendered)
-        
-        
+    }
+
+    @Test func hitTestBasicScrollView() async throws {
+        struct MyView: View {
+            var body: some View {
+                ScrollView {
+                    Text("Hello")
+                        .padding(.bottom, 1)
+                    Text("World")
+                }
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+
+        assertInlineSnapshot(of: application.node.hitTest(at: .zero, key: .init(.mouseUp(button: 0, at: .zero))), as: .frameDescription) {
+            """
+            → Text:string("Hello") (0, 0) 5x1
+
+            """
+        }
+
+        assertInlineSnapshot(of: application.node.hitTest(at: .init(column: 0, line: 1), key: .init(.mouseUp(button: 0, at: .init(column: 0, line: 1)))), as: .frameDescription) {
+            """
+            → ScrollView [offset:(0, 0) size:5x3] (0, 0) 5x100
+              → TupleView<Pack{Padding<Text>, Text}>
+                → Padding:[(0, 0) 5x2]
+                  → Text:string("Hello") (0, 0) 5x1
+                → Text:string("World") (0, 2) 5x1
+
+            """
+        }
+
+
+        #expect(application.node.hitTest(at: .init(column: 6, line: 2), key: .init(.mouseUp(button: 0, at: .init(column: 6, line: 2)))) == nil)
+    }
+
+    @Test func hitTest_inScrolledView() async throws {
+        struct MyView: View {
+            var body: some View {
+                ScrollView {
+                    Text("Hello")
+                        .frame(height: 5)
+                    Text("World")
+                        .frame(height: 5)
+                }
+                .frame(height: 5)
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+
+        application.process(key: .init(.pageDown))
+        assertInlineSnapshot(of: application.node.hitTest(at: .init(column: 1, line: 2), key: .init(.mouseUp(button: 0, at: .init(column: 1, line: 2)))), as: .frameDescription) {
+            """
+            → Text:string("World") (0, 7) 5x1
+
+            """
+        }
     }
 }

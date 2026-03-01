@@ -44,7 +44,6 @@ import Testing
             of: application.renderer,
             as: .rendered
         )
-
     }
 
     @Test func testFrameHeightSpecified() async throws {
@@ -428,6 +427,58 @@ import Testing
             of: application.renderer,
             as: .rendered
         )
+
+    }
+
+    @Test func testHitTest() async throws {
+        struct MyView: View {
+            var body: some View {
+                Text("Hello World")
+                    .frame(width: 50, alignment: .center)
+                    .border()
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 52x3
+              → ComposedView<MyView>
+                → Border:[(0, 0) 52x3]
+                  → FixedFrame:50x(nil) [50x1]
+                    → Text:string("Hello World") (20, 1) 11x1
+
+            """
+        }
+
+        assertInlineSnapshot(of: application.node.hitTest(at: .init(column: 0, line: 0), key: Key(.mouseUp(button: 0, at: .zero))), as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 52x3
+              → ComposedView<MyView>
+                → Border:[(0, 0) 52x3]
+                  → FixedFrame:50x(nil) [50x1]
+                    → Text:string("Hello World") (20, 1) 11x1
+            
+            """
+        }
+        assertInlineSnapshot(of: application.node.hitTest(at: .init(column: 20, line: 1), key: Key(.mouseUp(button: 0, at: .init(column: 20, line: 1)))), as: .frameDescription) {
+            """
+            → Text:string("Hello World") (20, 1) 11x1
+            
+            """
+        }
+
+        assertInlineSnapshot(of: application.node.hitTest(at: .init(column: 31, line: 1), key: Key(.mouseUp(button: 0, at: .init(column: 31, line: 1)))), as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 52x3
+              → ComposedView<MyView>
+                → Border:[(0, 0) 52x3]
+                  → FixedFrame:50x(nil) [50x1]
+                    → Text:string("Hello World") (20, 1) 11x1
+            
+            """
+        }
 
     }
 }

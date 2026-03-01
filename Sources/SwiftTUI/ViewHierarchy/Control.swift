@@ -4,6 +4,7 @@
 /// Modifier views like `Border` or `Background` are not controls, but instead they _modify_ the controls in their hierarchy. This is especially true if they contain aggregations like `Group` or `ForEach`.
 @MainActor internal protocol Control: AnyObject {
     var frame: Rect { get set }
+    var frameDescription: String { get }
     var global: Rect { get }
     func size(proposedSize: Size) -> Size
 
@@ -21,6 +22,12 @@
     var layoutElement: Visitor.LayoutElement { get }
     var parent: Node? { get }
     func relative(to: Node?) -> Rect
+
+    /// Returns the control at position
+    func hitTest(at: Position, key: Key) -> (any Control)?
+
+    /// Handle key or bubble key up to the parent capable of handling the key.
+    func bubble(key: Key) -> Bool
 }
 
 extension Control {

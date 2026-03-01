@@ -106,6 +106,24 @@ extension Application {
 
         let keyInputTask = Task {
             for try await key in parser {
+                switch key.key {
+                case .mouseMove(let position),
+                     .mouseScrollUp(let position),
+                     .mouseScrollDown(let position),
+                     .mouseDown(button: _, at: let position),
+                     .mouseUp(button: _, at: let position),
+                     .mouseDrag(button: _, at: let position):
+
+                    // Translate the position into a node and deliver the event to that node even if it doesn't have focus.
+                    if
+                        let control = node.hitTest(at: position),
+                        control.bubble(key: key)
+                    {
+                        continue
+                    }
+                default: break
+                }
+
                 if node.focusManager?.handle(key: key) == true {
                     continue
                 }

@@ -953,4 +953,23 @@ import Testing
         application.process(key: .init(.tab, modifiers: .shift))
     }
 
+    @Test func testHitTest() async throws {
+        struct MyView: View {
+            @State var text1 = ""
+            @FocusState var isFocused
+            var body: some View {
+                TextField(text: $text1) { _ in }
+                    .focus($isFocused)
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+
+        assertInlineSnapshot(of: application.node.hitTest(at: .zero, key: .init(.mouseUp(button: 0, at: .zero))), as: .frameDescription) {
+            """
+            → TextField:"" (0) FOCUSED (0, 0) 100x1
+
+            """
+        }
+    }
 }
