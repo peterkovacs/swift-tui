@@ -5,13 +5,13 @@ public struct Key: Sendable, Equatable {
     public let value: Value
     public let modifiers: Modifiers
 
-    init(_ key: Value, modifiers: Modifiers = []) {
+    nonisolated init(_ key: Value, modifiers: Modifiers = []) {
         self.value = key
         self.modifiers = modifiers
         self.normalize()
     }
 
-    static func fromMouseEvent(
+    nonisolated static func fromMouseEvent(
         mouse: Int,
         position: Position,
         suffix: Unicode.Scalar
@@ -69,14 +69,12 @@ public struct Key: Sendable, Equatable {
         return nil
     }
 
-    public enum Value: Sendable, Hashable, ExpressibleByUnicodeScalarLiteral {
+    nonisolated public enum Value: Sendable, Hashable, ExpressibleByUnicodeScalarLiteral {
         public init(unicodeScalarLiteral value: UnicodeScalar) {
             self = .char(value)
         }
 
-
         public typealias ExtendedGraphemeClusterLiteralType = Character
-
         public typealias UnicodeScalarLiteralType = UnicodeScalar
 
         case char(Unicode.Scalar)
@@ -93,56 +91,55 @@ public struct Key: Sendable, Equatable {
         case mouseScrollUp(Position)
         case mouseScrollDown(Position)
 
-
         // MARK: Key Aliases
-        static let nul: Self     = "\u{0}"
-        static let soh: Self     = "\u{1}"
-        static let stx: Self     = "\u{2}"
-        static let etx: Self     = "\u{3}"
-        static let eot: Self     = "\u{4}"
-        static let enq: Self     = "\u{5}"
-        static let ack: Self     = "\u{6}"
-        static let bel: Self     = "\u{7}"
-        static let bs: Self      = "\u{8}"
-        static let tab: Self     = "\u{9}"
-        static let newLine: Self = "\u{a}"
-        static let vt: Self      = "\u{b}"
-        static let np: Self      = "\u{c}"
-        static let enter: Self   = "\u{d}"
-        static let so: Self      = "\u{e}"
-        static let si: Self      = "\u{f}"
-        static let dle: Self     = "\u{10}"
-        static let dc1: Self     = "\u{11}"
-        static let dc2: Self     = "\u{12}"
-        static let dc3: Self     = "\u{13}"
-        static let dc4: Self     = "\u{14}"
-        static let nak: Self     = "\u{15}"
-        static let syn: Self     = "\u{16}"
-        static let etb: Self     = "\u{17}"
-        static let can: Self     = "\u{18}"
-        static let em: Self      = "\u{19}"
-        static let sub: Self     = "\u{1a}"
-        static let escape: Self  = "\u{1b}"
-        static let fs: Self      = "\u{1c}"
-        static let gs: Self      = "\u{1d}"
-        static let rs: Self      = "\u{1e}"
-        static let us: Self      = "\u{1f}"
-        static let space: Self   = " "
-        static let delete: Self  = "\u{7f}"
+        nonisolated static let nul: Self     = "\u{0}"
+        nonisolated static let soh: Self     = "\u{1}"
+        nonisolated static let stx: Self     = "\u{2}"
+        nonisolated static let etx: Self     = "\u{3}"
+        nonisolated static let eot: Self     = "\u{4}"
+        nonisolated static let enq: Self     = "\u{5}"
+        nonisolated static let ack: Self     = "\u{6}"
+        nonisolated static let bel: Self     = "\u{7}"
+        nonisolated static let bs: Self      = "\u{8}"
+        nonisolated static let tab: Self     = "\u{9}"
+        nonisolated static let newLine: Self = "\u{a}"
+        nonisolated static let vt: Self      = "\u{b}"
+        nonisolated static let np: Self      = "\u{c}"
+        nonisolated static let enter: Self   = "\u{d}"
+        nonisolated static let so: Self      = "\u{e}"
+        nonisolated static let si: Self      = "\u{f}"
+        nonisolated static let dle: Self     = "\u{10}"
+        nonisolated static let dc1: Self     = "\u{11}"
+        nonisolated static let dc2: Self     = "\u{12}"
+        nonisolated static let dc3: Self     = "\u{13}"
+        nonisolated static let dc4: Self     = "\u{14}"
+        nonisolated static let nak: Self     = "\u{15}"
+        nonisolated static let syn: Self     = "\u{16}"
+        nonisolated static let etb: Self     = "\u{17}"
+        nonisolated static let can: Self     = "\u{18}"
+        nonisolated static let em: Self      = "\u{19}"
+        nonisolated static let sub: Self     = "\u{1a}"
+        nonisolated static let escape: Self  = "\u{1b}"
+        nonisolated static let fs: Self      = "\u{1c}"
+        nonisolated static let gs: Self      = "\u{1d}"
+        nonisolated static let rs: Self      = "\u{1e}"
+        nonisolated static let us: Self      = "\u{1f}"
+        nonisolated static let space: Self   = " "
+        nonisolated static let delete: Self  = "\u{7f}"
     }
 
     public struct Modifiers: Sendable, OptionSet {
         public let rawValue: Int
 
-        public static let shift = Self(rawValue: 1 << 0)
-        public static let ctrl = Self(rawValue: 1 << 1)
-        public static let alt = Self(rawValue: 1 << 2)
+        nonisolated public static let shift = Self(rawValue: 1 << 0)
+        nonisolated public static let ctrl = Self(rawValue: 1 << 1)
+        nonisolated public static let alt = Self(rawValue: 1 << 2)
 
-        public init(rawValue: Int) {
+        nonisolated public init(rawValue: Int) {
             self.rawValue = rawValue
         }
 
-        public init(sgr: Int) {
+        nonisolated public init(sgr: Int) {
             var value = 0
 
             // 4, 8, or 16 are added to any event that has
@@ -163,7 +160,7 @@ public struct Key: Sendable, Equatable {
         }
     }
 
-    var isControl: Bool {
+    nonisolated var isControl: Bool {
         switch value {
         case .nul, .soh, .stx, .etx, .eot, .enq, .ack, .bel, .bs, .tab, .newLine,
              .vt, .np, .enter, .so, .si, .dle, .dc1, .dc2, .dc3, .dc4, .nak,
@@ -174,7 +171,7 @@ public struct Key: Sendable, Equatable {
         }
     }
 
-    private mutating func normalize() {
+    nonisolated private mutating func normalize() {
         switch (value, modifiers) {
         case ("@", .ctrl):     self = .init("\u{0}")
         case ("a", .ctrl):     self = .init("\u{1}")
@@ -215,7 +212,7 @@ public struct Key: Sendable, Equatable {
 }
 
 /// Parse bytes from the fileHandle into `Key`s.
-actor KeyParser: AsyncSequence {
+actor KeyParser /* : AsyncSequence */ {
     typealias Timeout = Task<Void, Never>
 
     enum State: Equatable {
@@ -240,30 +237,6 @@ actor KeyParser: AsyncSequence {
     public init(fileHandle: consuming FileHandle = .standardInput) {
         self.state = (.initial, nil)
         self.fileHandle = fileHandle
-    }
-
-    // MARK: AsyncSequence
-
-    public typealias Element = Key
-    public nonisolated func makeAsyncIterator() -> AsyncIterator {
-        AsyncIterator(owner: self)
-    }
-
-    public struct AsyncIterator: AsyncIteratorProtocol {
-        let owner: KeyParser
-        var iter: AsyncThrowingStream<Key, Error>.AsyncIterator? = nil
-
-        init(owner: KeyParser) {
-            self.owner = owner
-        }
-
-        public mutating func next() async throws -> Key? {
-            if iter == nil {
-                iter = await owner.parse().makeAsyncIterator()
-            }
-
-            return try await iter?.next()
-        }
     }
 
     // MARK: Parse Input
@@ -347,7 +320,7 @@ actor KeyParser: AsyncSequence {
         return stream.stream
     }
 
-    private func parse() -> AsyncThrowingStream<Key, Error> {
+    public func parse() -> AsyncThrowingStream<Key, Error> {
         let stream = AsyncThrowingStream<Key, Error>.makeStream()
         let task = Task {
             do {
@@ -674,4 +647,4 @@ actor KeyParser: AsyncSequence {
     }
 }
 
-private let Digit = Unicode.Scalar(0x30)...Unicode.Scalar(0x39)
+nonisolated private let Digit = Unicode.Scalar(0x30)...Unicode.Scalar(0x39)

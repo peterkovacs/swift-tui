@@ -1,5 +1,4 @@
 
-// TODO: Documentation on how to create an EnviornmentKey.
 public protocol EnvironmentKey {
     associatedtype Value
     static var defaultValue: Value { get }

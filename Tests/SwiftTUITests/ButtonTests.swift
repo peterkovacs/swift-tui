@@ -2,6 +2,7 @@ import InlineSnapshotTesting
 import SnapshotTesting
 @testable import SwiftTUI
 import Testing
+import Synchronization
 
 @MainActor @Suite("Button Tests", .snapshots(record: .failed)) struct ButtonTests {
     @Test func testDisabledButtonSkippedForDefaultFocus() async throws {
@@ -31,7 +32,7 @@ import Testing
     }
 
     @Test func testDisabledButtonDoesNotFireAction() async throws {
-        let actionCalled = LockIsolated(false)
+        let actionCalled = Mutex(false)
 
         struct MyView: View {
             let action: @MainActor () -> Void
@@ -41,13 +42,13 @@ import Testing
             }
         }
 
-        let (application, _) = try drawView(MyView { actionCalled.withValue { $0 = true } })
+        let (application, _) = try drawView(MyView { actionCalled.withLock { $0 = true } })
 
         // No focusable element, so keypress goes nowhere
         application.process(key: .init(.enter))
         application.process(key: .init(.space))
 
-        #expect(!actionCalled.value)
+        #expect(actionCalled.withLock(\.self) == false)
     }
 
 
@@ -63,8 +64,8 @@ import Testing
             }
         }
 
-        let actionCalled = LockIsolated(false)
-        let (application, _) = try drawView(MyView { actionCalled.withValue { $0.toggle() } })
+        let actionCalled = Mutex(false)
+        let (application, _) = try drawView(MyView { actionCalled.withLock { $0.toggle() } })
 
         assertInlineSnapshot(of: application, as: .frameDescription) {
             """
@@ -80,9 +81,9 @@ import Testing
         }
         assertSnapshot(of: application.renderer, as: .rendered)
 
-        #expect(actionCalled.value == false)
+        #expect(actionCalled.withLock(\.self) == false)
         application.process(key: .init(.enter))
-        #expect(actionCalled.value)
+        #expect(actionCalled.withLock(\.self) == true)
     }
 
     @Test func testHitTest() async throws {

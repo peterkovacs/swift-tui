@@ -20,7 +20,7 @@ extension EnvironmentValues {
   }
 }
 
-public struct DividerStyle: Sendable, Equatable {
+nonisolated public struct DividerStyle: Sendable, Equatable {
     let horizontal: Character
     let vertical: Character
 

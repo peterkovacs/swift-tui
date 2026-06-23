@@ -2,11 +2,12 @@ import Observation
 import SnapshotTesting
 @testable import SwiftTUI
 import Testing
+import Synchronization
 
 @MainActor
 @Suite("Appearance Tests", .serialized) struct AppearanceTests {
     @Test func testOnAppearCalledWhenViewAppears() async throws {
-        let appeared = LockIsolated(false)
+        let appeared = Mutex(false)
 
         struct MyView: View {
             let appeared: @Sendable () -> Void
@@ -18,13 +19,13 @@ import Testing
             }
         }
 
-        _ = try drawView(MyView { appeared.withValue { $0 = true } })
+        _ = try drawView(MyView { appeared.withLock { $0 = true } })
 
-        #expect(appeared.value)
+        #expect(appeared.withLock(\.self) == true)
     }
 
     @Test func testOnAppearNotCalledBeforeViewBuilds() async throws {
-        let appeared = LockIsolated(false)
+        let appeared = Mutex(false)
 
         struct MyView: View {
             let appeared: @Sendable () -> Void
@@ -37,8 +38,8 @@ import Testing
         }
 
         // Just creating the view struct must not trigger onAppear
-        _ = MyView { appeared.withValue { $0 = true } }
-        #expect(!appeared.value)
+        _ = MyView { appeared.withLock { $0 = true } }
+        #expect(appeared.withLock(\.self) == false)
     }
 
     @Observable
@@ -47,7 +48,7 @@ import Testing
     }
 
     @Test func testOnDisappearCalledWhenViewRemoved() async throws {
-        let disappeared = LockIsolated(false)
+        let disappeared = Mutex(false)
 
         struct MyView: View {
             @State var model: Model
@@ -64,19 +65,19 @@ import Testing
 
         let model = Model()
         let (application, _) = try drawView(
-            MyView(model: model) { disappeared.withValue { $0 = true } }
+            MyView(model: model) { disappeared.withLock { $0 = true } }
         )
 
-        #expect(!disappeared.value)
+        #expect(disappeared.withLock(\.self) == false)
 
         model.isShowing = false
         application.update()
 
-        #expect(disappeared.value)
+        #expect(disappeared.withLock(\.self) == true)
     }
 
     @Test func testOnDisappearNotCalledWhenViewStaysVisible() async throws {
-        let disappeared = LockIsolated(false)
+        let disappeared = Mutex(false)
 
         struct MyView: View {
             @State var model: Model
@@ -94,20 +95,20 @@ import Testing
 
         let model = Model()
         let (application, _) = try drawView(
-            MyView(model: model) { disappeared.withValue { $0 = true } }
+            MyView(model: model) { disappeared.withLock { $0 = true } }
         )
 
         // The view with onDisappear is still visible — no callback yet
-        #expect(!disappeared.value)
+        #expect(disappeared.withLock(\.self) == false)
 
         // Trigger an unrelated update
         application.update()
-        #expect(!disappeared.value)
+        #expect(disappeared.withLock(\.self) == false)
     }
 
     @Test func testOnAppearAndOnDisappearBothFire() async throws {
-        let appeared = LockIsolated(false)
-        let disappeared = LockIsolated(false)
+        let appeared = Mutex(false)
+        let disappeared = Mutex(false)
 
         struct MyView: View {
             @State var model: Model
@@ -125,16 +126,16 @@ import Testing
         let model = Model()
         let (application, _) = try drawView(
             MyView(model: model,
-                   appeared: { appeared.withValue { $0 = true } },
-                   disappeared: { disappeared.withValue { $0 = true } })
+                   appeared: { appeared.withLock { $0 = true } },
+                   disappeared: { disappeared.withLock { $0 = true } })
         )
 
-        #expect(appeared.value)
-        #expect(!disappeared.value)
+        #expect(appeared.withLock(\.self) == true)
+        #expect(disappeared.withLock(\.self) == false)
 
         model.isShowing = false
         application.update()
 
-        #expect(disappeared.value)
+        #expect(disappeared.withLock(\.self) == true)
     }
 }

@@ -81,7 +81,7 @@ struct Window<Element> {
 }
 
 extension Window: Sequence {
-    struct CoordinateIterator: Sequence, IteratorProtocol {
+    nonisolated struct CoordinateIterator: nonisolated Sequence, IteratorProtocol {
         let size: Size
         var coordinate: Position
 
@@ -95,7 +95,7 @@ extension Window: Sequence {
         }
     }
 
-    struct RowIterator: Sequence, IteratorProtocol {
+    nonisolated struct RowIterator: nonisolated Sequence, IteratorProtocol {
         let size: Size
         var coordinate: Position
 
@@ -107,11 +107,11 @@ extension Window: Sequence {
         }
     }
 
-    struct ColumnIterator: Sequence, IteratorProtocol {
+    nonisolated struct ColumnIterator: nonisolated Sequence, IteratorProtocol {
         let size: Size
         var coordinate: Position
 
-        mutating func next() -> Position? {
+        nonisolated mutating func next() -> Position? {
             if coordinate.line >= size.height { return nil }
             defer { coordinate.line += 1 }
 

@@ -1,6 +1,6 @@
 import Foundation
 
-struct AttributedLineIterator: IteratorProtocol, Sequence {
+nonisolated struct AttributedLineIterator: nonisolated IteratorProtocol, Sequence {
     let rect: Rect
     let string: AttributedString
     var currentIndex: AttributedString.Index

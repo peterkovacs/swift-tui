@@ -57,7 +57,9 @@ struct KeyParserTests {
     )
     func parsesEscapeSequences(input: String, expectation: Key) async throws {
         let (parser, fileHandle) = KeyParser.pipe()
-        var iterator = parser.makeAsyncIterator()
+
+        let sequence = await parser.parse()
+        var iterator = sequence.makeAsyncIterator()
 
         Task {
             try fileHandle.write(
@@ -71,7 +73,7 @@ struct KeyParserTests {
 
     @Test func parsesMouseDown() async throws {
         let (parser, fileHandle) = KeyParser.pipe()
-        var iterator = parser.makeAsyncIterator()
+        var iterator = await parser.parse().makeAsyncIterator()
 
         Task {
             try fileHandle.write(
@@ -86,7 +88,7 @@ struct KeyParserTests {
 
     @Test func parsesF5() async throws {
         let (parser, fileHandle) = KeyParser.pipe()
-        var iterator = parser.makeAsyncIterator()
+        var iterator = await parser.parse().makeAsyncIterator()
         
         Task {
             try fileHandle.write(
@@ -100,7 +102,7 @@ struct KeyParserTests {
 
     @Test func parsesEscape() async throws {
         let (parser, fileHandle) = KeyParser.pipe()
-        var iterator = parser.makeAsyncIterator()
+        var iterator = await parser.parse().makeAsyncIterator()
 
         Task {
             try fileHandle.write(
@@ -131,7 +133,7 @@ struct KeyParserTests {
     // "\u{1b}[<1;2;3", so the yielded key sequence was shorter and incorrect.
     @Test func testMouseSequenceTimeoutIncludesAllDigits() async throws {
         let (parser, fileHandle) = KeyParser.pipe()
-        var iterator = parser.makeAsyncIterator()
+        var iterator = await parser.parse().makeAsyncIterator()
 
         // Write ESC [ < 1 ; 2 ; 3  (incomplete – missing the terminal M/m)
         Task {
@@ -163,7 +165,7 @@ struct KeyParserTests {
 
     @Test func parsesUnicode() async throws {
         let (parser, fileHandle) = KeyParser.pipe()
-        var iterator = parser.makeAsyncIterator()
+        var iterator = await parser.parse().makeAsyncIterator()
 
         Task {
             try fileHandle.write(

@@ -1,6 +1,7 @@
 import Dependencies
 import Foundation
 import AsyncAlgorithms
+import Synchronization
 
 @MainActor public class Application {
     private(set) var node: RootNode!
@@ -78,8 +79,8 @@ extension Application {
         let sigwinch: AsyncStream<Void> = {
             let stream = AsyncStream<Void>.makeStream()
 
-            let sigWinChSource = LockIsolated(DispatchSource.makeSignalSource(signal: SIGWINCH, queue: .main))
-            sigWinChSource.withValue { signal in
+            let sigWinChSource = Mutex(DispatchSource.makeSignalSource(signal: SIGWINCH, queue: .main))
+            sigWinChSource.withLock { signal in
                 signal.setEventHandler(
                     qos: .userInitiated,
                     flags: [],
@@ -91,7 +92,7 @@ extension Application {
             }
 
             stream.continuation.onTermination = { _ in
-                sigWinChSource.withValue { $0.cancel() }
+                sigWinChSource.withLock { $0.cancel() }
             }
 
             return stream.stream
@@ -105,7 +106,7 @@ extension Application {
         }
 
         let keyInputTask = Task {
-            for try await key in parser {
+            for try await key in await parser.parse() {
                 // print("KEY: \(String(describing: key))")
 
                 switch key.value {

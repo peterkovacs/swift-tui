@@ -1,16 +1,16 @@
-public enum VerticalAlignment: Sendable, Hashable {
+nonisolated public enum VerticalAlignment: Sendable, Hashable {
     case top
     case center
     case bottom
 }
 
-public enum HorizontalAlignment: Sendable, Hashable {
+nonisolated public enum HorizontalAlignment: Sendable, Hashable {
     case leading
     case center
     case trailing
 }
 
-public struct Alignment: Sendable, Hashable {
+nonisolated public struct Alignment: Sendable, Hashable {
     public var horizontalAlignment: HorizontalAlignment
     public var verticalAlignment: VerticalAlignment
 

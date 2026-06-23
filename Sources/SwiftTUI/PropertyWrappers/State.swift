@@ -33,7 +33,7 @@ public struct State<Wrapped>: DynamicProperty {
 
 extension State: Sendable where Wrapped: Sendable {}
 
-extension State where Wrapped: Equatable & Sendable {
+extension State where Wrapped: Equatable {
     public init(initialValue: Wrapped) {
         self.reference = .init(initialValue: initialValue, isEqual: { $0 == $1 })
     }
@@ -52,7 +52,7 @@ extension State where Wrapped: ExpressibleByNilLiteral {
 @MainActor
 final class DynamicPropertyReference<Wrapped> {
     let initialValue: Wrapped
-    let isEqual: (@Sendable (Wrapped, Wrapped) -> Bool)?
+    let isEqual: ((Wrapped, Wrapped) -> Bool)?
 
     struct Key: Hashable, Sendable {
         let type: ObjectIdentifier
@@ -67,7 +67,7 @@ final class DynamicPropertyReference<Wrapped> {
     weak var node: DynamicPropertyNode?
     var label: String?
 
-    init(initialValue: Wrapped, isEqual: (@Sendable (Wrapped, Wrapped) -> Bool)? = nil) {
+    init(initialValue: Wrapped, isEqual: ((Wrapped, Wrapped) -> Bool)? = nil) {
         self.initialValue = initialValue
         self.isEqual = isEqual
     }

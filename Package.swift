@@ -29,6 +29,11 @@ let package = Package(
                 "CUnicode",
                 .product(name: "Dependencies", package: "swift-dependencies"),
                 .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
+            ],
+            swiftSettings: [
+                .defaultIsolation(MainActor.self),
+                .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
+                .enableUpcomingFeature("InferIsolatedConformances"),
             ]
         ),
         .target(name: "CUnicode"),

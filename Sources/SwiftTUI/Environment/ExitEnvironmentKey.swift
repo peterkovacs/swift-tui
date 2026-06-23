@@ -22,12 +22,12 @@ extension EnvironmentValues {
     ///   }
     /// }
     /// ```
-    @MainActor public var exit: @Sendable () -> Void {
+    public var exit: @MainActor () -> Void {
         get { self[ExitEnvironmentKey.self] }
         set { self[ExitEnvironmentKey.self] = newValue }
     }
 
     private struct ExitEnvironmentKey: EnvironmentKey {
-        static let defaultValue: @Sendable () -> Void = Exit.exit
+        static let defaultValue: @MainActor () -> Void = Exit.exit
     }
 }

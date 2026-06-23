@@ -47,8 +47,7 @@ final class AppearanceNode: Node {
         onAppear?()
     }
 
-    deinit {
-        let action = onDisappear
-        MainActor.assumeIsolated { action?() }
+    isolated deinit {
+        onDisappear?()
     }
 }

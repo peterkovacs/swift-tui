@@ -2,6 +2,7 @@ import Observation
 import SnapshotTesting
 @testable import SwiftTUI
 import Testing
+import Synchronization
 
 @MainActor
 @Suite("Task Tests", .serialized) struct TaskTests {
@@ -14,17 +15,17 @@ import Testing
             }
         }
 
-        let isCalled = LockIsolated(false)
+        let isCalled = Mutex(false)
         let (application, _) = try drawView(
             MyView {
-                isCalled.withValue {
+                isCalled.withLock {
                     $0 = true
                 }
             }
         )
 
         await application.waitForTasksToComplete()
-        #expect(isCalled.value == true)
+        #expect(isCalled.withLock(\.self) == true)
     }
 
     @Observable
@@ -51,16 +52,16 @@ import Testing
         }
 
         let model = Model()
-        let isCalled = LockIsolated(false)
+        let isCalled = Mutex(false)
         let (application, _) = try drawView(
             MyView(model: model) {
-                isCalled.withValue {
+                isCalled.withLock {
                     $0 = true
                 }
             }
         )
 
-        #expect(isCalled.value == false)
+        #expect(isCalled.withLock(\.self) == false)
         model.isShowing.toggle()
 
         #expect(!application.invalidated.isEmpty)
@@ -71,7 +72,7 @@ import Testing
         // Give time for our code to get called?
         await Task.megaYield()
 
-        #expect(isCalled.value == true)
+        #expect(isCalled.withLock(\.self) == true)
     }
 
     @Test func testTaskIsRestartedWhenIDChanges() async throws {
@@ -88,10 +89,10 @@ import Testing
         }
 
         let model = Model()
-        let isCalled = LockIsolated([Bool]())
+        let isCalled = Mutex([Bool]())
         let (application, _) = try drawView(
             MyView(model: model) { value in
-                isCalled.withValue {
+                isCalled.withLock {
                     $0.append(value)
                 }
             }
@@ -100,7 +101,7 @@ import Testing
         // Give task time to start
         await application.waitForTasksToComplete()
 
-        #expect(isCalled.value == [true])
+        #expect(isCalled.withLock(\.self) == [true])
         model.isShowing.toggle()
 
         #expect(!application.invalidated.isEmpty)
@@ -109,7 +110,7 @@ import Testing
         // Give task time to actually cancel
         await application.waitForTasksToComplete()
 
-        #expect(isCalled.value == [true, false])
+        #expect(isCalled.withLock(\.self) == [true, false])
 
     }
 }

@@ -2,7 +2,7 @@ import Foundation
 
 /// `Int` extended with infinity values, used by certain modifiers such as `.frame(maxWidth:)` to
 /// allow views taking up all necessary space.
-public struct Extended: Equatable, Sendable, Hashable {
+nonisolated public struct Extended: Equatable, Sendable, Hashable {
     fileprivate let data: Value
 
     fileprivate enum Value: Sendable, Hashable {
@@ -60,13 +60,13 @@ public struct Extended: Equatable, Sendable, Hashable {
     }
 }
 
-extension Extended: ExpressibleByIntegerLiteral {
+nonisolated extension Extended: nonisolated ExpressibleByIntegerLiteral {
     public init(integerLiteral value: Int) {
         self.init(value)
     }
 }
 
-extension Extended: AdditiveArithmetic {
+nonisolated extension Extended: nonisolated AdditiveArithmetic {
     public static func -(lhs: Extended, rhs: Extended) -> Extended {
         switch (lhs.data, rhs.data) {
         case (.number(let a), .number(let b)):
@@ -114,7 +114,7 @@ extension Extended: AdditiveArithmetic {
     }
 }
 
-extension Extended: Comparable {
+nonisolated extension Extended: nonisolated Comparable {
     public static func <(lhs: Extended, rhs: Extended) -> Bool {
         switch (lhs.data, rhs.data) {
         case (.number(let a), .number(let b)):
@@ -139,7 +139,7 @@ extension Extended: Comparable {
     }
 }
 
-extension Extended {
+nonisolated extension Extended {
     public static func *(lhs: Extended, rhs: Extended) -> Extended {
         switch (lhs.data, rhs.data) {
         case (.number(let a), .number(let b)):
@@ -226,7 +226,7 @@ extension Extended {
     }
 }
 
-public func max(_ a: Extended, _ b: Extended) -> Extended {
+nonisolated public func max(_ a: Extended, _ b: Extended) -> Extended {
     switch (a.data, b.data) {
     case (.number(let a), .number(let b)):
         return Extended(max(a, b))
@@ -249,7 +249,7 @@ public func max(_ a: Extended, _ b: Extended) -> Extended {
     }
 }
 
-extension Extended: CustomStringConvertible {
+nonisolated extension Extended: nonisolated CustomStringConvertible {
     public var description: String {
         switch data {
         case .positiveInfinity:

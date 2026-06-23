@@ -1,10 +1,10 @@
 import Foundation
 
 @propertyWrapper
-public struct Environment<Wrapped: Sendable>: EnvironmentValue, DynamicProperty, Sendable {
+public struct Environment<Wrapped>: EnvironmentValue, DynamicProperty {
     var reference: EnvironmentReference<Wrapped>
 
-    public init(_ keyPath: KeyPath<EnvironmentValues, Wrapped> & Sendable) {
+    public init(_ keyPath: KeyPath<EnvironmentValues, Wrapped>) {
         self.reference = .init(keyPath: keyPath)
     }
 
@@ -17,14 +17,14 @@ public struct Environment<Wrapped: Sendable>: EnvironmentValue, DynamicProperty,
     }
 }
 
-protocol EnvironmentValue: Sendable {
-    associatedtype Wrapped: Sendable
+protocol EnvironmentValue {
+    associatedtype Wrapped
     @MainActor var wrappedValue: Wrapped { get }
 }
 
-final class EnvironmentReference<Wrapped>: Sendable  {
-    private let keyPath: KeyPath<EnvironmentValues, Wrapped> & Sendable
-    init(keyPath: KeyPath<EnvironmentValues, Wrapped> & Sendable) {
+final class EnvironmentReference<Wrapped>  {
+    private let keyPath: KeyPath<EnvironmentValues, Wrapped>
+    init(keyPath: KeyPath<EnvironmentValues, Wrapped>) {
         self.keyPath = keyPath
     }
 

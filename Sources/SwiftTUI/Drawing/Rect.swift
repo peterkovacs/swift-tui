@@ -1,6 +1,6 @@
 import Foundation
 
-struct Rect: Hashable {
+nonisolated struct Rect: Hashable {
     var position: Position
     var size: Size
 
@@ -72,11 +72,11 @@ struct Rect: Hashable {
     }
 }
 
-extension Rect: CustomStringConvertible {
+nonisolated extension Rect: nonisolated CustomStringConvertible {
     var description: String { "\(position) \(size)" }
 }
 
-extension Rect {
+nonisolated extension Rect {
     var indices: some Collection<Position> {
         Window<Cell>.CoordinateIterator(size: size, coordinate: .zero).lazy.map { $0 + position }
     }
@@ -123,7 +123,7 @@ extension Rect {
 
 }
 
-extension Rect {
+nonisolated extension Rect {
     static func - (lhs: Rect, rhs: Position) -> Rect {
         .init(position: lhs.position - rhs, size: lhs.size)
     }

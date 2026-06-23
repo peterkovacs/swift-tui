@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Size: Sendable, CustomStringConvertible, Hashable {
+nonisolated public struct Size: Sendable, CustomStringConvertible, Hashable {
     public var width: Extended
     public var height: Extended
 
@@ -19,7 +19,7 @@ public struct Size: Sendable, CustomStringConvertible, Hashable {
 
 }
 
-extension Size {
+nonisolated extension Size {
     public static func + (lhs: Size, rhs: Size) -> Size {
         .init(width: lhs.width + rhs.width, height: lhs.height + rhs.height)
     }

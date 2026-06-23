@@ -1,6 +1,6 @@
 import Foundation
 
-struct CellAttributes: Equatable {
+nonisolated struct CellAttributes: Equatable {
     var bold: Bool
     var italic: Bool
     var underline: Bool

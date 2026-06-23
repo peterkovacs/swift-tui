@@ -1,6 +1,6 @@
 import Foundation
 
-public enum EscapeSequence {
+nonisolated public enum EscapeSequence {
     public static let clearScreen = "\u{1b}[2J".utf8
 
     public static let enableAlternateBuffer = "\u{1b}[?1049h".utf8

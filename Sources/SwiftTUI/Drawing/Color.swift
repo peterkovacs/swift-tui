@@ -7,7 +7,7 @@ import Foundation
 ///
 /// The named colors are ANSI colors. In many terminal emulators they are user-defined or part of a
 /// theme, and bold text automatically uses the bright color variant.
-public struct Color: Sendable, Hashable {
+nonisolated public struct Color: Sendable, Hashable {
     private let data: Data
 
     private enum Data: Sendable, Hashable {
@@ -86,7 +86,7 @@ public struct Color: Sendable, Hashable {
     public static var gray: Color { .brightBlack }
 }
 
-public struct ANSIColor: Sendable, Hashable {
+nonisolated public struct ANSIColor: Sendable, Hashable {
     let foregroundCode: Int
     let backgroundCode: Int
 
@@ -111,7 +111,7 @@ public struct ANSIColor: Sendable, Hashable {
     public static var brightWhite: ANSIColor { ANSIColor(foregroundCode: 97, backgroundCode: 107) }
 }
 
-struct XTermColor: Sendable, Hashable {
+nonisolated struct XTermColor: Sendable, Hashable {
     let value: Int
 
     static func color(red: Int, green: Int, blue: Int) -> XTermColor {
@@ -131,7 +131,7 @@ struct XTermColor: Sendable, Hashable {
     }
 }
 
-struct TrueColor: Sendable, Hashable {
+nonisolated struct TrueColor: Sendable, Hashable {
     let red: Int
     let green: Int
     let blue: Int

@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Position: Hashable, Sendable {
+nonisolated public struct Position: Hashable, Sendable {
     public var column: Extended
     public var line: Extended
 
@@ -19,15 +19,15 @@ public struct Position: Hashable, Sendable {
     }
 }
 
-extension Position: CustomStringConvertible {
+nonisolated extension Position: nonisolated CustomStringConvertible {
     public var description: String { "(\(column), \(line))" }
 }
 
-extension Position: CustomDebugStringConvertible {
+nonisolated extension Position: nonisolated CustomDebugStringConvertible {
     public var debugDescription: String { description }
 }
 
-extension Position: AdditiveArithmetic {
+nonisolated extension Position: nonisolated AdditiveArithmetic {
     public static func +(lhs: Self, rhs: Self) -> Self {
         Position(column: lhs.column + rhs.column, line: lhs.line + rhs.line)
     }

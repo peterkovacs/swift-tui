@@ -1,6 +1,6 @@
 import Foundation
 
-struct Cell: Equatable {
+nonisolated struct Cell: Equatable {
     var char: Character
     var foregroundColor: Color
 

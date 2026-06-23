@@ -1,4 +1,4 @@
-struct LineIterator: IteratorProtocol, Sequence {
+nonisolated struct LineIterator: nonisolated IteratorProtocol, Sequence {
     let rect: Rect
     let string: String
     var currentIndex: String.Index

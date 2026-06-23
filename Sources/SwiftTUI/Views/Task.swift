@@ -83,7 +83,7 @@ final class TaskNode<ID: Equatable>: Node, Taskable {
         super.init(view: view, parent: parent, root: root)
     }
 
-    deinit {
+    isolated deinit {
         task?.cancel()
     }
 
