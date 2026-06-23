@@ -568,6 +568,54 @@ import Testing
         #expect(application.node.hitTest(at: .init(column: 6, line: 2), key: .init(.mouseUp(button: 0, at: .init(column: 6, line: 2)))) == nil)
     }
 
+    // Verifies that a mouse-scroll event bubbles through a focused child Focusable
+    // that cannot handle it (TextField) up to the enclosing ScrollView.
+    // Before the Node.bubble fix, bubble() stopped at the first Focusable that
+    // returned false instead of continuing to the parent.
+    @Test func testMouseScrollBubblesThroughFocusedChildToScrollView() async throws {
+        struct MyView: View {
+            @State var text = ""
+            var body: some View {
+                ScrollView {
+                    TextField(text: $text) { _ in }
+                    Text("1")
+                    Text("2")
+                    Text("3")
+                    Text("4")
+                }
+                .frame(height: 3)
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+
+        // Simulate the Application event loop's hitTest + bubble path for mouse events.
+        // hitTest finds the TextField at (0,0); bubble propagates the scroll event through
+        // the TextField (which returns false) to the ScrollView (which handles it).
+        let scrollKey = Key(.mouseScrollDown(Position(column: 0, line: 0)))
+        if let control = application.node.hitTest(at: .zero, key: scrollKey) {
+            _ = control.bubble(key: scrollKey)
+            application.update()
+        }
+
+        // The ScrollView's contentOffset.line should have incremented by 1
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 100x3
+              → ComposedView<MyView>
+                → FixedFrame:(nil)x3 [100x3]
+                  → ScrollView [offset:(0, 1) size:99x5] (0, 0) 100x3
+                    → TupleView<Pack{TextField, Text, Text, Text, Text}>
+                      → TextField:"" (0) FOCUSED (0, 0) 99x1
+                      → Text:string("1") (49, 1) 1x1
+                      → Text:string("2") (49, 2) 1x1
+                      → Text:string("3") (49, 3) 1x1
+                      → Text:string("4") (49, 4) 1x1
+
+            """
+        }
+    }
+
     @Test func hitTest_inScrolledView() async throws {
         struct MyView: View {
             var body: some View {

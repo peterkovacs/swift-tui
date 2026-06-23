@@ -125,6 +125,42 @@ struct KeyParserTests {
 
     }
 
+    // Verifies that the timeout yielding string for a partial 3-part mouse sequence
+    // includes all three digit groups (digit1, digit2, and the start of digit3).
+    // Before the fix the string was missing digit2, e.g. "\u{1b}[<1;3" instead of
+    // "\u{1b}[<1;2;3", so the yielded key sequence was shorter and incorrect.
+    @Test func testMouseSequenceTimeoutIncludesAllDigits() async throws {
+        let (parser, fileHandle) = KeyParser.pipe()
+        var iterator = parser.makeAsyncIterator()
+
+        // Write ESC [ < 1 ; 2 ; 3  (incomplete – missing the terminal M/m)
+        Task {
+            try fileHandle.write(contentsOf: "\u{1b}[<1;2;3".data(using: .utf8)!)
+        }
+
+        // Wait longer than the 30 ms parser timeout so the partial sequence is flushed
+        try await Task.sleep(for: .milliseconds(150))
+
+        // With the fix the string "\u{1b}[<1;2;3" is yielded as 8 individual char keys
+        let k1 = try await iterator.next()
+        let k2 = try await iterator.next()
+        let k3 = try await iterator.next()
+        let k4 = try await iterator.next()
+        let k5 = try await iterator.next()
+        let k6 = try await iterator.next()
+        let k7 = try await iterator.next()
+        let k8 = try await iterator.next()
+
+        #expect(k1 == Key(.char("\u{1b}")))
+        #expect(k2 == Key(.char("[")))
+        #expect(k3 == Key(.char("<")))
+        #expect(k4 == Key(.char("1")))
+        #expect(k5 == Key(.char(";")))
+        #expect(k6 == Key(.char("2"))) // was missing before the fix
+        #expect(k7 == Key(.char(";"))) // was missing before the fix
+        #expect(k8 == Key(.char("3")))
+    }
+
     @Test func parsesUnicode() async throws {
         let (parser, fileHandle) = KeyParser.pipe()
         var iterator = parser.makeAsyncIterator()

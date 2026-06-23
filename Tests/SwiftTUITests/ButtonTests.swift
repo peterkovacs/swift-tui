@@ -4,6 +4,53 @@ import SnapshotTesting
 import Testing
 
 @MainActor @Suite("Button Tests", .snapshots(record: .failed)) struct ButtonTests {
+    @Test func testDisabledButtonSkippedForDefaultFocus() async throws {
+        struct MyView: View {
+            var body: some View {
+                Button("Disabled") { }
+                    .disabled()
+                Button("Enabled") { }
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 8x2
+              → ComposedView<MyView>
+                → TupleView<Pack{SetEnvironmentView<Button<Text>, Bool>, Button<Text>}>
+                  → SetEnvironmentView<Button<Text>, Bool>
+                    → Button (0, 0) 8x1
+                      → Text:string("Disabled") (0, 0) 8x1
+                  → Button FOCUSED (0, 1) 7x1
+                    → Text:string("Enabled") (0, 1) 7x1
+
+            """
+        }
+    }
+
+    @Test func testDisabledButtonDoesNotFireAction() async throws {
+        let actionCalled = LockIsolated(false)
+
+        struct MyView: View {
+            let action: @MainActor () -> Void
+            var body: some View {
+                Button("Go", action: action)
+                    .disabled()
+            }
+        }
+
+        let (application, _) = try drawView(MyView { actionCalled.withValue { $0 = true } })
+
+        // No focusable element, so keypress goes nowhere
+        application.process(key: .init(.enter))
+        application.process(key: .init(.space))
+
+        #expect(!actionCalled.value)
+    }
+
+
     @Test func containsImplicitHStack() async throws {
         struct MyView: View {
             let action: @MainActor () -> Void

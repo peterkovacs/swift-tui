@@ -33,6 +33,16 @@ public struct State<Wrapped>: DynamicProperty {
 
 extension State: Sendable where Wrapped: Sendable {}
 
+extension State where Wrapped: Equatable & Sendable {
+    public init(initialValue: Wrapped) {
+        self.reference = .init(initialValue: initialValue, isEqual: { $0 == $1 })
+    }
+
+    public init(wrappedValue: Wrapped) {
+        self.reference = .init(initialValue: wrappedValue, isEqual: { $0 == $1 })
+    }
+}
+
 extension State where Wrapped: ExpressibleByNilLiteral {
     @inlinable public init() {
         self.init(wrappedValue: nil as Wrapped)
@@ -42,6 +52,7 @@ extension State where Wrapped: ExpressibleByNilLiteral {
 @MainActor
 final class DynamicPropertyReference<Wrapped> {
     let initialValue: Wrapped
+    let isEqual: (@Sendable (Wrapped, Wrapped) -> Bool)?
 
     struct Key: Hashable, Sendable {
         let type: ObjectIdentifier
@@ -56,8 +67,9 @@ final class DynamicPropertyReference<Wrapped> {
     weak var node: DynamicPropertyNode?
     var label: String?
 
-    init(initialValue: Wrapped) {
+    init(initialValue: Wrapped, isEqual: (@Sendable (Wrapped, Wrapped) -> Bool)? = nil) {
         self.initialValue = initialValue
+        self.isEqual = isEqual
     }
 
     var wrappedValue: Wrapped {
@@ -75,7 +87,11 @@ final class DynamicPropertyReference<Wrapped> {
         set {
             // If not yet wired, ignore the set until setup; once wired, it will be seeded via initialize.
             guard let node, let label else { return }
-            node.set(state: Key(label: label), value: newValue)
+            let key = Key(label: label)
+            if let isEqual, let existing: Wrapped = node.get(state: key), isEqual(existing, newValue) {
+                return
+            }
+            node.set(state: key, value: newValue)
         }
     }
 
