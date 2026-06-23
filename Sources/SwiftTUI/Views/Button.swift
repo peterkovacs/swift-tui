@@ -51,7 +51,7 @@ final class ButtonNode: HStackNode {
 
     override func draw(rect: Rect, into window: inout Window<Cell?>) {
         super.draw(rect: rect, into: &window)
-        
+
         if isFocused {
             guard let frame = global.intersection(rect) else { return }
             for i in frame.indices {
@@ -83,9 +83,10 @@ extension ButtonNode: Focusable {
         isFocused = false
     }
 
-    var isFocusable: Bool { true }
+    var isFocusable: Bool { !resolvedEnvironment().isDisabled }
 
     func handle(key: Key) -> Bool {
+        guard !resolvedEnvironment().isDisabled else { return false }
         switch key.value {
         case .space, .enter, .mouseUp(button: 0, at: _):
             action()

@@ -28,8 +28,6 @@ class FocusManager {
             if !evaluatingFocus {
                 if let oldValue {
                     focusVisitor.visited[oldValue].resignFirstResponder()
-                } else if let parent {
-                    // if there was no focus prior, then we need to inform the parent that this FocusManager now has the focus.
                 }
                 focusedElementIndex.map { focusVisitor.visited[$0] }?.becomeFirstResponder()
             }

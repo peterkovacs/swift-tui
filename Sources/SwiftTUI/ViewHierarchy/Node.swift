@@ -109,13 +109,13 @@ internal class Node {
     }
 
     func bubble(key: Key) -> Bool {
-        if let self = self as? Focusable {
-            return self.handle(key: key)
-        } else if let parent = parent {
-            return parent.bubble(key: key)
-        } else {
-            return false
+        if let self = self as? Focusable, self.handle(key: key) {
+            return true
         }
+        if let parent = parent {
+            return parent.bubble(key: key)
+        }
+        return false
     }
 
     /// Performs a depth-first search to find the deepest control capable of handling a given key at the provided position.
@@ -210,6 +210,12 @@ internal class Node {
 
     var description: String {
         "\(type(of: self.view))"
+    }
+
+    func resolvedEnvironment() -> EnvironmentValues {
+        var values = parent?.resolvedEnvironment() ?? EnvironmentValues()
+        environment?(&values)
+        return values
     }
 
     func relative(to ancestor: Node?) -> Rect {

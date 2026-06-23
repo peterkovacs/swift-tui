@@ -13,6 +13,12 @@ class DynamicPropertyNode: Node {
         set(references: content)
     }
 
+    func set<Wrapped: Equatable>(state: AnyHashable, value: Wrapped) {
+        if let existing: Wrapped = self.state[state] as? Wrapped, existing == value { return }
+        self.state[state] = value
+        self.invalidate()
+    }
+
     func set<Wrapped>(state: AnyHashable, value: Wrapped) {
         self.state[state] = value
         self.invalidate()

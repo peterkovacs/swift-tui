@@ -47,11 +47,6 @@ struct TaskView<ID: Equatable, Content: View>: View, PrimitiveView {
     }
 }
 
-@globalActor
-actor TaskActor {
-    static let shared = TaskActor()
-}
-
 @MainActor
 protocol Taskable {
     var task: Task<Void, Never>? { get }
@@ -95,7 +90,7 @@ final class TaskNode<ID: Equatable>: Node, Taskable {
     override func layout<T>(visitor: inout T) where T : Visitor.Layout {
         super.layout(visitor: &visitor)
         if task == nil {
-            task = .init(priority: priority) { @TaskActor [action] in
+            task = .init(priority: priority) { [action] in
                 await action()
             }
         }

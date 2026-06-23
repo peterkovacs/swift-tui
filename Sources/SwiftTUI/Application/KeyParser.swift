@@ -645,7 +645,7 @@ actor KeyParser: AsyncSequence {
             case let (.escapeSquareBracketLessThanDigitDigitSemicolon(digit1, digit2), char) where Digit ~= char:
                 state = timeout(
                     .escapeSquareBracketLessThanDigitDigitDigit(digit1, digit2, Int(char.value - 0x30)),
-                    yielding: "\u{1b}[<\(digit1);\(char)"
+                    yielding: "\u{1b}[<\(digit1);\(digit2);\(char)"
                 )
             case let (.escapeSquareBracketLessThanDigitDigitSemicolon(digit1, digit2), char):
                 yield(string: "\u{1b}[<\(digit1);\(digit2)\(char)")

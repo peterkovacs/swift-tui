@@ -14,12 +14,12 @@ public enum ScrollIndicatorVisibility: Sendable, Hashable {
 
 public struct ScrollView<Content: View>: View, PrimitiveView {
     let axes: LayoutAxis.Set
-    let indiciatorVisibility: ScrollIndicatorVisibility
+    let indicatorVisibility: ScrollIndicatorVisibility
     let content: Content
 
-    public init(_ axes: LayoutAxis.Set = [.vertical], indiciatorVisibility: ScrollIndicatorVisibility = .automatic, @ViewBuilder content: () -> Content) {
+    public init(_ axes: LayoutAxis.Set = [.vertical], indicatorVisibility: ScrollIndicatorVisibility = .automatic, @ViewBuilder content: () -> Content) {
         self.axes = axes
-        self.indiciatorVisibility = indiciatorVisibility
+        self.indicatorVisibility = indicatorVisibility
         self.content = content()
     }
 
@@ -29,7 +29,7 @@ public struct ScrollView<Content: View>: View, PrimitiveView {
             parent: parent,
             root: root,
             axes: axes,
-            indicatorVisiblity: indiciatorVisibility
+            indicatorVisibility: indicatorVisibility
         )
 
         // NOTE: children of a scrollview are added in ``RootNode.init(view:parent:root)``
@@ -41,14 +41,14 @@ public struct ScrollView<Content: View>: View, PrimitiveView {
         guard let node = node as? ScrollViewNode else { fatalError() }
 
         node.axes = axes
-        node.indicatorVisiblity = indiciatorVisibility
+        node.indicatorVisibility = indicatorVisibility
         node.children[0].update(view: content.view)
     }
 }
 
 class ScrollViewNode: RootNode {
     var axes: LayoutAxis.Set
-    var indicatorVisiblity: ScrollIndicatorVisibility { didSet { if indicatorVisiblity != oldValue { invalidateLayout() } } }
+    var indicatorVisibility: ScrollIndicatorVisibility { didSet { if indicatorVisibility != oldValue { invalidateLayout() } } }
     var indicatorSize: Size = .zero { didSet { if indicatorSize != oldValue { _buffer = nil } } }
     var contentArea: Size { frame.size - indicatorSize }
     var contentOffset: Position = .init(column: 0, line: 0)
@@ -89,9 +89,9 @@ class ScrollViewNode: RootNode {
         }
     }
 
-    init<T: View>(view: T, parent: Node?, root: RootNode?, axes: LayoutAxis.Set, indicatorVisiblity: ScrollIndicatorVisibility) {
+    init<T: View>(view: T, parent: Node?, root: RootNode?, axes: LayoutAxis.Set, indicatorVisibility: ScrollIndicatorVisibility) {
         self.axes = axes
-        self.indicatorVisiblity = indicatorVisiblity
+        self.indicatorVisibility = indicatorVisibility
         super.init(view: view, parent: parent, root: root)
     }
 
@@ -133,8 +133,8 @@ class ScrollViewNode: RootNode {
         ).size
 
         self.indicatorSize = Size(
-            width:  axes.contains(.vertical)   ? indicatorVisiblity.size(if: contentSize.height > rect.size.height) : 0,
-            height: axes.contains(.horizontal) ? indicatorVisiblity.size(if: contentSize.width  > rect.size.width)  : 0
+            width:  axes.contains(.vertical)   ? indicatorVisibility.size(if: contentSize.height > rect.size.height) : 0,
+            height: axes.contains(.horizontal) ? indicatorVisibility.size(if: contentSize.width  > rect.size.width)  : 0
         )
 
         frame = rect
@@ -163,8 +163,8 @@ class ScrollViewNode: RootNode {
         assert(contentSize.height != .infinity && contentSize.width != .infinity)
 
         let indicatorSize: Size = .init(
-            width:  axes.contains(.vertical)   ? indicatorVisiblity.size(if: contentSize.height > proposedSize.height) : 0,
-            height: axes.contains(.horizontal) ? indicatorVisiblity.size(if: contentSize.width  > proposedSize.width)  : 0
+            width:  axes.contains(.vertical)   ? indicatorVisibility.size(if: contentSize.height > proposedSize.height) : 0,
+            height: axes.contains(.horizontal) ? indicatorVisibility.size(if: contentSize.width  > proposedSize.width)  : 0
         )
 
         let combinedSize = (contentSize + indicatorSize).constraining(to: proposedSize).expanding(to: indicatorSize)
@@ -203,11 +203,7 @@ class ScrollViewNode: RootNode {
         let offset = contentOffset.column.intValue
         let length = ((contentArea.width) * (contentArea.width)) / contentSize.width
 
-        let startPosition = Extended(
-            Int(
-                (Double(frame) * (Double(offset) / Double(width)))
-            )
-        )
+        let startPosition = Extended(frame * offset / width)
 
         return .init(
             column: global.minColumn + startPosition,
@@ -228,11 +224,7 @@ class ScrollViewNode: RootNode {
         let offset = contentOffset.line.intValue
         let length = (contentArea.height * contentArea.height) / contentSize.height
 
-        let startPosition = Extended(
-            Int(
-                (Double(frame) * (Double(offset) / Double(height)))
-            )
-        )
+        let startPosition = Extended(frame * offset / height)
 
 
         return .init(
@@ -302,11 +294,11 @@ class ScrollViewNode: RootNode {
             key = Key(.mouseScrollUp(position), modifiers: key.modifiers)
         case .mouseScrollDown:
             key = Key(.mouseScrollDown(position), modifiers: key.modifiers)
-        case .mouseUp(button: let button, at: let p):
+        case .mouseUp(button: let button, at: _):
             key = Key(.mouseUp(button: button, at: position), modifiers: key.modifiers)
-        case .mouseDown(button: let button, at: let p):
+        case .mouseDown(button: let button, at: _):
             key = Key(.mouseDown(button: button, at: position), modifiers: key.modifiers)
-        case .mouseDrag(button: let button, at: let p):
+        case .mouseDrag(button: let button, at: _):
             key = Key(.mouseDrag(button: button, at: position), modifiers: key.modifiers)
         default: break
         }
@@ -317,11 +309,7 @@ class ScrollViewNode: RootNode {
             }
         }
 
-        if global.contains(position) {
-            return self
-        }
-
-        return nil
+        return self
     }
 }
 

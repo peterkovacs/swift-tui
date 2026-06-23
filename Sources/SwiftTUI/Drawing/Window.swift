@@ -50,6 +50,7 @@ struct Window<Element> {
 
         _modify {
             let p = coord + offset
+            assert(isValid(coord), "coordinate out of bounds")
             let i = (p.line * size.width + p.column).intValue
             yield &elements[i]
         }

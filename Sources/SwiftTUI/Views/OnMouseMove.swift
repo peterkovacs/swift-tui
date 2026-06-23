@@ -1,14 +1,14 @@
 extension View {
-    public func onMouseMove( _ action: @escaping (Position) -> Void) -> some View {
+    public func onMouseMove(_ action: @escaping @MainActor (Position) -> Void) -> some View {
         OnMouseMove(onMouseMove: action, content: self)
     }
 }
 
 struct OnMouseMove<Content: View>: View, PrimitiveView {
     let content: Content
-    let onMouseMove: (Position) -> Void
+    let onMouseMove: @MainActor (Position) -> Void
 
-    public init(onMouseMove: @escaping (Position) -> Void, content: Content) {
+    public init(onMouseMove: @escaping @MainActor (Position) -> Void, content: Content) {
         self.content = content
         self.onMouseMove = onMouseMove
     }
@@ -38,13 +38,13 @@ struct OnMouseMove<Content: View>: View, PrimitiveView {
 }
 
 class OnMouseMoveNode: VStackNode {
-    var callback: (Position) -> Void
+    var callback: @MainActor (Position) -> Void
 
     init<Content: View>(
         view: any GenericView,
         parent: Node?,
         root: RootNode?,
-        callback: @escaping (Position) -> Void,
+        callback: @escaping @MainActor (Position) -> Void,
         content: Content
     ) {
         self.callback = callback

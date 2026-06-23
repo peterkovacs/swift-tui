@@ -178,7 +178,7 @@ final class TextFieldNode: DynamicPropertyNode, Control {
             for (position, character) in zip(global.indices, placeholder.indices) where rect.contains(position) {
                 window.write(at: position, default: .init(char: placeholder[character])) {
                     $0.char = placeholder[character]
-                    $0.attributes.inverted = isFocused && character == cursorPosition
+                    $0.attributes.inverted = isFocused && character == placeholder.startIndex
                     $0.foregroundColor = placeholderColor
                 }
             }
@@ -213,14 +213,15 @@ extension TextFieldNode: Focusable {
     func becomeFirstResponder() {
         isFocused = true
     }
-    
+
     func resignFirstResponder() {
         isFocused = false
     }
-    
-    var isFocusable: Bool { true }
+
+    var isFocusable: Bool { !resolvedEnvironment().isDisabled }
 
     func handle(key: Key) -> Bool {
+        guard !resolvedEnvironment().isDisabled else { return false }
         if !text.indices.contains(cursorPosition) {
             cursorPosition = text.endIndex
         }
@@ -246,8 +247,7 @@ extension TextFieldNode: Focusable {
             return true
 
         case Key(.delete):
-            if !text.isEmpty, cursorPosition != text.startIndex {
-                cursorPosition = text.index(before: cursorPosition)
+            if !text.isEmpty, cursorPosition != text.endIndex {
                 text.remove(at: cursorPosition)
                 invalidate()
             }

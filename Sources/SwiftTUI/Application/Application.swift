@@ -108,7 +108,7 @@ extension Application {
             for try await key in parser {
                 // print("KEY: \(String(describing: key))")
 
-                switch key.key {
+                switch key.value {
                 case .mouseMove(let position),
                      .mouseScrollUp(let position),
                      .mouseScrollDown(let position),

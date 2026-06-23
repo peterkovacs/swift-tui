@@ -175,7 +175,7 @@ class TerminalRenderer: Renderer {
 
         // Set the character size to 8 bits per byte. Likely has no effect on
         // anything remotely modern.
-        tattr.c_cflag &= ~tcflag_t(CS8)
+        tattr.c_cflag |= tcflag_t(CS8)
 
         // from <termios.h>
         // #define VMIN            16      /* !ICANON */
