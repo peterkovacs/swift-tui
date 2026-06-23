@@ -23,6 +23,10 @@ extension Position: CustomStringConvertible {
     public var description: String { "(\(column), \(line))" }
 }
 
+extension Position: CustomDebugStringConvertible {
+    public var debugDescription: String { description }
+}
+
 extension Position: AdditiveArithmetic {
     public static func +(lhs: Self, rhs: Self) -> Self {
         Position(column: lhs.column + rhs.column, line: lhs.line + rhs.line)

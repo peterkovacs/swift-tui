@@ -21,7 +21,7 @@
         // children of a ScrollView are rooted in the scrollview itself, but the scrollview still has its own parent root.
         let child = view.view.build(parent: self, root: self)
         add(at: 0, node: child)
-        self.focusManager = .init(secondary: child)
+        self.focusManager = .init(secondary: child, parent: root?.focusManager)
     }
 
     func invalidate(node: Node, frame: @escaping (Node) -> Rect = \.global) {

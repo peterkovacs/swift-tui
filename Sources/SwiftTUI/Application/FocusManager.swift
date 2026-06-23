@@ -26,11 +26,16 @@ class FocusManager {
     private var focusedElementIndex: Array<Visitor.FocusableElement>.Index? {
         didSet {
             if !evaluatingFocus {
-                oldValue.map { focusVisitor.visited[$0] }?.resignFirstResponder()
+                if let oldValue {
+                    focusVisitor.visited[oldValue].resignFirstResponder()
+                } else if let parent {
+                    // if there was no focus prior, then we need to inform the parent that this FocusManager now has the focus.
+                }
                 focusedElementIndex.map { focusVisitor.visited[$0] }?.becomeFirstResponder()
             }
         }
     }
+    private var parent: FocusManager? = nil
 
     var focusedElement: Visitor.FocusableElement? {
         focusedElementIndex.map { focusVisitor.visited[$0]}
@@ -43,11 +48,12 @@ class FocusManager {
         self.focusedElementIndex = nil
     }
 
-    init(secondary root: Node) {
+    init(secondary root: Node, parent: FocusManager?) {
         // TODO: Deal with prefersDefaultFocus
         self.isRoot = false
         self.focusVisitor = .init(visiting: root)
         self.focusedElementIndex = nil
+        self.parent = parent
     }
 
     func defaultFocus() {

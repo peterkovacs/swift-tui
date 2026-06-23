@@ -201,7 +201,7 @@ final class TextFieldNode: DynamicPropertyNode, Control {
     override func hitTest(at position: Position, key: Key) -> (any Control)? {
         guard global.contains(position) else { return nil }
 
-        if case .mouseUp = key.key, !isFocused {
+        if case .mouseUp = key.value, !isFocused {
             root?.focusManager?.change(focus: focusableElement)
         }
 
@@ -327,7 +327,7 @@ extension TextFieldNode: Focusable {
 
         case _ where key.modifiers.isEmpty && !key.isControl:
 
-            if case .char(let value) = key.key {
+            if case .char(let value) = key.value {
                 text.insert(.init(value), at: cursorPosition)
                 cursorPosition = text.index(after: cursorPosition)
                 invalidate()

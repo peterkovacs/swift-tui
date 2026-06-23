@@ -295,7 +295,7 @@ class ScrollViewNode: RootNode {
         var key = key
         let position = position - global.position + contentOffset
 
-        switch key.key {
+        switch key.value {
         case .mouseMove:
             key = Key(.mouseMove(position), modifiers: key.modifiers)
         case .mouseScrollUp:
@@ -386,7 +386,7 @@ extension ScrollViewNode: Focusable {
             return true
         }
 
-        switch (key.key, key.modifiers) {
+        switch (key.value, key.modifiers) {
         case (.up, []), (.mouseScrollUp, _):
             guard axes.contains(.vertical), contentSize.height > contentArea.height else { return false }
             guard contentOffset.line > 0  else { return false }

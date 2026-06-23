@@ -86,7 +86,7 @@ extension ButtonNode: Focusable {
     var isFocusable: Bool { true }
 
     func handle(key: Key) -> Bool {
-        switch key.key {
+        switch key.value {
         case .space, .enter, .mouseUp(button: 0, at: _):
             action()
             return true

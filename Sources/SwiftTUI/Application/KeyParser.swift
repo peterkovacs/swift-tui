@@ -2,11 +2,11 @@ import Foundation
 import CUnicode
 
 public struct Key: Sendable, Equatable {
-    public let key: Value
+    public let value: Value
     public let modifiers: Modifiers
 
     init(_ key: Value, modifiers: Modifiers = []) {
-        self.key = key
+        self.value = key
         self.modifiers = modifiers
         self.normalize()
     }
@@ -164,7 +164,7 @@ public struct Key: Sendable, Equatable {
     }
 
     var isControl: Bool {
-        switch key {
+        switch value {
         case .nul, .soh, .stx, .etx, .eot, .enq, .ack, .bel, .bs, .tab, .newLine,
              .vt, .np, .enter, .so, .si, .dle, .dc1, .dc2, .dc3, .dc4, .nak,
              .syn, .etb, .can, .em, .sub, .fs, .gs, .rs, .us, .delete:
@@ -175,7 +175,7 @@ public struct Key: Sendable, Equatable {
     }
 
     private mutating func normalize() {
-        switch (key, modifiers) {
+        switch (value, modifiers) {
         case ("@", .ctrl):     self = .init("\u{0}")
         case ("a", .ctrl):     self = .init("\u{1}")
         case ("b", .ctrl):     self = .init("\u{2}")
@@ -210,18 +210,6 @@ public struct Key: Sendable, Equatable {
         case ("_", .ctrl):     self = .init("\u{1f}")
         case ("?", .ctrl):     self = .init("\u{7f}")
         default: break
-        }
-    }
-
-    func bytes() -> [UInt8] {
-        switch (key, modifiers) {
-        case (.char(let s), []):
-            return Array(s.utf8)
-        default:
-            guard let key = KeyParser.mapping.first(where: { $0.value == self })?.key
-            else { return [] }
-
-            return Array(key.utf8)
         }
     }
 }
@@ -375,204 +363,6 @@ actor KeyParser: AsyncSequence {
 
         return stream.stream
     }
-
-    nonisolated static let mapping: [String: Key] = [
-        // //    Arrow keys
-        "\u{1b}[A":    Key(.up),
-        "\u{1b}[B":    Key(.down),
-        "\u{1b}[C":    Key(.right),
-        "\u{1b}[D":    Key(.left),
-
-        "\u{1b}[1;2A": Key(.up,    modifiers: .shift),
-        "\u{1b}[1;2B": Key(.down,  modifiers: .shift),
-        "\u{1b}[1;2C": Key(.right, modifiers: .shift),
-        "\u{1b}[1;2D": Key(.left,  modifiers: .shift),
-
-        "\u{1b}[OA":   Key(.up,    modifiers: .shift), // DECCKM
-        "\u{1b}[OB":   Key(.down,  modifiers: .shift), // DECCKM
-        "\u{1b}[OC":   Key(.right, modifiers: .shift), // DECCKM
-        "\u{1b}[OD":   Key(.left,  modifiers: .shift), // DECCKM
-
-        "\u{1b}[a":    Key(.up,    modifiers: .shift), // urxvt
-        "\u{1b}[b":    Key(.down,  modifiers: .shift), // urxvt
-        "\u{1b}[c":    Key(.right, modifiers: .shift), // urxvt
-        "\u{1b}[d":    Key(.left,  modifiers: .shift), // urxvt
-
-        "\u{1b}[1;3A": Key(.up,    modifiers: .alt),
-        "\u{1b}[1;3B": Key(.down,  modifiers: .alt),
-        "\u{1b}[1;3C": Key(.right, modifiers: .alt),
-        "\u{1b}[1;3D": Key(.left,  modifiers: .alt),
-
-        "\u{1b}[1;4A": Key(.up,    modifiers: [.shift, .alt]),
-        "\u{1b}[1;4B": Key(.down,  modifiers: [.shift, .alt]),
-        "\u{1b}[1;4C": Key(.right, modifiers: [.shift, .alt]),
-        "\u{1b}[1;4D": Key(.left,  modifiers: [.shift, .alt]),
-
-        "\u{1b}[1;5A": Key(.up,    modifiers: .ctrl),
-        "\u{1b}[1;5B": Key(.down,  modifiers: .ctrl),
-        "\u{1b}[1;5C": Key(.right, modifiers: .ctrl),
-        "\u{1b}[1;5D": Key(.left,  modifiers: .ctrl),
-
-        "\u{1b}[Oa":   Key(.up,    modifiers: [.ctrl, .alt]),    // urxvt
-        "\u{1b}[Ob":   Key(.down,  modifiers: [.ctrl, .alt]),  // urxvt
-        "\u{1b}[Oc":   Key(.right, modifiers: [.ctrl, .alt]), // urxvt
-        "\u{1b}[Od":   Key(.left,  modifiers: [.ctrl, .alt]),  // urxvt
-
-        "\u{1b}[1;6A": Key(.up,    modifiers: [.ctrl, .shift]),
-        "\u{1b}[1;6B": Key(.down,  modifiers: [.ctrl, .shift]),
-        "\u{1b}[1;6C": Key(.right, modifiers: [.ctrl, .shift]),
-        "\u{1b}[1;6D": Key(.left,  modifiers: [.ctrl, .shift]),
-
-        "\u{1b}[1;7A": Key(.up,    modifiers: [.ctrl, .alt]),
-        "\u{1b}[1;7B": Key(.down,  modifiers: [.ctrl, .alt]),
-        "\u{1b}[1;7C": Key(.right, modifiers: [.ctrl, .alt]),
-        "\u{1b}[1;7D": Key(.left,  modifiers: [.ctrl, .alt]),
-
-        "\u{1b}[1;8A": Key(.up,    modifiers: [.ctrl, .shift, .alt]),
-        "\u{1b}[1;8B": Key(.down,  modifiers: [.ctrl, .shift, .alt]),
-        "\u{1b}[1;8C": Key(.right, modifiers: [.ctrl, .shift, .alt]),
-        "\u{1b}[1;8D": Key(.left,  modifiers: [.ctrl, .shift, .alt]),
-
-        // Miscellaneous keys
-        "\u{1b}[Z":    Key(.tab, modifiers: .shift),
-
-        "\u{1b}[2~":   Key(.insert),
-        "\u{1b}[3;2~": Key(.insert),                   // differ
-
-        "\u{1b}[3~":   Key(.delete),
-        "\u{1b}[3;3~": Key(.delete),                   // differ
-        "\u{1b}[3;5~": Key(.delete, modifiers: .ctrl), // differ
-
-        "\u{1b}[5~":   Key(.pageUp),
-        "\u{1b}[5;3~": Key(.pageUp, modifiers: .alt),
-        "\u{1b}[5;5~": Key(.pageUp, modifiers: .ctrl),
-        "\u{1b}[5^":   Key(.pageUp, modifiers: .ctrl), // urxvt
-        "\u{1b}[5;7~": Key(.pageUp, modifiers: [.ctrl, .alt]),
-
-        "\u{1b}[6~":   Key(.pageDown),
-        "\u{1b}[6;3~": Key(.pageDown, modifiers: .alt),
-        "\u{1b}[6;5~": Key(.pageDown, modifiers: .ctrl),
-        "\u{1b}[6^":   Key(.pageDown, modifiers: .ctrl), // urxvt
-        "\u{1b}[6;7~": Key(.pageDown, modifiers: [.ctrl, .alt]),
-
-        "\u{1b}[1~":   Key(.home),
-        "\u{1b}[H":    Key(.home),                     // xterm, lxterm
-        "\u{1b}[1;3H": Key(.home, modifiers: .alt),          // xterm, lxterm
-        "\u{1b}[1;5H": Key(.home, modifiers: .ctrl),                 // xterm, lxterm
-        "\u{1b}[1;7H": Key(.home, modifiers: [.ctrl, .alt]),      // xterm, lxterm
-        "\u{1b}[1;2H": Key(.home, modifiers: .shift),                // xterm, lxterm
-        "\u{1b}[1;4H": Key(.home, modifiers: [.shift, .alt]),     // xterm, lxterm
-        "\u{1b}[1;6H": Key(.home, modifiers: [.ctrl, .shift]),            // xterm, lxterm
-        "\u{1b}[1;8H": Key(.home, modifiers: [.ctrl, .shift, .alt]), // xterm, lxterm
-
-        "\u{1b}[4~":   Key(.end),
-        "\u{1b}[F":    Key(.end),                     // xterm, lxterm
-        "\u{1b}[1;2F": Key(.end, modifiers: .shift),                // xterm, lxterm
-        "\u{1b}[1;3F": Key(.end, modifiers: .alt),          // xterm, lxterm
-        "\u{1b}[1;4F": Key(.end, modifiers: [.shift, .alt]),     // xterm, lxterm
-        "\u{1b}[1;5F": Key(.end, modifiers: .ctrl),                 // xterm, lxterm
-        "\u{1b}[1;6F": Key(.end, modifiers: [.ctrl, .shift]),            // xterm, lxterm
-        "\u{1b}[1;7F": Key(.end, modifiers: [.ctrl, .alt]),      // xterm, lxterm
-        "\u{1b}[1;8F": Key(.end, modifiers: [.ctrl, .shift, .alt]), // xterm, lxterm
-
-        "\u{1b}[7~": Key(.home),          // urxvt
-        "\u{1b}[7^": Key(.home, modifiers: .ctrl),      // urxvt
-        "\u{1b}[7$": Key(.home, modifiers: .shift),     // urxvt
-        "\u{1b}[7@": Key(.home, modifiers: [.ctrl, .shift]), // urxvt
-
-        "\u{1b}[8~": Key(.end),          // urxvt
-        "\u{1b}[8^": Key(.end, modifiers: .ctrl),      // urxvt
-        "\u{1b}[8$": Key(.end, modifiers: .shift),     // urxvt
-        "\u{1b}[8@": Key(.end, modifiers: [.ctrl, .shift]), // urxvt
-
-        // Function keys, Linux console
-        "\u{1b}[[A": Key(.f1), // linux console
-        "\u{1b}[[B": Key(.f2), // linux console
-        "\u{1b}[[C": Key(.f3), // linux console
-        "\u{1b}[[D": Key(.f4), // linux console
-        "\u{1b}[[E": Key(.f5), // linux console
-
-        // Function keys, X11
-        "\u{1b}OP": Key(.f1), // vt100, xterm
-        "\u{1b}OQ": Key(.f2), // vt100, xterm
-        "\u{1b}OR": Key(.f3), // vt100, xterm
-        "\u{1b}OS": Key(.f4), // vt100, xterm
-
-        "\u{1b}[1;3P": Key(.f1, modifiers: .alt), // vt100, xterm
-        "\u{1b}[1;3Q": Key(.f2, modifiers: .alt), // vt100, xterm
-        "\u{1b}[1;3R": Key(.f3, modifiers: .alt), // vt100, xterm
-        "\u{1b}[1;3S": Key(.f4, modifiers: .alt), // vt100, xterm
-
-        "\u{1b}[11~": Key(.f1), // urxvt
-        "\u{1b}[12~": Key(.f2), // urxvt
-        "\u{1b}[13~": Key(.f3), // urxvt
-        "\u{1b}[14~": Key(.f4), // urxvt
-        "\u{1b}[15~": Key(.f5), // vt100, xterm, also urxvt
-
-        "\u{1b}[17~": Key(.f6),  // vt100, xterm, also urxvt
-        "\u{1b}[18~": Key(.f7),  // vt100, xterm, also urxvt
-        "\u{1b}[19~": Key(.f8),  // vt100, xterm, also urxvt
-        "\u{1b}[20~": Key(.f9),  // vt100, xterm, also urxvt
-        "\u{1b}[21~": Key(.f10), // vt100, xterm, also urxvt
-
-        "\u{1b}[23~": Key(.f11), // vt100, xterm, also urxvt
-        "\u{1b}[24~": Key(.f12), // vt100, xterm, also urxvt
-        "\u{1b}[25~": Key(.f13), // vt100, xterm, also urxvt
-        "\u{1b}[26~": Key(.f14), // vt100, xterm, also urxvt
-
-        "\u{1b}[28~": Key(.f15), // vt100, xterm, also urxvt
-        "\u{1b}[29~": Key(.f16), // vt100, xterm, also urxvt
-
-        "\u{1b}[31~": Key(.f17),
-        "\u{1b}[32~": Key(.f18),
-        "\u{1b}[33~": Key(.f19),
-        "\u{1b}[34~": Key(.f20),
-
-        "\u{1b}[1;2P": Key(.f13),
-        "\u{1b}[1;2Q": Key(.f14),
-        "\u{1b}[1;2R": Key(.f15),
-        "\u{1b}[1;2S": Key(.f16),
-
-        "\u{1b}[15;2~": Key(.f17),
-        "\u{1b}[17;2~": Key(.f18),
-        "\u{1b}[18;2~": Key(.f19),
-        "\u{1b}[19;2~": Key(.f20),
-
-        "\u{1b}[15;3~": Key(.f5, modifiers: .alt), // vt100, xterm, also urxvt
-        "\u{1b}[17;3~": Key(.f6, modifiers: .alt),  // vt100, xterm
-        "\u{1b}[18;3~": Key(.f7, modifiers: .alt),  // vt100, xterm
-        "\u{1b}[19;3~": Key(.f8, modifiers: .alt),  // vt100, xterm
-        "\u{1b}[20;3~": Key(.f9, modifiers: .alt),  // vt100, xterm
-        "\u{1b}[21;3~": Key(.f10, modifiers: .alt), // vt100, xterm
-
-        "\u{1b}[23;3~": Key(.f11, modifiers: .alt), // vt100, xterm
-        "\u{1b}[24;3~": Key(.f12, modifiers: .alt), // vt100, xterm
-        "\u{1b}[25;3~": Key(.f13, modifiers: .alt), // vt100, xterm
-        "\u{1b}[26;3~": Key(.f14, modifiers: .alt), // vt100, xterm
-
-        "\u{1b}[28;3~": Key(.f15, modifiers: .alt), // vt100, xterm
-        "\u{1b}[29;3~": Key(.f16, modifiers: .alt), // vt100, xterm
-
-        // Powershell sequences.
-        "\u{1b}OA": Key(.up),
-        "\u{1b}OB": Key(.down),
-        "\u{1b}OC": Key(.right),
-        "\u{1b}OD": Key(.left),
-    ]
-
-    // All possible valid prefixes of escape sequences.
-    nonisolated static private let prefixes = { () -> Set<String> in
-        var result = Set<String>()
-        for m in mapping.keys {
-            var p = ""
-            for c in m.dropLast() {
-                p.append(String(c))
-                result.insert(p)
-            }
-        }
-
-        return result
-    }()
 
     private func parse(continuation: AsyncThrowingStream<Key, Error>.Continuation) async throws {
 

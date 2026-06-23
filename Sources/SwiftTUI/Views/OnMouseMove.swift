@@ -54,7 +54,7 @@ class OnMouseMoveNode: VStackNode {
     override func hitTest(at position: Position, key: Key) -> (any Control)? {
         guard let control = super.hitTest(at: position, key: key) else { return nil }
 
-        if case .mouseMove(let position) = key.key {
+        if case .mouseMove(let position) = key.value {
             self.callback(position)
         }
 
