@@ -250,14 +250,15 @@ class ScrollViewNode: RootNode {
         let global = global
         guard let rect = global.intersection(rect) else { return }
 
-//        if buffer == nil {
-//            var buffer = Window<Cell?>(repeating: nil, size: contentSize)
-//            children[0].draw(rect: rect, into: &buffer)
-//            self.buffer = buffer
-//        }
-
-        window.with(offset: -contentOffset + global.position) { window in
-            children[0].draw(rect: rect + contentOffset - global.position, into: &window)
+        // Copy the visible portion from the cached full-content buffer rather than
+        // re-traversing the node tree on every render. The buffer is invalidated by
+        // invalidate(node:frame:) whenever content changes.
+        let buffer = self.buffer
+        for position in rect.indices {
+            let contentPos = position - global.position + contentOffset
+            if buffer.isValid(contentPos) {
+                window[position] = buffer[contentPos]
+            }
         }
 
         if let scrollBar = horizontalScrollBar() {

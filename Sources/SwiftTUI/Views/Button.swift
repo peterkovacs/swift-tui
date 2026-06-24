@@ -70,6 +70,9 @@ final class ButtonNode: HStackNode {
 
     override func hitTest(at position: Position, key: Key) -> (any Control)? {
         guard global.contains(position) else { return nil }
+        if case .mouseUp = key.value, !isFocused {
+            root?.focusManager?.change(focus: focusableElement)
+        }
         return self
     }
 }

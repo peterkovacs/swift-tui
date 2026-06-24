@@ -66,11 +66,9 @@ import Synchronization
 extension Application {
 
     private func handleWindowSizeChange() {
-        MainActor.assumeIsolated {
-            renderer.setSize()
-            node.invalidate()
-            update()
-        }
+        renderer.setSize()
+        _ = node.layout(rect: .init(position: .zero, size: renderer.window.size))
+        renderer.draw(rect: nil)
     }
 
     public func start() async throws {
@@ -107,41 +105,8 @@ extension Application {
 
         let keyInputTask = Task {
             for try await key in await parser.parse() {
-                // print("KEY: \(String(describing: key))")
-
-                switch key.value {
-                case .mouseMove(let position),
-                     .mouseScrollUp(let position),
-                     .mouseScrollDown(let position),
-                     .mouseDown(button: _, at: let position),
-                     .mouseUp(button: _, at: let position),
-                     .mouseDrag(button: _, at: let position):
-
-                    // Translate the position into a node and deliver the event to that node even if it doesn't have focus.
-                    if
-                        let control = node.hitTest(at: position, key: key),
-                        control.bubble(key: key)
-                    {
-                        continue
-                    }
-                default: break
-                }
-
-                if node.focusManager?.handle(key: key) == true {
-                    continue
-                }
-
-                switch key {
-                case Key(.char("l"), modifiers: .ctrl):
-                    self.handleWindowSizeChange()
-
-                case Key(.char("d"), modifiers: .ctrl):
-                    Exit.exit()
-                default:
-                    break
-                }
+                process(key: key)
             }
-
             Exit.exit()
         }
 
@@ -168,7 +133,27 @@ extension Application {
     }
 
     func process(key: Key) {
-        _ = node.focusManager?.handle(key: key)
+        switch key.value {
+        case .mouseMove(let position),
+             .mouseScrollUp(let position),
+             .mouseScrollDown(let position),
+             .mouseDown(button: _, at: let position),
+             .mouseUp(button: _, at: let position),
+             .mouseDrag(button: _, at: let position):
+            if let control = node.hitTest(at: position, key: key) {
+                _ = control.bubble(key: key)
+            }
+        default:
+            if node.focusManager?.handle(key: key) == true { break }
+            switch key {
+            case Key(.char("l"), modifiers: .ctrl):
+                handleWindowSizeChange()
+            case Key(.char("d"), modifiers: .ctrl):
+                Exit.exit()
+            default:
+                break
+            }
+        }
         update()
     }
 

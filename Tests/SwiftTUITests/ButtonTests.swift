@@ -86,6 +86,71 @@ import Synchronization
         #expect(actionCalled.withLock(\.self) == true)
     }
 
+    @Test func testMouseClickFocusesButton() async throws {
+        struct MyView: View {
+            var body: some View {
+                Button("First") { }
+                Button("Second") { }
+            }
+        }
+
+        let (application, _) = try drawView(MyView())
+
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 6x2
+              → ComposedView<MyView>
+                → TupleView<Pack{Button<Text>, Button<Text>}>
+                  → Button FOCUSED (0, 0) 5x1
+                    → Text:string("First") (0, 0) 5x1
+                  → Button (0, 1) 6x1
+                    → Text:string("Second") (0, 1) 6x1
+
+            """
+        }
+
+        // Click the second button — it should become focused.
+        application.process(key: Key(.mouseUp(button: 0, at: Position(column: 0, line: 1))))
+
+        assertInlineSnapshot(of: application, as: .frameDescription) {
+            """
+            → VStack<MyView> (0, 0) 6x2
+              → ComposedView<MyView>
+                → TupleView<Pack{Button<Text>, Button<Text>}>
+                  → Button (0, 0) 5x1
+                    → Text:string("First") (0, 0) 5x1
+                  → Button FOCUSED (0, 1) 6x1
+                    → Text:string("Second") (0, 1) 6x1
+
+            """
+        }
+    }
+
+    @Test func testMouseClickOutsideButtonDoesNotFireAction() async throws {
+        let actionCalled = Mutex(false)
+
+        struct MyView: View {
+            let action: @MainActor () -> Void
+            var body: some View {
+                Button("OK", action: action)
+            }
+        }
+
+        let (application, _) = try drawView(MyView { actionCalled.withLock { $0 = true } })
+
+        // Confirm a click on the button fires the action.
+        application.process(key: Key(.mouseUp(button: 0, at: .zero)))
+        #expect(actionCalled.withLock(\.self) == true)
+
+        // A click outside the button's bounds must not fire the action, even
+        // though the button has focus. Before the fix, mouse events that missed
+        // hitTest fell through to FocusManager, which dispatched them to the
+        // focused button regardless of position.
+        actionCalled.withLock { $0 = false }
+        application.process(key: Key(.mouseUp(button: 0, at: Position(column: 50, line: 50))))
+        #expect(actionCalled.withLock(\.self) == false)
+    }
+
     @Test func testHitTest() async throws {
         struct MyView: View {
             var body: some View {
