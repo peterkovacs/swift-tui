@@ -369,6 +369,14 @@ extension ScrollViewNode: Focusable {
     }
 
     func handle(key: Key) -> Bool {
+        // Mouse click/drag events are position-based and routed through hitTest.
+        // Forwarding them to the focus manager would let the focused child handle
+        // a click that did not land on it.
+        switch key.value {
+        case .mouseDown, .mouseUp, .mouseDrag, .mouseMove:
+            return false
+        default: break
+        }
 
         if focusManager.handle(key: key), let focusedElement = focusManager.focusedElement {
             scroll(to: focusedElement.node)

@@ -2,6 +2,7 @@ import InlineSnapshotTesting
 import Observation
 import SnapshotTesting
 @testable import SwiftTUI
+import Synchronization
 import Testing
 
 @MainActor
@@ -614,6 +615,29 @@ import Testing
 
             """
         }
+    }
+
+    @Test func testMouseClickInEmptyScrollViewAreaDoesNotFireFocusedButton() async throws {
+        let actionCalled = Mutex(false)
+
+        struct MyView: View {
+            let action: @MainActor () -> Void
+            var body: some View {
+                ScrollView {
+                    Button("Click Me", action: action)
+                }
+                .frame(width: 20, height: 10)
+            }
+        }
+
+        let (application, _) = try drawView(MyView { actionCalled.withLock { $0 = true } })
+
+        // Click well below the button (which occupies line 0) — within the
+        // ScrollView's frame but not on any child control. Before the fix,
+        // ScrollViewNode.handle forwarded the mouseUp to its focus manager,
+        // which dispatched to the focused button regardless of position.
+        application.process(key: Key(.mouseUp(button: 0, at: Position(column: 0, line: 5))))
+        #expect(actionCalled.withLock { $0 } == false)
     }
 
     @Test func hitTest_inScrolledView() async throws {
