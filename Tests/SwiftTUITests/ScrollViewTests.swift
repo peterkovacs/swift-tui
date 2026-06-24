@@ -592,7 +592,7 @@ import Testing
         // Simulate the Application event loop's hitTest + bubble path for mouse events.
         // hitTest finds the TextField at (0,0); bubble propagates the scroll event through
         // the TextField (which returns false) to the ScrollView (which handles it).
-        let scrollKey = Key(.mouseScrollDown(Position(column: 0, line: 0)))
+        let scrollKey = Key(.mouseScrollDown(Position(column: 0, line: 0), delta: 1))
         if let control = application.node.hitTest(at: .zero, key: scrollKey) {
             _ = control.bubble(key: scrollKey)
             application.update()

@@ -9,6 +9,11 @@ import Synchronization
     let parser: KeyParser
     var invalidated: [(node: Node, frame: (Node) -> Rect)] = []
 
+    // Scroll coalescing state — see accumulateScroll / flushPendingScroll.
+    private var pendingScrollDelta: Int = 0
+    private var pendingScrollPosition: Position = .zero
+    private var scrollFlushTask: Task<Void, Never>? = nil
+    @Dependency(\.continuousClock) var clock
 
     init<T: View>(
         root: T,
@@ -105,8 +110,15 @@ extension Application {
 
         let keyInputTask = Task {
             for try await key in await parser.parse() {
-                process(key: key)
+                switch key.value {
+                case .mouseScrollUp, .mouseScrollDown:
+                    accumulateScroll(key: key)
+                default:
+                    immediateFlushScroll()
+                    process(key: key)
+                }
             }
+            immediateFlushScroll()
             Exit.exit()
         }
 
@@ -132,11 +144,58 @@ extension Application {
         renderer.stop()
     }
 
+    private func accumulateScroll(key: Key) {
+        switch key.value {
+        case .mouseScrollUp(let position, let delta):
+            if pendingScrollDelta < 0 { immediateFlushScroll() }
+            if pendingScrollDelta == 0 { pendingScrollPosition = position }
+            pendingScrollDelta += delta
+        case .mouseScrollDown(let position, let delta):
+            if pendingScrollDelta > 0 { immediateFlushScroll() }
+            if pendingScrollDelta == 0 { pendingScrollPosition = position }
+            pendingScrollDelta -= delta
+        default: return
+        }
+        // Throttle: one flush task per burst, fires after one frame (~16ms).
+        // Events arriving faster than that are coalesced into a single dispatch.
+        if scrollFlushTask == nil {
+            scrollFlushTask = Task {
+                do {
+                    try await clock.sleep(for: .milliseconds(16))
+                    flushPendingScroll()
+                } catch {
+                    // Cancelled by immediateFlushScroll() — don't flush here.
+                }
+            }
+        }
+    }
+
+    // Flush synchronously; used when a non-scroll event or direction change
+    // arrives and must be ordered after any accumulated scroll.
+    private func immediateFlushScroll() {
+        if let scrollFlushTask {
+            scrollFlushTask.cancel()
+            flushPendingScroll()
+        }
+    }
+
+    private func flushPendingScroll() {
+        let delta = pendingScrollDelta
+        let position = pendingScrollPosition
+        pendingScrollDelta = 0
+        scrollFlushTask = nil
+        guard delta != 0 else { return }
+        let key = delta > 0
+            ? Key(.mouseScrollUp(position, delta: delta))
+            : Key(.mouseScrollDown(position, delta: -delta))
+        process(key: key)
+    }
+
     func process(key: Key) {
         switch key.value {
         case .mouseMove(let position),
-             .mouseScrollUp(let position),
-             .mouseScrollDown(let position),
+             .mouseScrollUp(let position, _),
+             .mouseScrollDown(let position, _),
              .mouseDown(button: _, at: let position),
              .mouseUp(button: _, at: let position),
              .mouseDrag(button: _, at: let position):

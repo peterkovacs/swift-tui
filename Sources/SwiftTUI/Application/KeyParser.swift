@@ -36,12 +36,12 @@ public struct Key: Sendable, Equatable {
                 switch mouse & 0x1 {
                 case 0:
                     return Key(
-                        .mouseScrollUp(position),
+                        .mouseScrollUp(position, delta: 1),
                         modifiers: .init(sgr: mouse)
                     )
                 default:
                     return Key(
-                        .mouseScrollDown(position),
+                        .mouseScrollDown(position, delta: 1),
                         modifiers: .init(sgr: mouse)
                     )
                 }
@@ -88,8 +88,8 @@ public struct Key: Sendable, Equatable {
         case mouseDown(button: Int, at: Position)
         case mouseUp(button: Int, at: Position)
         case mouseDrag(button: Int, at: Position)
-        case mouseScrollUp(Position)
-        case mouseScrollDown(Position)
+        case mouseScrollUp(Position, delta: Int)
+        case mouseScrollDown(Position, delta: Int)
 
         // MARK: Key Aliases
         nonisolated static let nul: Self     = "\u{0}"

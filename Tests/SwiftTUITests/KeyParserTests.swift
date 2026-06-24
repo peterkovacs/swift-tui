@@ -43,8 +43,8 @@ struct KeyParserTests {
             ("[5~", Key(.pageUp)),
             ("[6~", Key(.pageDown)),
 
-            ("[<65;82;16M", Key(.mouseScrollDown(Position(column: 81, line: 15)))),
-            ("[<64;82;16M", Key(.mouseScrollUp(.init(column: 81, line: 15)))),
+            ("[<65;82;16M", Key(.mouseScrollDown(Position(column: 81, line: 15), delta: 1))),
+            ("[<64;82;16M", Key(.mouseScrollUp(.init(column: 81, line: 15), delta: 1))),
             ("[<35;81;16M", Key(.mouseMove(.init(column: 80, line: 15)))),
             ("[<0;80;17M", Key(.mouseDown(button: 0, at: .init(column: 79, line: 16)))),
             ("[<0;80;17m", Key(.mouseUp(button: 0, at: .init(column: 79, line: 16)))),

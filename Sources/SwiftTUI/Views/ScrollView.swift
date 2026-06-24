@@ -291,10 +291,10 @@ class ScrollViewNode: RootNode {
         switch key.value {
         case .mouseMove:
             key = Key(.mouseMove(position), modifiers: key.modifiers)
-        case .mouseScrollUp:
-            key = Key(.mouseScrollUp(position), modifiers: key.modifiers)
-        case .mouseScrollDown:
-            key = Key(.mouseScrollDown(position), modifiers: key.modifiers)
+        case .mouseScrollUp(_, let delta):
+            key = Key(.mouseScrollUp(position, delta: delta), modifiers: key.modifiers)
+        case .mouseScrollDown(_, let delta):
+            key = Key(.mouseScrollDown(position, delta: delta), modifiers: key.modifiers)
         case .mouseUp(button: let button, at: _):
             key = Key(.mouseUp(button: button, at: position), modifiers: key.modifiers)
         case .mouseDown(button: let button, at: _):
@@ -376,17 +376,25 @@ extension ScrollViewNode: Focusable {
         }
 
         switch (key.value, key.modifiers) {
-        case (.up, []), (.mouseScrollUp, _):
+        case (.up, []):
             guard axes.contains(.vertical), contentSize.height > contentArea.height else { return false }
-            guard contentOffset.line > 0  else { return false }
-
+            guard contentOffset.line > 0 else { return false }
             contentOffset.line -= 1
 
-        case (.down, []), (.mouseScrollDown, _):
+        case (.mouseScrollUp(_, let delta), _):
+            guard axes.contains(.vertical), contentSize.height > contentArea.height else { return false }
+            guard contentOffset.line > 0 else { return false }
+            contentOffset.line = max(0, contentOffset.line - Extended(delta))
+
+        case (.down, []):
             guard axes.contains(.vertical), contentSize.height > contentArea.height else { return false }
             guard contentOffset.line + contentArea.height < contentSize.height else { return false }
-
             contentOffset.line += 1
+
+        case (.mouseScrollDown(_, let delta), _):
+            guard axes.contains(.vertical), contentSize.height > contentArea.height else { return false }
+            guard contentOffset.line + contentArea.height < contentSize.height else { return false }
+            contentOffset.line = min(contentSize.height - contentArea.height, contentOffset.line + Extended(delta))
 
         case (.left, []):
             guard axes.contains(.horizontal), contentSize.width > contentArea.width else { return false }
